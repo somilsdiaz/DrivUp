@@ -1,11 +1,11 @@
 import React from 'react';
-
+import HeaderFooter from '../layouts/headerFooter';
 
 const Rutas: React.FC = () => {
     return (
-        <div>
+        <HeaderFooter>
             Rutas de buses que fueron integradas al proyecto
-        </div>
+        </HeaderFooter>
     );
 };
 

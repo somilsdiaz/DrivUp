@@ -1,11 +1,11 @@
 import React from 'react';
-
+import HeaderFooter from '../layouts/headerFooter';
 
 const About: React.FC = () => {
     return (
-        <div>
+        <HeaderFooter>            
             Pagina para describir de que trata del proyecto, mision, vision
-        </div>
+        </HeaderFooter>
     );
 };
 

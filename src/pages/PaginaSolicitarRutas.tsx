@@ -1,11 +1,11 @@
 import React from 'react';
-
+import HeaderFooter from '../layouts/headerFooter';
 
 const SolicitarRutaPagina: React.FC = () => {
     return (
-        <div>
-            Pagina donde los usuarios pueden reservar/solicitar/pedir una ruta 
-        </div>
+        <HeaderFooter>            
+            Pagina donde los usuarios pueden reservar/solicitar/pedir una ruta
+        </HeaderFooter>
     );
 };
 
