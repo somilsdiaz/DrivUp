@@ -1,6 +1,10 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Login from '../pages/login';
 import Inicio from '../pages/inicio';
+import Rutas from '../pages/rutas';
+import Contacto from '../pages/contacto';
+import About from '../pages/about';
+import SolicitarRutaPagina from '../pages/PaginaSolicitarRutas';
 
 const router = createBrowserRouter([
     {
@@ -8,10 +12,25 @@ const router = createBrowserRouter([
         element: <Login />,
     },
     {
-        path:"/",
+        path: "/",
         element: <Inicio />,
     },
-
+    {
+        path: "/rutas",
+        element: <Rutas />,
+    },
+    {
+        path: "/solicitar-mi-ruta",
+        element: <SolicitarRutaPagina />,
+    },
+    {
+        path: "/contacto",
+        element: <Contacto />,
+    },
+    {
+        path: "/acerca-de",
+        element: <About />,
+    },
 ]);
 
 export const AppRoutes = () => {
