@@ -1,14 +1,28 @@
+import React, { useState } from "react";
 import { Bell, Menu, User, ChevronDown, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import MenuResponsive from "./menuResponsive";
 
-export default function Header() {
+const Header: React.FC = () => {
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
+
+    const toggleMenu = () => {
+        setIsMenuVisible((prev) => !prev);
+    };
+
+    const closeMenu = () => {
+        setIsMenuVisible(false);
+    };
+
     return (
         <header className="bg-gradient-to-r from-[#078930] to-[#0AAB4B] text-white p-4 shadow-lg sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center">
 
                 {/* Logo y nombre de la pagina */}
                 <div className="flex items-center space-x-4">
-                    <button className="lg:hidden p-2 rounded-lg hover:bg-[#0AAB4B] transition-colors">
+                    <button
+                        onClick={toggleMenu}
+                        className="lg:hidden p-2 rounded-lg hover:bg-[#0AAB4B] transition-colors">
                         <Menu size={24} />
                     </button>
                     <Link to="/" className="text-2xl font-bold flex items-center space-x-2">
@@ -16,6 +30,8 @@ export default function Header() {
                         <span>UniBus</span>
                     </Link>
                 </div>
+                {/* Componente MenuResponsive */}
+                <MenuResponsive isMenuVisible={isMenuVisible} closeMenu={closeMenu} />
 
                 {/*Elementos del header*/}
                 <nav className="hidden lg:flex space-x-6 items-center">
@@ -70,4 +86,5 @@ export default function Header() {
             </div>
         </header>
     );
-}
+};
+export default Header;
