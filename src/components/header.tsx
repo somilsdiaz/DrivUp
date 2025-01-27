@@ -14,19 +14,19 @@ export default function Header() {
                     </Link>
                 </div>
                 <nav className="hidden lg:flex space-x-6">
-                    <Link to="/routes" className="hover:text-[#FCD116] transition-colors">
+                    <Link to="/" className="hover:text-[#FCD116] transition-colors">
                         Inicio
                     </Link>
-                    <Link to="/schedule" className="hover:text-[#FCD116] transition-colors">
+                    <Link to="/rutas" className="hover:text-[#FCD116] transition-colors">
                         Rutas
                     </Link>
-                    <Link to="/about" className="hover:text-[#FCD116] transition-colors">
+                    <Link to="/solicitar-mi-ruta" className="hover:text-[#FCD116] transition-colors">
                         Solicitar rutas
                     </Link>
-                    <Link to="/contact" className="hover:text-[#FCD116] transition-colors">
+                    <Link to="/contacto" className="hover:text-[#FCD116] transition-colors">
                         Contacto
                     </Link>
-                    <Link to="/contact" className="hover:text-[#FCD116] transition-colors">
+                    <Link to="/acerca-de" className="hover:text-[#FCD116] transition-colors">
                         Acerca de nosotros
                     </Link>
                 </nav>
