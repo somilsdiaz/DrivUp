@@ -1,12 +1,12 @@
 import React from 'react';
 import HeaderFooter from '../layouts/headerFooter';
 
-const Inicio: React.FC = () => {
+const Rutas: React.FC = () => {
     return (
         <HeaderFooter>
-            Este es el inicio
+            Rutas de buses que fueron integradas al proyecto
         </HeaderFooter>
     );
 };
 
-export default Inicio;
+export default Rutas;
