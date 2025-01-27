@@ -1,11 +1,11 @@
 import React from 'react';
-
+import MainLayout from '../layouts/headerFooter';
 
 const Inicio: React.FC = () => {
     return (
-        <div>
+        <MainLayout>
             Este es el inicio
-        </div>
+        </MainLayout>
     );
 };
 
