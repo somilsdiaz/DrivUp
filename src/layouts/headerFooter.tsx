@@ -6,7 +6,7 @@ type MainLayoutProps = {
     children: React.ReactNode;
 };
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const HeaderFooter: React.FC<MainLayoutProps> = ({ children }) => {
 
     return (
         <div>
@@ -19,4 +19,4 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     );
 };
 
-export default MainLayout;
+export default HeaderFooter;
