@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { NoticiasCard } from "./NoticiasCard"
 
@@ -10,59 +10,41 @@ interface Noticia {
     readMoreLink: string
     date: string
     readTime: number
+    empresa: string
 }
-
-const noticias: Noticia[] = [
-    {
-        id: 1,
-        title: "Aumento en tarifas de buses",
-        summary: "A partir del próximo mes, las tarifas de buses aumentarán un 5% debido a...",
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        readMoreLink: "/noticias/aumento-tarifas",
-        date: "2025-01-15",
-        readTime: 6,
-    },
-    {
-        id: 2,
-        title: "Desvío temporal en la ruta 34",
-        summary: "Debido a obras en la Avenida Principal, la ruta 34 será desviada por...",
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        readMoreLink: "/noticias/desvio-ruta-34",
-        date: "2025-01-15",
-        readTime: 3
-    },
-    {
-        id: 3,
-        title: "Nueva ciclovía en el centro",
-        summary: "Se ha inaugurado una nueva ciclovía en el centro para fomentar la movilidad sostenible...",
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        readMoreLink: "/noticias/ciclovia-centro",
-        date: "2025-02-01",
-        readTime: 1,
-    },
-    {
-        id: 4,
-        title: "Reducción en el tráfico por teletrabajo",
-        summary: "El tráfico en la ciudad ha disminuido un 20% gracias a la adopción del teletrabajo...",
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        readMoreLink: "/noticias/trafico-teletrabajo",
-        date: "2025-02-02",
-        readTime: 5,
-    },
-    {
-        id: 5,
-        title: "Reducción en el tráfico por teletrabajo",
-        summary: "El tráfico en la ciudad ha disminuido un 20% gracias a la adopción del teletrabajo...",
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        readMoreLink: "/noticias/trafico-teletrabajo",
-        date: "2024-10-15",
-        readTime: 3,
-    },
-]
 
 export function NoticiasSection() {
     const carouselRef = useRef<HTMLDivElement>(null)
     let scrollInterval = useRef<ReturnType<typeof setInterval> | null>(null)
+
+
+    const [noticias, setNoticias] = useState<Noticia[]>([]);
+
+    useEffect(() => {
+        // Función para obtener las noticias desde el backend
+        const fetchNoticias = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/noticias", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error al obtener las noticias");
+                }
+
+                const data = await response.json();
+                setNoticias(data);
+            } catch (error) {
+                console.error("Error fetching noticias:", error);
+            }
+        };
+
+        fetchNoticias();
+    }, []);
+
 
     useEffect(() => {
         const carousel = carouselRef.current
