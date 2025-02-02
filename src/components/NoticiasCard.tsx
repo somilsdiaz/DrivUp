@@ -5,7 +5,7 @@ interface NoticiasCardProps {
     summary: string;
     imageUrl: string;
     readMoreLink: string;
-    date: string; 
+    date: string;
     readTime: number;
 }
 
