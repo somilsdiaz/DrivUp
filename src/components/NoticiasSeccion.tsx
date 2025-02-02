@@ -7,9 +7,8 @@ interface Noticia {
     title: string
     summary: string
     imageUrl: string
-    readMoreLink: string
     date: string
-    readTime: number
+    readtime: number
     empresa: string
 }
 
@@ -90,8 +89,7 @@ export function NoticiasSection() {
     }
 
     return (
-        <section className="py-12 px-4">
-            <h2 className="text-3xl font-bold mb-6 text-center">Noticias Relevantes</h2>
+        <section className="py-3 px-4">
             <div className="relative w-full overflow-hidden">
                 <div ref={carouselRef} className="overflow-hidden">
                     <div

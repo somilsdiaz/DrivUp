@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
 import HeaderFooter from '../layouts/headerFooter';
-
+import { NoticiasSection } from '../components/NoticiasSeccion';
 
 interface Noticia {
     id: number;
@@ -42,15 +42,15 @@ const NoticiasPage: React.FC = () => {
 
     return (
         <HeaderFooter>
-            <article className="max-w-3xl mx-auto">
-                <h1 className="text-custom-red text-4xl font-bold mb-4">{noticia.title}</h1>
+            <article className="max-w-3xl mx-auto pt-9">
+                <h1 className="text-[#CF251F] text-4xl font-bold mb-4">{noticia.title}</h1>
                 <div className="flex items-center text-sm text-[#333333] mb-2">
                     <Calendar className="w-4 h-4 mr-1 text-[#078930]" />
                     <span>{noticia.date}</span>
                     <span className="mx-2 text-[#CF251F]">•</span>
                     <span>{noticia.empresa}</span>
                 </div>
-                <h2 className="text-custom-green text-2xl mb-6">{noticia.subtitle}</h2>
+                <h2 className="text-[#078930] text-2xl mb-6">{noticia.subtitle}</h2>
                 {/* Imagen (si está presente) */}
                 {noticia.imageUrl && (
                     <div className="mb-8">
@@ -61,14 +61,16 @@ const NoticiasPage: React.FC = () => {
                         />
                     </div>
                 )}
-                <div className="text-custom-gray-dark mb-8">
+                <div className="text-[#333333] mb-8 text-justify">
                     {noticia.content.split("\n").map((paragraph, index) => (
                         <p key={index} className="mb-4">
                             {paragraph}
                         </p>
                     ))}
                 </div>
+                <NoticiasSection />
             </article>
+            
         </HeaderFooter>
 
     )
