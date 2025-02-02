@@ -6,13 +6,12 @@ interface NoticiasCardProps {
     title: string;
     summary: string;
     imageUrl: string;
-    readMoreLink: string;
     date: string;
-    readTime: number;
+    readtime: number;
     empresa: string;
 }
 
-export function NoticiasCard({id,  title, summary, imageUrl, date, readTime, empresa }: NoticiasCardProps) {
+export function NoticiasCard({id,  title, summary, imageUrl, date, readtime, empresa }: NoticiasCardProps) {
     const navigate = useNavigate();
 
     const handleReadMore = () => {
@@ -35,8 +34,7 @@ export function NoticiasCard({id,  title, summary, imageUrl, date, readTime, emp
                     <span>{date}</span>
                     <span className="mx-2 text-[#CF251F]">•</span>
                     <Clock className="w-4 h-4 mr-1 text-[#078930]" />
-                    <span>{readTime} min lectura</span>
-
+                    <span>{readtime} min lectura</span>
                 </div>
 
                 <h2 className="text-lg font-bold line-clamp-2 mb-2 text-[#CF251F]">{title}</h2>
