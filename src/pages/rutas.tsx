@@ -36,7 +36,7 @@ const busRoutes: BusRoute[] = [
         theme: {
             color: "bg-red-500",
             icon: "City",
-            description: "Fast-paced urban adventure",
+            description: "Ruta que conecta barrios residenciales como Las Flores y Soledad 2000 con puntos clave de Barranquilla",
         },
         destinos: ["Las flores", "Via 40", "Centro", "Calle 17", "Simon Bolivar", "Plaza del sol", "Soledad 2000", "La nevada"],
     },
@@ -53,41 +53,41 @@ const busRoutes: BusRoute[] = [
         theme: {
             color: "bg-blue-500",
             icon: "Umbrella",
-            description: "Relaxing coastal journey",
+            description: "Ruta que une el vibrante barrio Villa Carolina con el corazón de Barranquilla, pasando por la Vía 40, el histórico Centro, la icónica Calle 17",
         },
         destinos: ["Villa carolina", "Via 40", "Centro", "Calle 17", "Simon Bolivar", "Plaza del sol", "Ciudad del puerto"],
     },
     {
         id: "3",
-        nombre: "Mountain Route",
+        nombre: "Circunvalar",
         empresa: "Carolina",
         tiempoPromedioViaje: 60,
         primerDespacho: "07:00",
         ultimoDespacho: "21:00",
-        costo: 3.5,
+        costo: 3300,
         imageUrl: "/placeholder.svg?height=200&width=300",
         mapUrl: "/placeholder.svg?height=200&width=300",
         theme: {
             color: "bg-green-500",
             icon: "Mountain",
-            description: "Scenic mountain exploration",
+            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies",
         },
         destinos: ["Mirador", "Parque Nacional", "Cascada"],
     },
     {
         id: "4",
-        nombre: "City Circle",
+        nombre: "Circular",
         empresa: "Transmetro",
         tiempoPromedioViaje: 40,
         primerDespacho: "05:30",
         ultimoDespacho: "23:30",
-        costo: 2.75,
+        costo: 3300,
         imageUrl: "/placeholder.svg?height=200&width=300",
         mapUrl: "/placeholder.svg?height=200&width=300",
         theme: {
             color: "bg-purple-500",
             icon: "Bus",
-            description: "Comprehensive city tour",
+            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies",
         },
         destinos: ["Museo", "Teatro", "Zona Histórica"],
     },
@@ -151,9 +151,36 @@ const Rutas: React.FC = () => {
 
                     {/* Lista de rutas filtradas */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredRoutes.map((route) => (
-                            <BusRouteCard key={route.id} route={route} />
-                        ))}
+                        {filteredRoutes.length > 0 ? (
+                            filteredRoutes.map((route) => (
+                                <BusRouteCard key={route.id} route={route} />
+                            ))
+                        ) : (
+                            <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                                {/* Icono o ilustración (opcional) */}
+                                <svg
+                                    className="w-24 h-24 text-gray-400 mb-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                                    No se encontraron rutas
+                                </h2>
+                                <p className="text-gray-600 max-w-md">
+                                    Lo sentimos, no hemos encontrado rutas que coincidan con tu búsqueda. Por favor, intenta con otros filtros o verifica nuevamente más tarde.
+                                </p>
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </div>
