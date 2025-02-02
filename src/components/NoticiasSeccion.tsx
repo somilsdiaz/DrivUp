@@ -2,16 +2,14 @@ import { useRef, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { NoticiasCard } from "./NoticiasCard"
 
-
-
 interface Noticia {
     id: number
     title: string
     summary: string
     imageUrl: string
     readMoreLink: string
-    date: string     
-    readTime: number 
+    date: string
+    readTime: number
 }
 
 const noticias: Noticia[] = [
@@ -21,7 +19,7 @@ const noticias: Noticia[] = [
         summary: "A partir del próximo mes, las tarifas de buses aumentarán un 5% debido a...",
         imageUrl: "/placeholder.svg?height=200&width=300",
         readMoreLink: "/noticias/aumento-tarifas",
-        date: "2025-01-15", 
+        date: "2025-01-15",
         readTime: 6,
     },
     {
@@ -30,7 +28,7 @@ const noticias: Noticia[] = [
         summary: "Debido a obras en la Avenida Principal, la ruta 34 será desviada por...",
         imageUrl: "/placeholder.svg?height=200&width=300",
         readMoreLink: "/noticias/desvio-ruta-34",
-        date: "2025-01-15", 
+        date: "2025-01-15",
         readTime: 3
     },
     {
@@ -39,7 +37,7 @@ const noticias: Noticia[] = [
         summary: "Se ha inaugurado una nueva ciclovía en el centro para fomentar la movilidad sostenible...",
         imageUrl: "/placeholder.svg?height=200&width=300",
         readMoreLink: "/noticias/ciclovia-centro",
-        date: "2025-02-01", 
+        date: "2025-02-01",
         readTime: 1,
     },
     {
@@ -48,7 +46,7 @@ const noticias: Noticia[] = [
         summary: "El tráfico en la ciudad ha disminuido un 20% gracias a la adopción del teletrabajo...",
         imageUrl: "/placeholder.svg?height=200&width=300",
         readMoreLink: "/noticias/trafico-teletrabajo",
-        date: "2025-02-02", 
+        date: "2025-02-02",
         readTime: 5,
     },
     {
@@ -57,10 +55,9 @@ const noticias: Noticia[] = [
         summary: "El tráfico en la ciudad ha disminuido un 20% gracias a la adopción del teletrabajo...",
         imageUrl: "/placeholder.svg?height=200&width=300",
         readMoreLink: "/noticias/trafico-teletrabajo",
-        date: "2024-10-15", 
+        date: "2024-10-15",
         readTime: 3,
     },
-
 ]
 
 export function NoticiasSection() {
