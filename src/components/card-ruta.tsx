@@ -35,7 +35,7 @@ export function BusRouteCard({ route }: BusRouteCardProps) {
     const Icon = icons[route.theme.icon as keyof typeof icons];
 
     return (
-        <div className="w-full overflow-hidden transition-all duration-300 hover:shadow-lg border rounded-lg">
+        <div className="w-full overflow-hidden transition-all duration-300 hover:shadow-lg border md:border-gray-200 border-gray-400 rounded-lg">
             {/* Barra superior con color temático */}
             <div className={`${route.theme.color} h-2`} />
 
