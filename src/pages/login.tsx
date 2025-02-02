@@ -1,4 +1,3 @@
-import React from "react";
 import logo from "../assets/unibus-high-resolution-logo-transparent.png"
 
 const LoginPage = () => {
