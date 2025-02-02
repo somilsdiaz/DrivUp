@@ -176,7 +176,12 @@ const RegisterPage = () => {
                             id="email"
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="tucorreo@dominio.com"
-                            {...register("email", { required: "Este campo es obligatorio." })}
+                            {...register("email", {
+                                required:"Este campo es obligatorio.",
+                                pattern: {
+                                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                                message:"Correo invalido."}
+                             })}
                         />
                         {errors.email && (
                          <p className="text-red-500 text-sm mt-2">{errors.email.message}</p>
