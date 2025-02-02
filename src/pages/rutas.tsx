@@ -107,7 +107,7 @@ const Rutas: React.FC = () => {
 
     return (
         <HeaderFooter>
-            <div>
+            <div className='md:p-0 p-5'>
                 <div className="container mx-auto py-12">
                     {/* Filtros de búsqueda y selección */}
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
