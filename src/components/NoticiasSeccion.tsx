@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { NoticiasCard } from "./NoticiasCard"
-import ModernSkeletonLoader from "./CardNewsSkeletonLoader";
+import ModernSkeletonLoader from "./cardNewsSkeleton/CardNewsSkeletonLoader";
 
 interface Noticia {
     id: number
