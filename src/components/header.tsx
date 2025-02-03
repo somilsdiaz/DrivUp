@@ -14,6 +14,13 @@ const Header: React.FC = () => {
         setIsMenuVisible(false);
     };
 
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth', // Opcional: desplazamiento suave
+        });
+    };
+
     return (
         <header className="bg-gradient-to-r from-[#078930] to-[#0AAB4B] text-white p-4 shadow-lg sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center">
@@ -25,7 +32,8 @@ const Header: React.FC = () => {
                         className="lg:hidden p-2 rounded-lg hover:bg-[#0AAB4B] transition-colors">
                         <Menu size={24} />
                     </button>
-                    <Link to="/" className="text-2xl font-bold flex items-center space-x-2">
+                    <Link onClick={scrollToTop} 
+                        to="/" className="text-2xl font-bold flex items-center space-x-2">
                         <img src="/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
                         <span>UniBus</span>
                     </Link>
