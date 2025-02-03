@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
 import HeaderFooter from '../layouts/headerFooter';
 import { NoticiasSection } from '../components/NoticiasSeccion';
+import PageNewsSkeletonLoading from '../components/pageNewsSkeleton/PageNewsSkeletonLoading';
 
 interface Noticia {
     id: number;
@@ -19,6 +20,7 @@ const NoticiasPage: React.FC = () => {
     const { id } = useParams<{ id: string }>(); // Obtén el id de la URL
     const [noticia, setNoticia] = useState<Noticia | null>(null);
 
+
     useEffect(() => {
         const fetchNoticia = async () => {
             try {
@@ -30,6 +32,7 @@ const NoticiasPage: React.FC = () => {
                 setNoticia(data);
             } catch (error) {
                 console.error('Error fetching noticia:', error);
+            } finally {
             }
         };
 
@@ -37,16 +40,18 @@ const NoticiasPage: React.FC = () => {
     }, [id]);
 
     if (!noticia) {
-        return <div>Cargando...</div>; // Muestra un mensaje de carga mientras se obtienen los datos
+        return <PageNewsSkeletonLoading />; // Muestra un mensaje de carga mientras se obtienen los datos
     }
+
 
     return (
         <HeaderFooter>
             <article className="max-w-3xl mx-auto md:p-0 p-5 md:pt-9">
                 <h1 className="text-[#CF251F] text-4xl font-bold mb-4">{noticia.title}</h1>
                 <div className="flex items-center text-sm text-[#333333] mb-2">
+
                     <Calendar className="w-4 h-4 mr-1 text-[#078930]" />
-                    <span>{new Date(noticia.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</span>                  
+                    <span>{new Date(noticia.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                     <span className="mx-2 text-[#CF251F]">•</span>
                     <span>{noticia.empresa}</span>
                 </div>
@@ -70,7 +75,6 @@ const NoticiasPage: React.FC = () => {
                 </div>
                 <NoticiasSection />
             </article>
-            
         </HeaderFooter>
 
     )
