@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import { Bell, Menu, User, ChevronDown, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import MenuResponsive from "./menuResponsive";
@@ -14,12 +14,11 @@ const Header: React.FC = () => {
         setIsMenuVisible(false);
     };
 
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth', // Opcional: desplazamiento suave
-        });
-    };
+    // Mover el scroll al top cada vez que cambia la ruta
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [location.pathname]); // Se ejecuta cuando cambia la ruta
+
 
     return (
         <header className="bg-gradient-to-r from-[#078930] to-[#0AAB4B] text-white p-4 shadow-lg sticky top-0 z-50">
@@ -34,7 +33,6 @@ const Header: React.FC = () => {
                     </button>
                     <Link 
                         to="/" 
-                        onClick={scrollToTop} 
                         className="text-2xl font-bold flex items-center space-x-2">
                         <img src="/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
                         <span>UniBus</span>
