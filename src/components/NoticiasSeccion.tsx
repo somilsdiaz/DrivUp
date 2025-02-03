@@ -6,7 +6,7 @@ interface Noticia {
     id: number
     title: string
     summary: string
-    imageUrl: string
+    imageurl: string
     date: string
     readtime: number
     empresa: string
@@ -23,7 +23,7 @@ export function NoticiasSection() {
         // Función para obtener las noticias desde el backend
         const fetchNoticias = async () => {
             try {
-                const response = await fetch("http://localhost:5000/noticias", {
+                const response = await fetch("https://unibus-backend.onrender.com/noticias", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

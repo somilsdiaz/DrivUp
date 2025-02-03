@@ -5,23 +5,25 @@ interface NoticiasCardProps {
     id: number;
     title: string;
     summary: string;
-    imageUrl: string;
+    imageurl: string;
     date: string;
     readtime: number;
     empresa: string;
 }
 
-export function NoticiasCard({id,  title, summary, imageUrl, date, readtime, empresa }: NoticiasCardProps) {
+export function NoticiasCard({id,  title, summary, imageurl, date, readtime, empresa }: NoticiasCardProps) {
     const navigate = useNavigate();
 
     const handleReadMore = () => {
         navigate(`/noticias/${id}`); // Redirige a la ruta dinámica
+        window.scrollTo({ top: 0, behavior: "smooth" }); // Opcional: "smooth" para un desplazamiento suave
+
     };
     return (
-        <div className="w-[300px] h-[400px] flex flex-col border border-[#F5F5F5] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+        <div className="w-[300px] h-full flex-grow flex flex-col border border-[#F5F5F5] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             {/* Imagen */}
             <div className="relative w-full h-[200px]">
-                <img src={imageUrl || "/placeholder.svg"} alt={title} className="w-full h-full object-cover" />
+                <img src={imageurl || "/placeholder.svg"} alt={title} className="w-full h-full object-cover" />
             </div>
 
             {/* Contenido */}
@@ -29,10 +31,9 @@ export function NoticiasCard({id,  title, summary, imageUrl, date, readtime, emp
                 <div className="flex items-center text-sm text-[#333333] mb-2">
                     <span>{empresa}</span>
                 </div>
-                <div className="flex items-center text-sm text-[#333333] mb-2">
+                <div className="flex items-center text-xs text-[#333333] mb-2">
                     <Calendar className="w-4 h-4 mr-1 text-[#078930]" />
-                    <span>{date}</span>
-                    <span className="mx-2 text-[#CF251F]">•</span>
+                    <span>{new Date(date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</span>                    <span className="mx-2 text-[#CF251F]">•</span>
                     <Clock className="w-4 h-4 mr-1 text-[#078930]" />
                     <span>{readtime} min lectura</span>
                 </div>
