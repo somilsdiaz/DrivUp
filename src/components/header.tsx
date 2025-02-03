@@ -26,7 +26,7 @@ const Header: React.FC = () => {
                         <Menu size={24} />
                     </button>
                     <Link to="/" className="text-2xl font-bold flex items-center space-x-2">
-                        <img src="./src/assets/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
+                        <img src="/src/assets/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
                         <span>UniBus</span>
                     </Link>
                 </div>
