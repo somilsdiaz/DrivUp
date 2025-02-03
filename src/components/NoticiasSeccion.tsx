@@ -103,7 +103,9 @@ export function NoticiasSection() {
                         {isLoading ? (
                             // Mostrar 3 skeletons mientras carga
                             Array.from({ length: 5 }).map((_, index) => (
-                                <ModernSkeletonLoader key={index} />
+                                <div className="flex-shrink-0 w-[300px] gap-4">                                
+                                    <ModernSkeletonLoader key={index} />
+                                </div>
                             ))
                         ) : (
                             noticias.map((noticia) => (
