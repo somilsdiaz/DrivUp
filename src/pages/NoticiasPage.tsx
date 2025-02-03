@@ -20,7 +20,6 @@ const NoticiasPage: React.FC = () => {
     const { id } = useParams<{ id: string }>(); // Obtén el id de la URL
     const [noticia, setNoticia] = useState<Noticia | null>(null);
 
-
     useEffect(() => {
         const fetchNoticia = async () => {
             try {
@@ -32,17 +31,19 @@ const NoticiasPage: React.FC = () => {
                 setNoticia(data);
             } catch (error) {
                 console.error('Error fetching noticia:', error);
-            } finally {
-            }
+            } 
         };
 
         fetchNoticia();
     }, [id]);
 
     if (!noticia) {
-        return <PageNewsSkeletonLoading />; // Muestra un mensaje de carga mientras se obtienen los datos
+        return (
+            <HeaderFooter>
+                <PageNewsSkeletonLoading />
+            </HeaderFooter>
+        ); // Muestra un mensaje de carga mientras se obtienen los datos
     }
-
 
     return (
         <HeaderFooter>
@@ -76,7 +77,6 @@ const NoticiasPage: React.FC = () => {
                 <NoticiasSection />
             </article>
         </HeaderFooter>
-
     )
 }
 export default NoticiasPage
