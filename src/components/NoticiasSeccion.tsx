@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { NoticiasCard } from "./NoticiasCard"
+import ModernSkeletonLoader from "./CardNewsSkeletonLoader";
 
 interface Noticia {
     id: number
@@ -18,10 +19,12 @@ export function NoticiasSection() {
 
 
     const [noticias, setNoticias] = useState<Noticia[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         // Función para obtener las noticias desde el backend
         const fetchNoticias = async () => {
+            setIsLoading(true);
             try {
                 const response = await fetch("https://unibus-backend.onrender.com/noticias", {
                     method: "GET",
@@ -38,6 +41,8 @@ export function NoticiasSection() {
                 setNoticias(data);
             } catch (error) {
                 console.error("Error fetching noticias:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -95,11 +100,18 @@ export function NoticiasSection() {
                     <div
                         className="flex transition-transform duration-500 ease-in-out justify-center gap-4"
                     >
-                        {noticias.map((noticia) => (
-                            <div key={noticia.id} className="flex-shrink-0 w-[300px] gap-4">
-                                <NoticiasCard {...noticia} />
-                            </div>
-                        ))}
+                        {isLoading ? (
+                            // Mostrar 3 skeletons mientras carga
+                            Array.from({ length: 5 }).map((_, index) => (
+                                <ModernSkeletonLoader key={index} />
+                            ))
+                        ) : (
+                            noticias.map((noticia) => (
+                                <div key={noticia.id} className="flex-shrink-0 w-[300px] gap-4">
+                                    <NoticiasCard {...noticia} />
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
