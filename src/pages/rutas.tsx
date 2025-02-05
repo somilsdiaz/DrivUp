@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import HeaderFooter from '../layouts/headerFooter';
 import { Search } from "lucide-react";
 import { BusRouteCard } from '../components/card-ruta';
+import ModernSkeletonLoader from '../components/cardNewsSkeleton/CardNewsSkeletonLoader';
 
 type BusRoute = {
     id: string
@@ -27,10 +28,12 @@ const Rutas: React.FC = () => {
     const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [busRoutes, setBusRoutes] = useState<BusRoute[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Obtener las rutas desde el backend
     useEffect(() => {
         const fetchBusRoutes = async () => {
+            setIsLoading(true);
             try {
                 const response = await fetch('https://unibus-backend.onrender.com/rutas');
                 if (!response.ok) {
@@ -40,6 +43,8 @@ const Rutas: React.FC = () => {
                 setBusRoutes(data);
             } catch (error) {
                 console.error('Error:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -99,40 +104,45 @@ const Rutas: React.FC = () => {
                             <option value="Transmetro">Transmetro</option>
                         </select>
                     </div>
-
-                    {/* Lista de rutas filtradas */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredRoutes.length > 0 ? (
-                            filteredRoutes.map((route) => (
-                                <BusRouteCard key={route.id} route={route} />
-                            ))
-                        ) : (
-                            <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                                {/* Icono o ilustración (opcional) */}
-                                <svg
-                                    className="w-24 h-24 text-gray-400 mb-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-                                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                                    No se encontraron rutas
-                                </h2>
-                                <p className="text-gray-600 max-w-md">
-                                    Lo sentimos, no hemos encontrado rutas que coincidan con tu búsqueda. Por favor, intenta con otros filtros o verifica nuevamente más tarde.
-                                </p>
-                            </div>
-                        )}
-
-                    </div>
+                    {isLoading ? (                     // Mostrar 3 skeletons mientras carga
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {Array.from({ length: 3 }).map((_, index) => (
+                                <ModernSkeletonLoader key={index} />
+                            ))}
+                        </div>
+                    ) : (
+                        < div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {filteredRoutes.length > 0 ? (
+                                filteredRoutes.map((route) => (
+                                    <BusRouteCard key={route.id} route={route} />
+                                ))
+                            ) : (
+                                <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                                    {/* Icono o ilustración (opcional) */}
+                                    <svg
+                                        className="w-24 h-24 text-gray-400 mb-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                                        No se encontraron rutas
+                                    </h2>
+                                    <p className="text-gray-600 max-w-md">
+                                        Lo sentimos, no hemos encontrado rutas que coincidan con tu búsqueda. Por favor, intenta con otros filtros o verifica nuevamente más tarde.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </HeaderFooter >
