@@ -44,7 +44,7 @@ export function BusRouteCard({ route }: BusRouteCardProps) {
                 <img
                     src={route.imageUrl || "/placeholder.svg"}
                     alt={`${route.nombre} route`}
-                    className="w-full h-48 object-cover rounded-t-lg"
+                    className="w-full h-52 object-cover rounded-t-lg"
                 />
                 {/* Badge de la compañía */}
                 <div className="absolute top-2 right-2">
