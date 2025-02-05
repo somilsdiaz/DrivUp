@@ -1,4 +1,5 @@
 import { Bus, Umbrella, Mountain, MapPin as City } from "lucide-react";
+import { useState } from "react";
 
 type BusRoute = {
     id: string
@@ -33,7 +34,9 @@ interface BusRouteCardProps {
 
 export function BusRouteCard({ route }: BusRouteCardProps) {
     const Icon = icons[route.theme.icon as keyof typeof icons];
-
+    // Estados de carga para la imagen y el mapa
+    const [isImageLoaded, setIsImageLoaded] = useState(false);
+    const [isMapLoaded, setIsMapLoaded] = useState(false);
     return (
         <div className="w-full max-w-2xl mx-auto overflow-hidden transition-all duration-300 hover:shadow-lg border md:border-gray-200 border-gray-400 rounded-lg flex flex-col h-full">
             {/* Barra superior con color temático */}
@@ -41,10 +44,21 @@ export function BusRouteCard({ route }: BusRouteCardProps) {
 
             {/* Encabezado de la tarjeta */}
             <div className="relative flex-shrink-0">
+                {/* Skeleton para la imagen */}
+                {!isImageLoaded && (
+                    <div className="flex justify-center items-center h-52 skeleton skeleton-image">
+                        <div className="loading-dots">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                )}
                 <img
                     src={route.imageUrl || "/placeholder.svg"}
                     alt={`${route.nombre} route`}
-                    className="w-full h-52 object-cover rounded-t-lg"
+                    className={`w-full h-52 object-cover rounded-t-lg ${isImageLoaded ? "" : "hidden"}`}
+                    onLoad={() => setIsImageLoaded(true)} // Marcar como cargada cuando termine
                 />
                 {/* Badge de la compañía */}
                 <div className="absolute top-2 right-2">
@@ -103,13 +117,25 @@ export function BusRouteCard({ route }: BusRouteCardProps) {
 
                 {/* Contenedor del mapa */}
                 <div className="w-full mt-auto">
+                    {/* Skeleton para el mapa */}
+                    {!isMapLoaded && (
+                        <div className="flex justify-center items-center h-52 skeleton skeleton-image">
+                            <div className="loading-dots">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mapa */}
                     <iframe
                         src={route.mapUrl}
                         width="100%"
-                        height="300" // Altura fija para el mapa
-                        className="rounded-lg shadow-md border border-gray-300"
+                        height="300"
                         allowFullScreen
                         loading="lazy"
+                        onLoad={() => setIsMapLoaded(true)}
                     ></iframe>
                 </div>
             </div>
