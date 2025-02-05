@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HeaderFooter from '../layouts/headerFooter';
-import { useState } from "react";
 import { Search } from "lucide-react";
 import { BusRouteCard } from '../components/card-ruta';
 
@@ -22,81 +21,32 @@ type BusRoute = {
     destinos: string[]
 }
 
-const busRoutes: BusRoute[] = [
-    {
-        id: "1",
-        nombre: "Via 40 - Soledad 2000",
-        empresa: "Coolitoral",
-        tiempoPromedioViaje: 60,
-        primerDespacho: "05:15 a.m",
-        ultimoDespacho: "10:00 p.m",
-        costo: 3300,
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        mapUrl: "https://www.google.com/maps/embed?pb=!1m48!1m12!1m3!1d62664.894021802174!2d-74.85796616408392!3d10.996856945989007!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m33!3e0!4m3!3m2!1d10.967407999999999!2d-74.7747332!4m3!3m2!1d10.9847541!2d-74.809069!4m3!3m2!1d10.982267799999999!2d-74.81849609999999!4m3!3m2!1d11.0126678!2d-74.8233265!4m3!3m2!1d11.0199781!2d-74.8707149!4m3!3m2!1d11.0162614!2d-74.8132808!4m3!3m2!1d11.0258697!2d-74.8034662!4m3!3m2!1d10.9677837!2d-74.77478339999999!5e0!3m2!1ses-419!2ses!4v1504881238373",
-        theme: {
-            color: "bg-red-500",
-            icon: "City",
-            description: "Ruta que conecta barrios residenciales como Las Flores y Soledad 2000 con puntos clave de Barranquilla",
-        },
-        destinos: ["Las flores", "Via 40", "Centro", "Calle 17", "Simon Bolivar", "Plaza del sol", "Soledad 2000", "La nevada"],
-    },
-    {
-        id: "2",
-        nombre: "Via 40 - Villa carolina",
-        empresa: "Coolitoral",
-        tiempoPromedioViaje: 75,
-        primerDespacho: "06:00 am",
-        ultimoDespacho: "8:15 pm",
-        costo: 3300,
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        mapUrl: "https://www.google.com/maps/embed?pb=!1m56!1m12!1m3!1d31333.495407481514!2d-74.81996410850496!3d10.986986849436063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m41!3e0!4m3!3m2!1d10.9672249!2d-74.7747703!4m3!3m2!1d10.9772935!2d-74.7798796!4m3!3m2!1d10.981408199999999!2d-74.7789361!4m3!3m2!1d10.9936627!2d-74.8135302!4m3!3m2!1d10.9909416!2d-74.8268837!4m3!3m2!1d11.006020099999999!2d-74.8245752!4m3!3m2!1d11.000992799999999!2d-74.8050853!4m3!3m2!1d10.9863568!2d-74.7919144!4m3!3m2!1d10.9837068!2d-74.7815945!4m3!3m2!1d10.967243199999999!2d-74.7749218!5e0!3m2!1ses-419!2ses!4v1504800524150",
-        theme: {
-            color: "bg-blue-500",
-            icon: "Umbrella",
-            description: "Ruta que une el vibrante barrio Villa Carolina con el corazón de Barranquilla, pasando por la Vía 40, el histórico Centro, la icónica Calle 17",
-        },
-        destinos: ["Villa carolina", "Via 40", "Centro", "Calle 17", "Simon Bolivar", "Plaza del sol", "Ciudad del puerto"],
-    },
-    {
-        id: "3",
-        nombre: "Circunvalar",
-        empresa: "Carolina",
-        tiempoPromedioViaje: 60,
-        primerDespacho: "07:00",
-        ultimoDespacho: "21:00",
-        costo: 3300,
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        mapUrl: "/placeholder.svg?height=200&width=300",
-        theme: {
-            color: "bg-green-500",
-            icon: "Mountain",
-            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies",
-        },
-        destinos: ["Mirador", "Parque Nacional", "Cascada"],
-    },
-    {
-        id: "4",
-        nombre: "Circular",
-        empresa: "Transmetro",
-        tiempoPromedioViaje: 40,
-        primerDespacho: "05:30",
-        ultimoDespacho: "23:30",
-        costo: 3300,
-        imageUrl: "/placeholder.svg?height=200&width=300",
-        mapUrl: "/placeholder.svg?height=200&width=300",
-        theme: {
-            color: "bg-purple-500",
-            icon: "Bus",
-            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies",
-        },
-        destinos: ["Museo", "Teatro", "Zona Histórica"],
-    },
-];
+
 
 const Rutas: React.FC = () => {
     const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [busRoutes, setBusRoutes] = useState<BusRoute[]>([]);
 
+    // Obtener las rutas desde el backend
+    useEffect(() => {
+        const fetchBusRoutes = async () => {
+            try {
+                const response = await fetch('https://unibus-backend.onrender.com/rutas');
+                if (!response.ok) {
+                    throw new Error('Error al obtener las rutas');
+                }
+                const data = await response.json();
+                setBusRoutes(data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+
+        fetchBusRoutes();
+    }, []);
+
+    // Filtrar las rutas según la compañía y el término de búsqueda
     const filteredRoutes = busRoutes.filter(
         (route) =>
             (selectedCompany ? route.empresa === selectedCompany : true) &&
@@ -104,6 +54,7 @@ const Rutas: React.FC = () => {
                 destino.toLowerCase().includes(searchTerm.toLowerCase()),
             ),
     );
+
 
     return (
         <HeaderFooter>
