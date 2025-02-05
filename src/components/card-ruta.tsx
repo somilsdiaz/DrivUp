@@ -37,6 +37,16 @@ export function BusRouteCard({ route }: BusRouteCardProps) {
     // Estados de carga para la imagen y el mapa
     const [isImageLoaded, setIsImageLoaded] = useState(false);
     const [isMapLoaded, setIsMapLoaded] = useState(false);
+
+    const convertTo12HourFormat = (time: string): string => {
+        const [hours, minutes] = time.split(":").map(Number); // Dividir la hora y los minutos
+        const period = hours >= 12 ? "p.m." : "a.m."; // Determinar si es AM o PM
+        const formattedHours = hours % 12 || 12; // Convertir a formato de 12 horas (0 -> 12)
+        const formattedMinutes = String(minutes).padStart(2, "0"); // Asegurar que los minutos tengan dos dígitos
+        return `${formattedHours}:${formattedMinutes} ${period}`;
+    };
+
+
     return (
         <div className="w-full max-w-2xl mx-auto overflow-hidden transition-all duration-300 hover:shadow-lg border md:border-gray-200 border-gray-400 rounded-lg flex flex-col h-full">
             {/* Barra superior con color temático */}
@@ -88,15 +98,15 @@ export function BusRouteCard({ route }: BusRouteCardProps) {
                     </div>
                     <div>
                         <p className="font-semibold">Costo del pasaje</p>
-                        <p>$ {route.costo.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</p>
+                        <p>$ {Math.floor(route.costo).toLocaleString("es-CO")}</p>
                     </div>
                     <div>
                         <p className="font-semibold">Primer despacho</p>
-                        <p>{route.primerDespacho}</p>
+                        <p>{convertTo12HourFormat(route.primerDespacho)}</p>
                     </div>
                     <div>
                         <p className="font-semibold">Ultimo despacho</p>
-                        <p>{route.ultimoDespacho}</p>
+                        <p>{convertTo12HourFormat(route.ultimoDespacho)}</p>
                     </div>
                 </div>
 
