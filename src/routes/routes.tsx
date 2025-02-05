@@ -6,6 +6,7 @@ import Rutas from '../pages/rutas';
 import Contacto from '../pages/contacto';
 import About from '../pages/about';
 import SolicitarRutaPagina from '../pages/PaginaSolicitarRutas';
+import NoticiasPage from '../pages/NoticiasPage';
 
 const router = createBrowserRouter([
     {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
     {
         path: "/acerca-de",
         element: <About />,
+    },
+    {
+        path: "/noticias/:id", // Ruta dinámica para las noticias
+        element: <NoticiasPage />,
     },
 ]);
 
