@@ -1,8 +1,5 @@
-"use client"
-
-import { useState } from "react"
 import { Link } from "react-router-dom";
-import { ChevronRight, Menu } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import HeaderFooter from "../layouts/headerFooter";
 
 
@@ -18,19 +15,13 @@ const sections = [
 ];
 
 export default function PrivacyPolicy() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-    const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
-    };
 
     return (
         <HeaderFooter>
             <div className="bg-white text-gray-800 min-h-screen">
                 {/* Sidebar */}
                 <nav
-                    className={`bg-gray-100 w-64 h-screen fixed top-20 left-0 p-8 overflow-y-auto transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                        } md:translate-x-0`}
+                    className={`bg-gray-100 w-64 h-screen fixed top-20 left-0 p-8 overflow-y-auto transform transition-transform duration-300 ease-in-out hidden md:block`}
                 >
                     {sections.map((section) => (
                         <a
@@ -66,7 +57,7 @@ export default function PrivacyPolicy() {
                             Bienvenido/a a UniBus , la plataforma digital diseñada para optimizar y mejorar tu experiencia en el transporte público universitario. En UniBus, valoramos profundamente tu privacidad y estamos comprometidos con proteger la información personal que nos confías. Este documento describe detalladamente nuestras políticas de privacidad, explicando qué datos recopilamos, cómo los utilizamos, almacenamos y protegemos, así como tus derechos en relación con esta información.
                         </p>
 
-                        <p className="pt-3">                            
+                        <p className="pt-3">
                             Te recomendamos leer cuidadosamente este documento para comprender plenamente nuestras prácticas de privacidad. Al utilizar nuestros servicios, aceptas las prácticas descritas en estas políticas.</p>
                     </section>
 
