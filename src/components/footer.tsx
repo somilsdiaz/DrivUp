@@ -66,7 +66,7 @@ const Footer: React.FC = () => {
                     placeholder="Ingresa tu correo electronico"
                 />
                
-                <button type="submit" className="bg-[#078930] text-[#333333] hover:bg-[#FCD116] p-2 rounded-r-lg">
+                <button type="submit" className="bg-[#078930] text-[#333333] hover:bg-[#FCD116] p-2 rounded-r-lg transition duration-150 cursor-pointer">
                     Suscribirme
                 </button>
                 </div>
