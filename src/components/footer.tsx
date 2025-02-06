@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
   const onSubmit: SubmitHandler<Input> = (data) => console.log(data);
 
   return (
-    <footer className="bg-[#CF251F] text-white text-center py-4 flex flex-col gap-4 h-full">
+    <footer className="z-50 sticky bg-[#CF251F] text-white text-center py-4 flex flex-col gap-4 h-full ">
       <section className="flex justify-between max-[600px]:flex-col max-[600px]:items-center max-[600px]:gap-4">
         <div className="sm:w-1/3 px-2 ">
           <h6 className="text-2xl font-semibold mb-2">Unibus</h6>
