@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import HeaderFooter from '../layouts/headerFooter';
 
 const Rutas: React.FC = () => {
