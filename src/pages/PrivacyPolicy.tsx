@@ -15,10 +15,24 @@ const sections = [
 ];
 
 export default function PrivacyPolicy() {
+    const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+        e.preventDefault();
+        const element = document.getElementById(sectionId);
+        const headerOffset = 97; // altura del header
+        if (element) {
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+    };
 
     return (
         <HeaderFooter>
-            <div className="bg-white text-gray-800 min-h-screen">
+            <div className="bg-white text-gray-800 min-h-screen scroll-pt-48">
                 {/* Sidebar */}
                 <nav
                     className={`bg-gray-100 w-64 h-screen fixed top-20 left-0 p-8 overflow-y-auto transform transition-transform duration-300 ease-in-out hidden md:block`}
@@ -27,6 +41,7 @@ export default function PrivacyPolicy() {
                         <a
                             key={section.id}
                             href={`#${section.id}`}
+                            onClick={(e) => handleScrollToSection(e, section.id)}
                             className="block py-2 text-gray-800 hover:text-blue-500"
                         >
                             {section.title}
@@ -35,7 +50,7 @@ export default function PrivacyPolicy() {
                 </nav>
 
                 {/* Main Content */}
-                <main className="ml-0 md:ml-64 p-8 max-w-3xl">
+                <main id="intro"  className="ml-0 md:ml-64 p-8 max-w-3xl">
                     <h1 className="text-4xl font-bold text-red-600 mb-6">
                         Política de privacidad de UniBus
                     </h1>
@@ -52,7 +67,7 @@ export default function PrivacyPolicy() {
                         </ol>
                     </nav>
 
-                    <section id="intro" className="mb-8 text-justify">
+                    <section className="mb-8 text-justify">
                         <p>
                             Bienvenido/a a UniBus , la plataforma digital diseñada para optimizar y mejorar tu experiencia en el transporte público universitario. En UniBus, valoramos profundamente tu privacidad y estamos comprometidos con proteger la información personal que nos confías. Este documento describe detalladamente nuestras políticas de privacidad, explicando qué datos recopilamos, cómo los utilizamos, almacenamos y protegemos, así como tus derechos en relación con esta información.
                         </p>
