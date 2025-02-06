@@ -6,7 +6,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 const Footer: React.FC = () => {
   const FastLinks: { name: string; link: string }[] = [
     { name: "Acerca de nosotros", link: "/acerca-de" },
-    { name: "Politica de privacidad", link: "#" },
+    { name: "Politica de privacidad", link: "/politicas-de-privacidad" },
     { name: "Terminos y condiciones", link: "#" },
     { name: "FAQ", link: "#" },
     { name: "Contacto", link: "/contacto" },
