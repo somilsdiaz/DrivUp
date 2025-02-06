@@ -7,7 +7,7 @@ import Contacto from '../pages/contacto';
 import About from '../pages/about';
 import SolicitarRutaPagina from '../pages/PaginaSolicitarRutas';
 import NoticiasPage from '../pages/NoticiasPage';
-
+import PrivacyPolicy from '../pages/PrivacyPolicy';
 const router = createBrowserRouter([
     {
         path: "/login", // Ruta para el login
@@ -40,6 +40,10 @@ const router = createBrowserRouter([
     {
         path: "/noticias/:id", // Ruta dinámica para las noticias
         element: <NoticiasPage />,
+    },    
+    {
+        path: "/politicas-de-privacidad", 
+        element: <PrivacyPolicy />,
     },
 ]);
 
