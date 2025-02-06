@@ -14,7 +14,7 @@ const sections = [
     { id: "seguridad", title: "4. Seguridad de la Información" },
     { id: "derechos", title: "5. Derechos del Usuario" },
     { id: "cambios", title: "6. Cambios en las Políticas de Privacidad" },
-    { id: "contacto", title: "7. Contacto" },
+    { id: "contacto", title: "Contacto" },
 ];
 
 export default function PrivacyPolicy() {
@@ -27,17 +27,9 @@ export default function PrivacyPolicy() {
     return (
         <HeaderFooter>
             <div className="bg-white text-gray-800 min-h-screen">
-                {/* Botón para mostrar/ocultar el menú en móviles */}
-                <button
-                    onClick={toggleSidebar}
-                    className="fixed top-4 left-4 z-50 p-2 bg-gray-100 rounded-lg md:hidden"
-                >
-                    <Menu className="w-6 h-6" />
-                </button>
-
                 {/* Sidebar */}
                 <nav
-                    className={`bg-gray-100 w-64 h-screen fixed top-0 left-0 p-8 overflow-y-auto transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                    className={`bg-gray-100 w-64 h-screen fixed top-20 left-0 p-8 overflow-y-auto transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
                         } md:translate-x-0`}
                 >
                     {sections.map((section) => (
@@ -237,7 +229,7 @@ export default function PrivacyPolicy() {
 
                     <section id="contacto" className="mb-8">
                         <h2 className="text-2xl font-semibold text-red-600 mb-4">
-                            7. Contacto
+                            Contacto
                         </h2>
                         <p>
                             Si tienes preguntas sobre estas politicas de privicades, por favor, contacte con nosotros:
