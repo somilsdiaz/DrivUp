@@ -8,6 +8,7 @@ import About from '../pages/about';
 import SolicitarRutaPagina from '../pages/PaginaSolicitarRutas';
 import NoticiasPage from '../pages/NoticiasPage';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
+import TermCondition from '../pages/termConditionPage';
 const router = createBrowserRouter([
     {
         path: "/login", // Ruta para el login
@@ -45,6 +46,10 @@ const router = createBrowserRouter([
         path: "/politicas-de-privacidad", 
         element: <PrivacyPolicy />,
     },
+    {
+        path:"/Terminos-y-condiciones",
+        element:<TermCondition/>
+    }
 ]);
 
 export const AppRoutes = () => {
