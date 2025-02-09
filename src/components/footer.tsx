@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
   const FastLinks: { name: string; link: string }[] = [
     { name: "Acerca de nosotros", link: "/acerca-de" },
     { name: "Politica de privacidad", link: "/politicas-de-privacidad" },
-    { name: "Terminos y condiciones", link: "#" },
+    { name: "Terminos y condiciones", link: "/terminos-y-condiciones" },
     { name: "FAQ", link: "#" },
     { name: "Contacto", link: "/contacto" },
   ];
