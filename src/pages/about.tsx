@@ -9,6 +9,7 @@ const About: React.FC = () => {
             <h1 className='text-center text-5xl text-green-700 my-6'>Acerca de Nosotros</h1>
             <div className="w-1/4 h-1 bg-green-700 mx-auto mb-4"></div>
             <section className='flex justify-center items-center flex-wrap gap-4 mb-4'>
+                {/* Div de la siguiente persona */}
                 <div className='flex flex-col md:flex-row justify-center items-center bg-[#e8e8e8] p-6 shadow-lg rounded-lg w-full max-w-lg md:max-w-none'>
                     <div>
                         <img src={Julian} alt="Merged Fleets" className="mr-0 ml-0 md:mr-2 md:ml-2 max-w-[150px] md:max-w-sm rounded-full shadow-lg border-3 border-green-700" />
@@ -45,9 +46,9 @@ const About: React.FC = () => {
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> 
 
-
+                {/* Div de la siguiente persona */}
 
                 <div className='flex flex-col-reverse md:flex-row justify-center items-center bg-[#e8e8e8] p-6 shadow-lg rounded-lg w-full max-w-lg md:max-w-none'>
                     <div>
@@ -87,7 +88,7 @@ const About: React.FC = () => {
                     </div>
                 </div>
 
-
+                {/* Div de la siguiente persona */}
 
                 <div className='flex flex-col md:flex-row justify-center items-center bg-[#e8e8e8] p-6 shadow-lg rounded-lg w-full max-w-lg md:max-w-none'>
                     <div>
