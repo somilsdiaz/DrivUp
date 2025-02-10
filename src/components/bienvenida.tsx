@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import background from "../assets/Merged-fleets.jpg";
 
 
 
@@ -7,7 +8,19 @@ const Bienvenida: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <body className="h-auto flex sm:justify-center md:justify-center lg:justify-start items-center bg-[url('src/assets/Merged-fleets.jpg')] bg-auto bg-cover bg-no-repeat bg-center bg-black/50 bg-blend-multiply h-65 overflow-hidden">
+        <body
+         style={{
+            backgroundImage: `url(${background})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundBlendMode: "multiply",
+            backgroundColor: "#808080",
+
+
+         }}
+
+         className="h-auto flex sm:justify-center md:justify-center lg:justify-start items-center h-65 overflow-hidden">
             <div className="mt-3 mb-3 ml-0 sm:ml-0 md:ml-0 lg:ml-8 w-full max-w-2xl bg-[#e8e8e8] p-8 shadow-lg rounded-lg border-2 border">
 
                 <h1 className="text-[#003747] text-4xl font-bold">UniBus</h1>
