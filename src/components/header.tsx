@@ -68,7 +68,7 @@ const Header: React.FC = () => {
                         Contacto
                     </Link>
                     <Link to="/acerca-de" className="hover:text-[#FCD116] transition-colors font-medium">
-                        Acerca de nosotros
+                        Acerca del proyecto
                     </Link>
                 </nav>
 
