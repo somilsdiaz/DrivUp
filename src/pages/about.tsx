@@ -110,7 +110,6 @@ const About: React.FC = () => {
                     </section>
 
 
-
                     <h2 id="devs" className='text-center text-3xl font-bold mb-8 mt-8 text-green-700'>Acerca de Nosotros</h2>
                     <div className="w-1/4 h-1 bg-green-700 mx-auto mb-4"></div>
                     <section className='flex justify-center items-center flex-wrap gap-4 mb-4'>
@@ -159,19 +158,19 @@ const About: React.FC = () => {
                             <div>
                                 <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
                                     <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Nombre: </h3>
-                                    <p className='text-lg font-[Montserrat]'> Julian Andrés Coll Barros</p>
+                                    <p className='text-lg font-[Montserrat]'>Somil Sandoval Diaz</p>
                                 </div>
                                 <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
                                     <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Cargo: </h3>
-                                    <p className='text-lg font-[Montserrat]'> Desarrollador Front-End</p>
+                                    <p className='text-lg font-[Montserrat]'> Desarrollador Full-Stack</p>
                                 </div>
                                 <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <p className='text-lg font-[Montserrat]'> "No siempre tengo un plan... pero cuando lo tengo, es increíble. Y cuando no, improviso con estilo."</p>
+                                    <p className='text-lg font-[Montserrat]'> "La habilidad técnica es fundamental para resolver problemas, pero es la pasión por lo que haces, junto con la disciplina y el compromiso con la excelencia lo que te lleva a transformar una buena solución en algo verdaderamente extraordinario."</p>
                                 </div>
                                 <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
                                     <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Redes Sociales: </h3>
                                     <a
-                                        href="https://github.com/jcoll05"
+                                        href="https://github.com/somilsdiaz"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-gray-800 hover:text-gray-600 transition-all text-3xl"
@@ -179,7 +178,7 @@ const About: React.FC = () => {
                                         <FaGithub />
                                     </a>
                                     <a
-                                        href="https://www.linkedin.com/in/julian-coll-518647324/"
+                                        href="https://www.linkedin.com/in/somil-sandoval-diaz/"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-blue-700 hover:text-blue-500 transition-all text-3xl"
@@ -189,7 +188,7 @@ const About: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <img src={Julian} alt="Merged Fleets" className="mr-0 ml-0 md:mr-2 md:ml-2 max-w-[150px] md:max-w-sm rounded-full shadow-lg border-3 border-green-700" />
+                                <img src="/Somil_profile.webp" alt="Merged Fleets" className="mr-0 ml-0 md:mr-2 md:ml-2 max-w-[150px] md:max-w-sm rounded-full shadow-lg border-3 border-green-700" />
                             </div>
                         </div>
 
