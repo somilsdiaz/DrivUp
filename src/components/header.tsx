@@ -35,7 +35,7 @@ const Header: React.FC = () => {
                         to="/" 
                         className="text-2xl font-bold flex items-center space-x-2">
                         <img src="/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
-                        <span>UniBus</span>
+                        <span className=" m-0 p-0 text-[#4ade80]">Uni</span><span className="m-0 p-0 animate-pulse">Bus</span>
 
                     </Link>
                 </div>
