@@ -53,7 +53,7 @@ const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMen
                         </li>
                         <li onClick={closeMenu}>
                             <Link to="/acerca-de" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2" >
-                                Acerca de nosotros
+                                Acerca del proyecto
                             </Link>
                         </li>
                     </ul>
