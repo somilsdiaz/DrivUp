@@ -1,50 +1,63 @@
-# React + TypeScript + Vite
+# UniBus
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+UniBus is a web application designed to revolutionize public transportation in Barranquilla by connecting users with efficient services, optimizing fleet distribution in real-time, and improving the travel experience through intelligent data analysis.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- User authentication (login/register)
+- View and search available bus routes 
+- News section with latest updates
+- Contact form for feedback
+- Privacy policy page
+- Responsive design
+- Route request system
+- Real-time route optimization
 
-## Expanding the ESLint configuration
+## Technologies Used
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- React.js
+- TypeScript
+- Tailwind CSS
+- React Router DOM
+- Framer Motion
+- Lucide React Icons
+- React Hook Form
+- Vite
 
-- Configure the top-level `parserOptions` property like this:
+## Project Structure
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+src/
+├── assets/              # Images and Static assets
+├── components/          # Reusable UI components
+├── contexts/            # React context providers
+├── layouts/             # Layout components
+├── pages/               # Page components
+├── routes/              # Route configurations
+└── services/            # API services
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Installation
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+1. Clone the repository:
+    ```sh
+    git clone  https://github.com/somilsdiaz/UniBus
+    cd uUnibus   ```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+2. Install dependencies:
+    ```sh
+    npm install
+    ```
+
+3. Start the development server:
+    ```sh
+    npm run dev
+    ```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
