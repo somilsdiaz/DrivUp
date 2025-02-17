@@ -14,6 +14,7 @@ const sections = [
 ];
 
 const About: React.FC = () => {
+
     const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
         e.preventDefault();
         const element = document.getElementById(sectionId);
