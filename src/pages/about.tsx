@@ -78,40 +78,40 @@ const About: React.FC = () => {
                             UniBus comienza su camino enfocándose en las rutas universitarias, pero tiene la visión de extenderse a todas las rutas de Barranquilla, mejorando la calidad de vida de todos los ciudadanos.
                         </p>
 
-                            <h2 className="text-3xl font-bold text-[#CF251F] mb-8 mt-8">Nuestra Misión y Visión</h2>
+                        <h2 className="text-3xl font-bold text-[#CF251F] mb-8 mt-8">Nuestra Misión y Visión</h2>
 
-                            <div className="mb-10">
-                                <h3 className="text-2xl font-semibold text-[#078930] mb-4 flex items-center">
-                                    <span className="bg-[#078930] text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">1</span>
-                                    Misión
-                                </h3>
-                                <p className="text-[#333333] leading-relaxed bg-[#F5F5F5] p-6 rounded-lg border-l-4 border-[#078930]">
-                                    Nuestra misión es <span className="font-semibold text-[#CF251F]">revolucionar el transporte público en Barranquilla</span>, comenzando por las rutas universitarias. A través de una plataforma tecnológica intuitiva y un sistema de gestión dinámico de flotas, buscamos conectar a estudiantes, docentes y a todos los ciudadanos con un servicio de transporte optimizado, que reduzca los tiempos de espera, mejore la experiencia de viaje y contribuya a una movilidad urbana más sostenible.
+                        <div id="mision" className="mb-10 ">
+                            <h3 className="text-2xl font-semibold text-[#078930] mb-4 flex items-center">
+                                <span className="bg-[#078930] text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">1</span>
+                                Misión
+                            </h3>
+                            <p className="text-[#333333] leading-relaxed bg-[#F5F5F5] p-6 rounded-lg border-l-4 border-[#078930]">
+                                Nuestra misión es <span className="font-semibold text-[#CF251F]">revolucionar el transporte público en Barranquilla</span>, comenzando por las rutas universitarias. A través de una plataforma tecnológica intuitiva y un sistema de gestión dinámico de flotas, buscamos conectar a estudiantes, docentes y a todos los ciudadanos con un servicio de transporte optimizado, que reduzca los tiempos de espera, mejore la experiencia de viaje y contribuya a una movilidad urbana más sostenible.
+                            </p>
+                        </div>
+
+                        <div id="vision" className="mb-10">
+                            <h3 className="text-2xl font-semibold text-[#078930] mb-4 flex items-center">
+                                <span className="bg-[#078930] text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">2</span>
+                                Visión
+                            </h3>
+                            <div className="text-[#333333] leading-relaxed bg-[#F5F5F5] p-6 rounded-lg border-l-4 border-[#FCD116]">
+                                <p className="mb-4">
+                                    Nuestra visión es <span className="font-semibold text-[#CF251F]">convertirnos en el referente en gestión de transporte público en Barranquilla</span>, expandiendo nuestro servicio desde el ámbito universitario a todas las rutas de la ciudad. Queremos que UniBus sea sinónimo de eficiencia, confiabilidad y comodidad para todos los barranquilleros, y un modelo a seguir para otras ciudades que buscan transformar su sistema de transporte público.
+                                </p>
+                                <p className="mb-4">
+                                    Aspiramos a un futuro donde el transporte público sea una experiencia positiva y accesible para todos, donde los tiempos de espera se reduzcan, la movilidad sea más fluida y la comunidad se conecte de manera eficiente con sus destinos.
+                                </p>
+                                <p>
+                                    UniBus es más que un proyecto, es un <span className="font-semibold text-[#078930]">compromiso</span> con la mejora de la calidad de vida de los barranquilleros y con la construcción de una Barranquilla más moderna y sostenible.
                                 </p>
                             </div>
-
-                            <div className="mb-10">
-                                <h3 className="text-2xl font-semibold text-[#078930] mb-4 flex items-center">
-                                    <span className="bg-[#078930] text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">2</span>
-                                    Visión
-                                </h3>
-                                <div className="text-[#333333] leading-relaxed bg-[#F5F5F5] p-6 rounded-lg border-l-4 border-[#FCD116]">
-                                    <p className="mb-4">
-                                        Nuestra visión es <span className="font-semibold text-[#CF251F]">convertirnos en el referente en gestión de transporte público en Barranquilla</span>, expandiendo nuestro servicio desde el ámbito universitario a todas las rutas de la ciudad. Queremos que UniBus sea sinónimo de eficiencia, confiabilidad y comodidad para todos los barranquilleros, y un modelo a seguir para otras ciudades que buscan transformar su sistema de transporte público.
-                                    </p>
-                                    <p className="mb-4">
-                                        Aspiramos a un futuro donde el transporte público sea una experiencia positiva y accesible para todos, donde los tiempos de espera se reduzcan, la movilidad sea más fluida y la comunidad se conecte de manera eficiente con sus destinos.
-                                    </p>
-                                    <p>
-                                        UniBus es más que un proyecto, es un <span className="font-semibold text-[#078930]">compromiso</span> con la mejora de la calidad de vida de los barranquilleros y con la construcción de una Barranquilla más moderna y sostenible.
-                                    </p>
-                                </div>
-                            </div>
+                        </div>
                     </section>
 
 
 
-                    <h2 className='text-center text-3xl font-bold mb-8 mt-8 text-green-700'>Acerca de Nosotros</h2>
+                    <h2 id="devs" className='text-center text-3xl font-bold mb-8 mt-8 text-green-700'>Acerca de Nosotros</h2>
                     <div className="w-1/4 h-1 bg-green-700 mx-auto mb-4"></div>
                     <section className='flex justify-center items-center flex-wrap gap-4 mb-4'>
                         {/* Div de la siguiente persona */}
