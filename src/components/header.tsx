@@ -35,15 +35,16 @@ const Header: React.FC = () => {
                         to="/" 
                         className="text-2xl font-bold flex items-center space-x-2">
                         <img src="/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
-                        <span>UniBus</span>
+                        <span className=" m-0 p-0 text-[#4ade80]">Uni</span><span className="m-0 p-0 animate-pulse">Bus</span>
+
                     </Link>
                 </div>
                 {/* Componente MenuResponsive */}
                 <MenuResponsive isMenuVisible={isMenuVisible} closeMenu={closeMenu} />
 
                 {/*Elementos del header*/}
-                <nav className="hidden lg:flex space-x-6 items-center">
-                    <Link to="/" className="hover:text-[#FCD116] transition-colors font-medium">
+                <nav className="hidden lg:flex space-x-6 items-center text-[15.6px]">
+                    <Link to="/" className="hover:text-[#FCD116] transition-colors font-medium ml-12 ">
                         Inicio
                     </Link>
                     <Link to="/rutas" className="hover:text-[#FCD116] transition-colors font-medium">
