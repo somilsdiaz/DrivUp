@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react"
-import { FaGithub, FaLinkedin } from "react-icons/fa";
 import HeaderFooter from '../layouts/headerFooter';
 import Julian from '../assets/JulianColl_about.png';
+import JulianAlmario from '../assets/Julian Almario Photo.jpeg';
+import { AboutProps } from '../core/interfaces/AboutProps';
+import { AboutBlock } from '../components/AboutBlock';
 
 const sections = [
     { id: "intro", title: "Introducción" },
@@ -12,6 +14,20 @@ const sections = [
     { id: "devs", title: "3. Acerca de nosotros" },
 
 ];
+
+
+const aboutArray:AboutProps[]=[{id:1,name: "Julian Andrés Coll Barros", role: "Desarrollador Front-End", 
+    phrase: "No siempre tengo un plan... pero cuando lo tengo, es increíble. Y cuando no, improviso con estilo.", 
+    gitnetwork: "https://github.com/jcoll05", linkedinetwork: "https://www.linkedin.com/in/julian-coll-518647324/",
+     image: Julian},
+    {id:2,name: "Somil Sandoval Diaz", role: "Desarrollador Full-Stack",
+    phrase: "La habilidad técnica es fundamental para resolver problemas, pero es la pasión por lo que haces, junto con la disciplina y el compromiso con la excelencia lo que te lleva a transformar una buena solución en algo verdaderamente extraordinario.",
+    gitnetwork:"https://github.com/somilsdiaz", linkedinetwork:"https://www.linkedin.com/in/somil-sandoval-diaz/", 
+    image:"/Somil_profile.webp"},
+    {id:3,name: "Julian Almario", role: "Desarrollador Full-Stack",
+    phrase:"Creo en la resiliencia como motor del aprendizaje y en la constancia como clave para transformar ideas en realidades. Cada desafío es una oportunidad para crecer, mejorar y encontrar soluciones innovadoras.",
+    gitnetwork:"https://github.com/JulianAlmario",linkedinetwork:"https://www.linkedin.com/in/julian-david-almario-vergara-0b0b63321/",
+    image:JulianAlmario}];
 
 const About: React.FC = () => {
 
@@ -114,124 +130,9 @@ const About: React.FC = () => {
                     <h2 id="devs" className='text-center text-3xl font-bold mb-8 mt-8 text-green-700'>Acerca de Nosotros</h2>
                     <div className="w-1/4 h-1 bg-green-700 mx-auto mb-4"></div>
                     <section className='flex justify-center items-center flex-wrap gap-4 mb-4'>
-                        {/* Div de la siguiente persona */}
-                        <div className='flex flex-col md:flex-row justify-center items-center bg-[#e8e8e8] p-6 shadow-lg rounded-lg w-full max-w-lg md:max-w-none'>
-                            <div>
-                                <img src={Julian} alt="Merged Fleets" className="mr-0 ml-0 md:mr-4 md:ml-2 w-40 h-40 md:w-48 md:h-48 rounded-full shadow-lg border-4 border-green-700 object-cover" />
-                            </div>
-                            <div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Nombre: </h3>
-                                    <p className='text-lg font-[Montserrat]'> Julian Andrés Coll Barros</p>
-                                </div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Cargo: </h3>
-                                    <p className='text-lg font-[Montserrat]'> Desarrollador Front-End</p>
-                                </div>
-                                <div className='flex justify-center ml-4 mt-4 md:ml-0 md:mt-0 md:justify-start items-center flex-wrap gap-2'>
-                                    <p className='text-lg font-[Montserrat]'> "No siempre tengo un plan... pero cuando lo tengo, es increíble. Y cuando no, improviso con estilo."</p>
-                                </div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Redes Sociales: </h3>
-                                    <a
-                                        href="https://github.com/jcoll05"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-gray-800 hover:text-gray-600 transition-all text-3xl"
-                                    >
-                                        <FaGithub />
-                                    </a>
-                                    <a
-                                        href="https://www.linkedin.com/in/julian-coll-518647324/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-700 hover:text-blue-500 transition-all text-3xl"
-                                    >
-                                        <FaLinkedin />
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Div de la siguiente persona */}
-
-                        <div className='flex flex-col-reverse md:flex-row justify-center items-center bg-[#e8e8e8] p-6 shadow-lg rounded-lg w-full max-w-lg md:max-w-none'>
-                            <div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Nombre: </h3>
-                                    <p className='text-lg font-[Montserrat]'>Somil Sandoval Diaz</p>
-                                </div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Cargo: </h3>
-                                    <p className='text-lg font-[Montserrat]'> Desarrollador Full-Stack</p>
-                                </div>
-                                <div className='flex justify-center ml-4 mt-4 md:ml-0 md:mt-0 md:justify-start items-center flex-wrap gap-2'>
-                                    <p className='text-lg font-[Montserrat]'> "La habilidad técnica es fundamental para resolver problemas, pero es la pasión por lo que haces, junto con la disciplina y el compromiso con la excelencia lo que te lleva a transformar una buena solución en algo verdaderamente extraordinario."</p>
-                                </div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Redes Sociales: </h3>
-                                    <a
-                                        href="https://github.com/somilsdiaz"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-gray-800 hover:text-gray-600 transition-all text-3xl"
-                                    >
-                                        <FaGithub />
-                                    </a>
-                                    <a
-                                        href="https://www.linkedin.com/in/somil-sandoval-diaz/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-700 hover:text-blue-500 transition-all text-3xl"
-                                    >
-                                        <FaLinkedin />
-                                    </a>
-                                </div>
-                            </div>
-                            <div>
-                                <img src="/Somil_profile.webp" alt="Merged Fleets" className="mr-0 ml-0 md:mr-50 md:ml-2 w-40 h-40 md:w-48 md:h-48 rounded-full shadow-lg border-4 border-green-700 object-cover" />
-                            </div>
-                        </div>
-
-                        {/* Div de la siguiente persona */}
-
-                        <div className='flex flex-col md:flex-row justify-center items-center bg-[#e8e8e8] p-6 shadow-lg rounded-lg w-full max-w-lg md:max-w-none'>
-                            <div>
-                                <img src={Julian} alt="Merged Fleets" className="mr-0 ml-0 md:mr-4 md:ml-2 w-40 h-40 md:w-48 md:h-48 rounded-full shadow-lg border-4 border-green-700 object-cover" />
-                            </div>
-                            <div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Nombre: </h3>
-                                    <p className='text-lg font-[Montserrat]'> Julian Andrés Coll Barros</p>
-                                </div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Cargo: </h3>
-                                    <p className='text-lg font-[Montserrat]'> Desarrollador Front-End</p>
-                                </div>
-                                <div className='flex justify-center ml-4 mt-4 md:ml-0 md:mt-0 md:justify-start items-center flex-wrap gap-2'>
-                                    <p className='text-lg font-[Montserrat]'> "No siempre tengo un plan... pero cuando lo tengo, es increíble. Y cuando no, improviso con estilo."</p>
-                                </div>
-                                <div className='flex justify-center md:justify-start items-center flex-wrap gap-2'>
-                                    <h3 className='text-center text-xl text-green-700 my-6 font-bold'>Redes Sociales: </h3>
-                                    <a
-                                        href="https://github.com/jcoll05"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-gray-800 hover:text-gray-600 transition-all text-3xl"
-                                    >
-                                        <FaGithub />
-                                    </a>
-                                    <a
-                                        href="https://www.linkedin.com/in/julian-coll-518647324/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-700 hover:text-blue-500 transition-all text-3xl"
-                                    >
-                                        <FaLinkedin />
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                        {aboutArray.map((about, index) => (
+                          <AboutBlock key={index} {...about}/>
+                        ))}
                     </section>
                 </main>
             </div>
