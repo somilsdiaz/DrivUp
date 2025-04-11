@@ -1,6 +1,6 @@
 import { useState} from "react";
 import { useForm } from "react-hook-form";
-import logo from "../assets/unibus-high-resolution-logo-transparent.png"
+import logo from "../assets/drivup_darklogo.png";
 import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
@@ -70,7 +70,7 @@ const RegisterPage = () => {
                 style={{ borderColor: "#122562" }}
             >
                 <div className="flex items-center justify-center ">
-                    <img src={logo} alt="Logo" className="h-48 w-48 mr-12" />
+                    <img src={logo} alt="Logo"/>
                 </div>
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                     Registrar Usuario
