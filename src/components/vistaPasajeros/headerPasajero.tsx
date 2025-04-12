@@ -20,7 +20,7 @@ const Header: React.FC = () => {
     }, [location.pathname]); // Se ejecuta cuando cambia la ruta
 
     return (
-        <header className="sticky top-0 z-40 border-b bg-[#4A4E69] text-white">
+        <header className="sticky top-0 z-40 border-b bg-[#003E69] text-white">
             <div className="container flex h-16 items-center justify-between py-4 px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
@@ -33,7 +33,7 @@ const Header: React.FC = () => {
                 </div>
 
                 {/* Navigation - Center */}
-                <nav className="hidden md:flex items-center justify-center flex-1 px-4 mx-4">
+                <nav className="hidden md:flex items-center justify-start flex-1 px-4 mx-4">
                     <div className="flex items-center gap-6 justify-center">
                         <Link to="/" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Solicitar viaje
