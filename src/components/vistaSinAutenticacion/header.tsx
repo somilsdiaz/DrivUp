@@ -37,7 +37,7 @@ const Header: React.FC = () => {
     }, [location.pathname]); // Se ejecuta cuando cambia la ruta
 
     return (
-        <header className="sticky top-0 z-40 border-b bg-[#2D5DA1] text-white">
+        <header className="sticky top-0 z-40  bg-[#2D5DA1] text-white">
             <div className="container flex h-16 items-center justify-between py-4 px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
