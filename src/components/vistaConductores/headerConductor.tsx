@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu as MenuIcon, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-import MenuResponsive from "./menuResponsive";
+import MenuResponsive from "../vistaSinAutenticacion/menuResponsive";
 
 const Header: React.FC = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -20,7 +20,7 @@ const Header: React.FC = () => {
     }, [location.pathname]); // Se ejecuta cuando cambia la ruta
 
     return (
-        <header className="sticky top-0 z-40 border-b bg-[#2D5DA1] text-white">
+        <header className="sticky top-0 z-40 border-b bg-[#003E69] text-white">
             <div className="container flex h-16 items-center justify-between py-4 px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
@@ -36,22 +36,25 @@ const Header: React.FC = () => {
                 <nav className="hidden md:flex items-center justify-center flex-1 px-4 mx-4">
                     <div className="flex items-center gap-6 justify-center">
                         <Link to="/" className="text-sm font-medium hover:underline whitespace-nowrap">
-                            Viaja
+                            Buscar Viaje
                         </Link>
                         <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
-                            Conduce
+                            Solicitudes
+                        </Link>
+                        <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
+                            Viajes programados
                         </Link>
                         <div className="relative group">
                             <button className="flex items-center gap-1 text-sm font-medium hover:underline whitespace-nowrap">
-                                <span>Como funciona</span>
+                                <span>Solicitar un viaje</span>
                                 <ChevronDown size={16} />
                             </button>
                             <div className="absolute hidden group-hover:block bg-white text-[#2D5DA1] rounded-lg shadow-lg mt-2 py-2 w-48">
-                                <Link to="/solicitar-mi-ruta" className="block px-4 py-2 hover:bg-[#F0F0F0] text-sm">
-                                    Viajes inmediatos
+                                <Link to="/solicitar-mi-ruta" className="block px-4 py-2 hover:bg-[#F0F0F0]">
+                                    Nueva Ruta
                                 </Link>
-                                <Link to="/mis-solicitudes" className="block px-4 py-2 hover:bg-[#F0F0F0] text-sm">
-                                    Reserva tu viaje
+                                <Link to="/mis-solicitudes" className="block px-4 py-2 hover:bg-[#F0F0F0]">
+                                    Mis Solicitudes
                                 </Link>
                             </div>
                         </div>
