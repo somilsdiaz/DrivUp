@@ -1,12 +1,18 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 
+interface MenuItem {
+    label: string;
+    path: string;
+}
+
 interface MenuResponsiveProps {
     isMenuVisible: boolean;
     closeMenu: () => void;
+    menuItems: MenuItem[];
 }
 
-const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMenu }) => {
+const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMenu, menuItems }) => {
     return (
         <div>
             {/* Menu */}
@@ -23,39 +29,16 @@ const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMen
                 </button>
                 <nav className="flex flex-col pt-20 pl-9 space-y-4">
                     <ul className="space-y-4">
-                        <li onClick={closeMenu}>
-                            <Link to="/" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2">
-                                Pagina de inicio
-                            </Link>
-                            
-                        </li>
-                        <li onClick={closeMenu}>
-                            <Link to="/rutas" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2">
-                                Rutas
-                            </Link>
-
-                        </li>
-                        <li onClick={closeMenu}>
-                            <Link to="/solicitar-mi-ruta" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2" >
-                                Nueva Ruta
-                            </Link>
-
-                        </li>
-                        <li onClick={closeMenu}>
-                            <Link to="/mis-solicitudes" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2" >
-                                Mis Solicitudes
-                            </Link>
-                        </li>
-                        <li onClick={closeMenu}>
-                            <Link to="/contacto" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2" >
-                                Contacto
-                            </Link>
-                        </li>
-                        <li onClick={closeMenu}>
-                            <Link to="/acerca-de" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2" >
-                                Acerca de UniBus
-                            </Link>
-                        </li>
+                        {menuItems.map((item, index) => (
+                            <li key={index} onClick={closeMenu}>
+                                <Link 
+                                    to={item.path} 
+                                    className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2"
+                                >
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
                     </ul>
                 </nav>
             </div>

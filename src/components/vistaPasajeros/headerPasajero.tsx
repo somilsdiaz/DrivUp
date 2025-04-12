@@ -3,6 +3,12 @@ import { Menu as MenuIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import MenuResponsive from "../vistaSinAutenticacion/menuResponsive";
 
+// Define the MenuItem interface to match the one in menuResponsive.tsx
+interface MenuItem {
+    label: string;
+    path: string;
+}
+
 const Header: React.FC = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
 
@@ -13,6 +19,15 @@ const Header: React.FC = () => {
     const closeMenu = () => {
         setIsMenuVisible(false);
     };
+
+        // Define menu items
+        const menuItems: MenuItem[] = [
+            { label: "Solicitar viaje", path: "/" },
+            { label: "Mis viajes", path: "/" },
+            { label: "Mis reservas", path: "/" },
+            { label: "Mi cuenta", path: "/" },
+            { label: "Contacto", path: "/" }
+        ];
 
     // Mover el scroll al top cada vez que cambia la ruta
     useEffect(() => {
@@ -64,8 +79,11 @@ const Header: React.FC = () => {
             </div>
 
             {/* Componente MenuResponsive */}
-            <MenuResponsive isMenuVisible={isMenuVisible} closeMenu={closeMenu} />
-        </header>
+            <MenuResponsive 
+                isMenuVisible={isMenuVisible} 
+                closeMenu={closeMenu} 
+                menuItems={menuItems}
+            />        </header>
     );
 };
 

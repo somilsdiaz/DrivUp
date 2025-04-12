@@ -3,6 +3,12 @@ import { Menu as MenuIcon, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import MenuResponsive from "./menuResponsive";
 
+// Define the MenuItem interface to match the one in menuResponsive.tsx
+interface MenuItem {
+    label: string;
+    path: string;
+}
+
 const Header: React.FC = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
 
@@ -13,6 +19,17 @@ const Header: React.FC = () => {
     const closeMenu = () => {
         setIsMenuVisible(false);
     };
+
+    // Define menu items
+    const menuItems: MenuItem[] = [
+        { label: "Pagina de inicio", path: "/" },
+        { label: "Viaja", path: "/" },
+        { label: "Conduce", path: "/rutas" },
+        { label: "Viajes inmediatos", path: "/solicitar-mi-ruta" },
+        { label: "Reserva tu viaje", path: "/mis-solicitudes" },
+        { label: "Quienes somos", path: "/acerca-de" },
+        { label: "Contacto", path: "/contacto" }
+    ];
 
     // Mover el scroll al top cada vez que cambia la ruta
     useEffect(() => {
@@ -81,7 +98,11 @@ const Header: React.FC = () => {
             </div>
 
             {/* Componente MenuResponsive */}
-            <MenuResponsive isMenuVisible={isMenuVisible} closeMenu={closeMenu} />
+            <MenuResponsive 
+                isMenuVisible={isMenuVisible} 
+                closeMenu={closeMenu} 
+                menuItems={menuItems}
+            />
         </header>
     );
 };
