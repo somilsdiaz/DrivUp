@@ -1,12 +1,4 @@
 import React from 'react';
-<<<<<<< HEAD
-import HeaderFooter from '../layouts/headerFooter';
-
-const About: React.FC = () => {
-    return (
-        <HeaderFooter>            
-            Pagina para describir de que trata del proyecto, mision, vision
-=======
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react"
 import HeaderFooter from '../layouts/headerFooter';
@@ -144,7 +136,6 @@ const About: React.FC = () => {
                     </section>
                 </main>
             </div>
->>>>>>> main
         </HeaderFooter>
     );
 };

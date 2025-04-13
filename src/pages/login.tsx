@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-import React, { useState } from "react";
-import { useForm } from "react-hook-form"
-import logo from "../assets/unibus-high-resolution-logo-transparent.png"
-=======
 import { useState } from "react";
 import { useForm } from "react-hook-form"
 import logo from "../assets/drivup_darklogo.png";
->>>>>>> main
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
@@ -20,23 +14,6 @@ const LoginPage = () => {
         handleSubmit,
         formState: { errors } } = useForm<LoginFormInputs>();
 
-<<<<<<< HEAD
-    const onSubmit = (data: LoginFormInputs) => {
-        console.log("Datos del formulario:", data);
-        // Aquí va la lógica para enviar los datos al servidor
-
-        // Si la operación fue exitosa:
-        setSuccessMessage("Logging in...");
-    
-       // Después de 5 segundos redirigir a pagina de inicio
-       setTimeout(() => {
-         navigate("/");
-        }, 5000);
-    };
-
-    const navigate = useNavigate();
-    const [successMessage, setSuccessMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
-=======
         const onSubmit = async (data: LoginFormInputs) => {
             setLoading(true); // Inicia el estado de carga
             try {
@@ -60,14 +37,14 @@ const LoginPage = () => {
                     }
                     throw new Error("Email o contraseña incorrectos");
                 }
-        
                 setSuccessMessage("Inicio de sesión exitoso...");
                 localStorage.setItem("token", result.token);
         
                 // Redirige inmediatamente después de guardar el token, o con tiempo de espera si es necesario
                 setTimeout(() => {
+                    setLoading(true)
                     navigate("/"); // Redirige al inicio
-                }, 5000); // Esto es opcional si prefieres un mensaje de éxito primero
+                }, 300); // Esto es opcional si prefieres un mensaje de éxito primero
             } catch (error) {
                 console.error("Error al iniciar sesión:", error);
                 setErrorMessage(error instanceof Error ? error.message : "Error desconocido al iniciar sesión");
@@ -81,7 +58,6 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
     const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
->>>>>>> main
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -89,25 +65,18 @@ const LoginPage = () => {
                 style={{ borderColor: "#122562" }}
             >
                 <div className="flex items-center justify-center ">
-<<<<<<< HEAD
-                    <img src={logo} alt="Logo" className="h-48 w-48 mr-12" />
-=======
                     <img src={logo} alt="Logo" />
->>>>>>> main
                 </div>
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                     Iniciar Sesión
                 </h2>
-<<<<<<< HEAD
-=======
                             {/* Mostrar el spinner si la carga está en proceso */}
             {loading && (
                 <div className="flex justify-center mb-4">
-                    <div className="spinner-border animate-spin border-4 border-t-4 border-blue-500 rounded-full w-8 h-8" />
+                    <div className="spinner-border animate-spin border-4 border-t-4 border-black-500 rounded-full w-8 h-8" />
                     <span className="ml-2 text-gray-700">Cargando...</span>
                 </div> )}
 
->>>>>>> main
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="mb-4">
                         <label
@@ -160,14 +129,11 @@ const LoginPage = () => {
                     <div className="mt-4 p-3 bg-green-100 text-green-700">
                         {successMessage}
                     </div>)}
-<<<<<<< HEAD
-=======
                 {/* Mostrar mensaje de error si está presente */}
                 {errorMessage && (
                     <div className="mt-4 p-3 bg-red-100 text-red-700">
                         {errorMessage}
                     </div>)}
->>>>>>> main
                 <p className="text-center text-gray-600 mt-4">
                     ¿No tienes una cuenta?{" "}
                     <a href="/register" className="text-blue-500 hover:underline">
