@@ -1,6 +1,5 @@
 import React from 'react';
-import Header from '../components/vistaSinAutenticacion/header';
-import Footer from '../components/vistaSinAutenticacion/footer';
+import Header from '../components/vistaConductores/headerConductor'
 
 type MainLayoutProps = {
     children: React.ReactNode;
@@ -14,7 +13,6 @@ const HeaderFooter: React.FC<MainLayoutProps> = ({ children }) => {
             <main>
                 {children}
             </main>
-            <Footer />
         </div>
     );
 };

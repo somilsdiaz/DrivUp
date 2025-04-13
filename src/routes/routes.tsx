@@ -6,6 +6,8 @@ import Contacto from '../pages/contacto';
 import About from '../pages/about';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermCondition from '../pages/termConditionPage';
+import HomeConductor from '../pages/vistaConductores/homeConductor';
+
 const router = createBrowserRouter([
     {
         path: "/login", // Ruta para el login
@@ -34,6 +36,10 @@ const router = createBrowserRouter([
     {
         path:"/Terminos-y-condiciones",
         element:<TermCondition/>
+    },
+    {
+        path:"/dashboard/conductor",
+        element:<HomeConductor></HomeConductor>
     }
 ]);
 

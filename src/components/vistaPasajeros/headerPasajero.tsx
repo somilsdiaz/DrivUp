@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu as MenuIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import MenuResponsive from "../vistaSinAutenticacion/menuResponsive";
+import MenuResponsive from "../menuResponsive";
 
 // Define the MenuItem interface to match the one in menuResponsive.tsx
 interface MenuItem {
