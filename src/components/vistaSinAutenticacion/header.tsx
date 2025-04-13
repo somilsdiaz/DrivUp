@@ -37,8 +37,8 @@ const Header: React.FC = () => {
     }, [location.pathname]); // Se ejecuta cuando cambia la ruta
 
     return (
-        <header className="sticky top-0 z-40 border-b bg-[#2D5DA1] text-white">
-            <div className="container flex h-16 items-center justify-between py-4 px-4 mx-auto">
+        <header className="sticky top-0 z-40  bg-[#2D5DA1] text-white">
+            <div className="container flex h-16 items-center justify-between py-4 px-2 md:px-3 lg:px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
                     <Link
@@ -50,8 +50,8 @@ const Header: React.FC = () => {
                 </div>
 
                 {/* Navigation - Center */}
-                <nav className="hidden md:flex items-center justify-center flex-1 px-4 mx-4">
-                    <div className="flex items-center gap-6 justify-center">
+                <nav className="hidden md:flex items-center justify-center flex-1 px-2 lg:px-4 mx-2 lg:mx-4">
+                    <div className="flex items-center gap-3 lg:gap-6 justify-center">
                         <Link to="/" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Viaja
                         </Link>
@@ -82,11 +82,11 @@ const Header: React.FC = () => {
                 </nav>
 
                 {/* Actions - Far right */}
-                <div className="hidden md:flex items-center gap-4 flex-shrink-0">
-                    <button className="text-white hover:bg-[#2D5DA1]/80 px-3 py-1.5 rounded-md text-sm whitespace-nowrap">
+                <div className="hidden md:flex items-center gap-2 lg:gap-4">
+                    <button className="text-white hover:bg-[#2D5DA1]/80 px-2 lg:px-3 py-1.5 rounded-md text-sm whitespace-nowrap">
                         Iniciar Sesión
                     </button>
-                    <button className="bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/90 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">
+                    <button className="bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/90 px-2 lg:px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">
                         Registrarse
                     </button>
                 </div>
