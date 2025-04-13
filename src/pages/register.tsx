@@ -1,11 +1,20 @@
+<<<<<<< HEAD
 import React, { useState} from "react";
 import { useForm } from "react-hook-form";
 import logo from "../assets/unibus-high-resolution-logo-transparent.png"
+=======
+import { useState} from "react";
+import { useForm } from "react-hook-form";
+import logo from "../assets/drivup_darklogo.png";
+>>>>>>> main
 import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
     type FormValues = {
+<<<<<<< HEAD
          id: number;
+=======
+>>>>>>> main
          name: string;
          second_name: string;
          last_name: string;
@@ -25,6 +34,7 @@ const RegisterPage = () => {
         watch
       } = useForm<FormValues>();
     
+<<<<<<< HEAD
       const [successMessage, setSuccessMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
       const navigate = useNavigate(); // Hook para redirección
       const onSubmit = (data: any) => {
@@ -39,6 +49,47 @@ const RegisterPage = () => {
          navigate("/login");
         }, 5000);
       };
+=======
+      const [successMessage, setSuccessMessage]= useState<string | null>(null); // Estado para el mensaje de éxito
+      const [errorMessage, setErrorMessage]=  useState<string | null>(null); // Estado para el mensaje de éxito
+      const navigate = useNavigate(); // Hook para redirección
+      const onSubmit = async (data: FormValues) => {
+        try {
+            console.log("Formulario enviado:", data);
+    
+            const response = await fetch("https://unibus-backend.onrender.com/registro", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+    
+            const result = await response.json(); // Convertimos la respuesta en JSON
+    
+            if (!response.ok) {
+                if (result.message) {
+                    throw new Error(result.message); // Capturar el mensaje de error del backend
+                }
+                throw new Error("Error en el registro");
+            }
+    
+            setSuccessMessage("¡Ha sido registrado con éxito!");
+    
+            setTimeout(() => {
+                navigate("/login");
+            }, 5000);
+        } catch (error) {
+            console.error("Error al enviar el formulario:", error);
+            
+            // Muestra el mensaje de error en la interfaz
+            if (error instanceof Error) {
+                setErrorMessage(error.message); // Mostrar mensaje de error del backend
+            }
+        }
+    };
+    
+>>>>>>> main
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -46,7 +97,11 @@ const RegisterPage = () => {
                 style={{ borderColor: "#122562" }}
             >
                 <div className="flex items-center justify-center ">
+<<<<<<< HEAD
                     <img src={logo} alt="Logo" className="h-48 w-48 mr-12" />
+=======
+                    <img src={logo} alt="Logo"/>
+>>>>>>> main
                 </div>
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                     Registrar Usuario
@@ -82,6 +137,10 @@ const RegisterPage = () => {
                             id="second_name"
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Segundo Nombre"
+<<<<<<< HEAD
+=======
+                            {...register("second_name")}
+>>>>>>> main
                         ></input>
                     </div>
                     <div>
@@ -275,6 +334,14 @@ const RegisterPage = () => {
                       <div className="mt-4 p-3 bg-green-100 text-green-700">
                         {successMessage}
                       </div>)}
+<<<<<<< HEAD
+=======
+                       {/* Mostrar mensaje de error si está presente */}
+                        {errorMessage && (
+                      <div className="mt-4 p-3 bg-red-100 text-red-700">
+                        {errorMessage}
+                      </div>)}
+>>>>>>> main
                 <p className="text-center text-gray-600 mt-4">
                     ¿Ya tienes una cuenta?{" "}
                     <a href="/login" className="text-blue-500 hover:underline">

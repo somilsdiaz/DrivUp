@@ -1,12 +1,27 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 
+<<<<<<< HEAD
 interface MenuResponsiveProps {
     isMenuVisible: boolean;
     closeMenu: () => void;
 }
 
 const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMenu }) => {
+=======
+interface MenuItem {
+    label: string;
+    path: string;
+}
+
+interface MenuResponsiveProps {
+    isMenuVisible: boolean;
+    closeMenu: () => void;
+    menuItems: MenuItem[];
+}
+
+const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMenu, menuItems }) => {
+>>>>>>> main
     return (
         <div>
             {/* Menu */}
@@ -23,6 +38,7 @@ const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMen
                 </button>
                 <nav className="flex flex-col pt-20 pl-9 space-y-4">
                     <ul className="space-y-4">
+<<<<<<< HEAD
                         <li onClick={closeMenu}>
                             <Link to="/" className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2">
                                 Pagina de inicio
@@ -56,6 +72,18 @@ const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMen
                                 Acerca de nosotros
                             </Link>
                         </li>
+=======
+                        {menuItems.map((item, index) => (
+                            <li key={index} onClick={closeMenu}>
+                                <Link 
+                                    to={item.path} 
+                                    className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2"
+                                >
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
+>>>>>>> main
                     </ul>
                 </nav>
             </div>
