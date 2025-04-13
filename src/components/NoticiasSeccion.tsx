@@ -1,0 +1,154 @@
+import { useRef, useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { NoticiasCard } from "./NoticiasCard";
+import ModernSkeletonLoader from "./cardNewsSkeleton/CardNewsSkeletonLoader";
+
+interface Noticia {
+    id: number;
+    title: string;
+    summary: string;
+    imageurl: string;
+    date: string;
+    readtime: number;
+    empresa: string;
+}
+
+export function NoticiasSection() {
+    const carouselRef = useRef<HTMLDivElement>(null);
+    let scrollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const [noticias, setNoticias] = useState<Noticia[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // Función para obtener las noticias desde el backend
+        const fetchNoticias = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch("https://unibus-backend.onrender.com/noticias", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error("Error al obtener las noticias");
+                }
+                const data = await response.json();
+                setNoticias(data);
+            } catch (error) {
+                console.error("Error fetching noticias:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchNoticias();
+    }, []);
+
+    useEffect(() => {
+        const carousel = carouselRef.current;
+        if (!carousel) return;
+
+        const startScrolling = () => {
+            if (scrollInterval.current) return; // Evita duplicar intervalos
+            scrollInterval.current = setInterval(() => {
+                if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth) {
+                    carousel.scrollLeft = 0;
+                } else {
+                    carousel.scrollLeft += 1;
+                }
+            }, 30);
+        };
+
+        const stopScrolling = () => {
+            if (scrollInterval.current) {
+                clearInterval(scrollInterval.current);
+                scrollInterval.current = null;
+            }
+        };
+
+        startScrolling();
+        carousel.addEventListener("mouseenter", stopScrolling);
+        carousel.addEventListener("mouseleave", startScrolling);
+
+        // Manejo de eventos táctiles
+        let startX = 0;
+        let isDragging = false;
+
+        const handleTouchStart = (e: TouchEvent) => {
+            startX = e.touches[0].pageX;
+            isDragging = true;
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+            if (!isDragging) return;
+            const deltaX = e.touches[0].pageX - startX;
+            carousel.scrollBy({ left: -deltaX, behavior: "auto" });
+            startX = e.touches[0].pageX;
+        };
+
+        const handleTouchEnd = () => {
+            isDragging = false;
+        };
+
+        carousel.addEventListener("touchstart", handleTouchStart);
+        carousel.addEventListener("touchmove", handleTouchMove);
+        carousel.addEventListener("touchend", handleTouchEnd);
+
+        return () => {
+            stopScrolling();
+            carousel.removeEventListener("mouseenter", stopScrolling);
+            carousel.removeEventListener("mouseleave", startScrolling);
+            carousel.removeEventListener("touchstart", handleTouchStart);
+            carousel.removeEventListener("touchmove", handleTouchMove);
+            carousel.removeEventListener("touchend", handleTouchEnd);
+        };
+    }, []);
+
+    const scroll = (direction: "left" | "right") => {
+        const carousel = carouselRef.current;
+        if (carousel) {
+            const scrollAmount = direction === "left" ? -300 : 300;
+            carousel.scrollBy({ left: scrollAmount, behavior: "smooth" });
+        }
+    };
+
+    return (
+        <section className="py-3 px-4">
+            <div className="relative w-full overflow-hidden">
+                <div ref={carouselRef} className="overflow-hidden">
+                    <div className="flex transition-transform duration-500 ease-in-out justify-center gap-4">
+                        {isLoading ? (
+                            // Mostrar 3 skeletons mientras carga
+                            Array.from({ length: 5 }).map((_, index) => (
+                                <div className="flex-shrink-0 w-[300px] gap-4">
+                                    <ModernSkeletonLoader key={index} />
+                                </div>
+                            ))
+                        ) : (
+                            noticias.map((noticia) => (
+                                <div key={noticia.id} className="flex-shrink-0 w-[300px] gap-4">
+                                    <NoticiasCard {...noticia} />
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+                {/* Botón Izquierdo */}
+                <button
+                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-transparent border-2 border-gray-500 p-2 rounded-full hover:bg-gray-200"
+                    onClick={() => scroll("left")}
+                >
+                    <ChevronLeft className="h-6 w-6 text-gray-600" />
+                </button>
+                {/* Botón Derecho */}
+                <button
+                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-transparent border-2 border-gray-500 p-2 rounded-full hover:bg-gray-200"
+                    onClick={() => scroll("right")}
+                >
+                    <ChevronRight className="h-6 w-6 text-gray-600" />
+                </button>
+            </div>
+        </section>
+    );
+}
