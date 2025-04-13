@@ -37,14 +37,14 @@ const LoginPage = () => {
                     }
                     throw new Error("Email o contraseña incorrectos");
                 }
-        
                 setSuccessMessage("Inicio de sesión exitoso...");
                 localStorage.setItem("token", result.token);
         
                 // Redirige inmediatamente después de guardar el token, o con tiempo de espera si es necesario
                 setTimeout(() => {
+                    setLoading(true)
                     navigate("/"); // Redirige al inicio
-                }, 5000); // Esto es opcional si prefieres un mensaje de éxito primero
+                }, 300); // Esto es opcional si prefieres un mensaje de éxito primero
             } catch (error) {
                 console.error("Error al iniciar sesión:", error);
                 setErrorMessage(error instanceof Error ? error.message : "Error desconocido al iniciar sesión");
@@ -73,7 +73,7 @@ const LoginPage = () => {
                             {/* Mostrar el spinner si la carga está en proceso */}
             {loading && (
                 <div className="flex justify-center mb-4">
-                    <div className="spinner-border animate-spin border-4 border-t-4 border-blue-500 rounded-full w-8 h-8" />
+                    <div className="spinner-border animate-spin border-4 border-t-4 border-black-500 rounded-full w-8 h-8" />
                     <span className="ml-2 text-gray-700">Cargando...</span>
                 </div> )}
 
