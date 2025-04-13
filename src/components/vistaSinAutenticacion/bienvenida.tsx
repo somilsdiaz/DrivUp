@@ -4,7 +4,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 
 const Bienvenida: React.FC = () => {
     return (
-        <div className="relative w-full h-screen overflow-hidden">
+        <div className="relative w-full h-[auto] p-2 pb-5 overflow-hidden min-[1325px]:h-screen items-center ">
             {/* Background Video with Overlay */}
             <div className="absolute inset-0 z-0">
                 <video
@@ -21,10 +21,10 @@ const Bienvenida: React.FC = () => {
             </div>
 
             {/* Content Container */}
-            <div className="relative z-20 flex items-center h-full container mx-auto px-4 md:px-8">
-                <div className="max-w-3xl">
+            <div className="relative z-20 flex h-auto container mx-auto px-4 md:px-8 ">
+                <div className="max-w-3xl mt-14">
                     {/* Eyebrow text */}
-                    <p className="text-[#F2B134] font-medium tracking-wide mb-4 animate-fadeIn">
+                    <p className="text-[#F2B134] font-medium tracking-wide mb-4 md:mb-3 lg:mb-2 animate-fadeIn">
                         LA FORMA INTELIGENTE DE VIAJAR
                     </p>
                     
@@ -34,12 +34,12 @@ const Bienvenida: React.FC = () => {
                     </h1>
                     
                     {/* Subtitle */}
-                    <h2 className="text-xl md:text-2xl text-white/90 font-medium mb-6 animate-slideUp animation-delay-200">
+                    <h2 className="text-xl md:text-2xl text-white/90 font-medium mb-6 md:mb-5 lg:mb-4 animate-slideUp animation-delay-200">
                         Viajes compartidos que conectan personas, ahorran tiempo y protegen nuestro entorno
                     </h2>
                     
                     {/* Description */}
-                    <p className="text-base md:text-lg text-white/80 mb-8 max-w-2xl animate-slideUp animation-delay-400">
+                    <p className="text-base md:text-lg text-white/80 mb-8 md:mb-6 lg:mb-5 max-w-2xl animate-slideUp animation-delay-400">
                         DrivUP combina tecnología inteligente y el poder de la comunidad para ofrecerte 
                         una alternativa de transporte más económica, eficiente y sostenible. Olvídate del 
                         tráfico, los largos tiempos de espera y la contaminación.
@@ -97,7 +97,7 @@ const Bienvenida: React.FC = () => {
             </div>
             
             {/* Animated Scroll Indicator */}
-            <div className="absolute left-1/2 bottom-8 transform -translate-x-1/2 z-20 animate-bounce">
+            <div className="absolute left-1/2 bottom-8 transform -translate-x-1/2 z-20 animate-bounce hidden md:flex">
                 <div className="w-8 h-12 border-2 border-white/50 rounded-full flex justify-center">
                     <div className="w-1 h-3 bg-white rounded-full mt-2 animate-scrollDown"></div>
                 </div>
