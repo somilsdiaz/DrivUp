@@ -7,6 +7,7 @@ import About from '../pages/about';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermCondition from '../pages/termConditionPage';
 import HomeConductor from '../pages/vistaConductores/homeConductor';
+import RequestPage from '../pages/vistaConductores/requestPage';
 
 const router = createBrowserRouter([
     {
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
     {
         path:"/dashboard/conductor",
         element:<HomeConductor></HomeConductor>
+    },
+    {
+        path:"/dashboard/conductor/solicitudes",
+        element:<RequestPage></RequestPage>
     }
 ]);
 

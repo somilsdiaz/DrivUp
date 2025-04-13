@@ -43,7 +43,7 @@ const Header: React.FC = () => {
     // Define menu items
     const menuItems: MenuItem[] = [
         { label: "Buscar viaje", path: "/" },
-        { label: "Solicitudes", path: "/" },
+        { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
         { label: "Viajes programados", path: "/rutas" },
         { label: "Contacto", path: "/contacto" }
     ];
@@ -59,7 +59,7 @@ const Header: React.FC = () => {
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
                     <Link
-                        to="/"
+                        to="/dashboard/conductor"
                         className="text-2xl font-bold flex items-center space-x-2">
                         <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-16 w-16 mb-2 mr-3" />
                         <span className="m-0 p-0">Driv</span><span className="m-0 p-0 text-[#4ade80]">Up</span>
@@ -72,7 +72,7 @@ const Header: React.FC = () => {
                         <Link to="/" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Buscar Viaje
                         </Link>
-                        <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/conductor/solicitudes" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Solicitudes
                         </Link>
                         <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
