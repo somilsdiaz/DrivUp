@@ -1,83 +1,83 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter } from "lucide-react";
-import { SubmitHandler, useForm } from "react-hook-form";
+
+type LinksProps = {
+  name: string;
+  link: string;
+};
+
+type SectionProps = {
+  title: string;
+  links: LinksProps[];
+};
 
 const Footer: React.FC = () => {
-  const FastLinks: { name: string; link: string }[] = [
-    { name: "Acerca de nosotros", link: "/acerca-de" },
-    { name: "Politica de privacidad", link: "/politicas-de-privacidad" },
-    { name: "Terminos y condiciones", link: "/terminos-y-condiciones" },
-    { name: "FAQ", link: "#" },
-    { name: "Contacto", link: "/contacto" },
+  const footerSections: SectionProps[] = [
+    {
+      title: "Plataforma",
+      links: [
+        { name: "Cómo funciona", link: "/como-funciona" },
+        { name: "Características", link: "/caracteristicas" },
+        { name: "Precios", link: "/precios" },
+        { name: "FAQ", link: "/faq" },
+      ],
+    },
+    {
+      title: "Compañía",
+      links: [
+        { name: "Sobre nosotros", link: "/acerca-de" },
+        { name: "Carreras", link: "/carreras" },
+        { name: "Contacto", link: "/contacto" },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { name: "Términos del servicio", link: "/terminos-y-condiciones" },
+        { name: "Política de privacidad", link: "/politicas-de-privacidad" },
+      ],
+    },
   ];
 
-  type Input={email:string};
-  const {register, handleSubmit, formState:{errors}}=useForm<Input>();
-
-  const onSubmit: SubmitHandler<Input> = (data) => console.log(data);
-
   return (
-    <footer className="z-50 sticky bg-[#CF251F] text-white text-center py-4 flex flex-col gap-4 h-full ">
-      <section className="flex justify-between max-[600px]:flex-col max-[600px]:items-center max-[600px]:gap-4">
-        <div className="sm:w-1/3 px-2 ">
-          <h6 className="text-2xl font-semibold mb-2">Unibus</h6>
-          <p>
-            Revolucionar el transporte público en Barranquilla mediante una
-            plataforma tecnológica que conecte a los usuarios con servicios
-            eficientes, optimizando la distribución de la flota en tiempo real y
-            mejorando la experiencia de viaje a través del análisis y uso
-            inteligente de datos.
+    <footer className="bg-[#4A4E69] text-white p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Branding Section */}
+        <div className="text-center mb-8">
+          <h6 className="text-3xl font-bold mb-2">DrivUp</h6>
+          <p className="text-sm">
+            Transformando la movilidad urbana con tecnología y comunidad
           </p>
         </div>
-        <div className="sm:w-1/3 px-2">
-          <h6 className="text-2xl font-semibold mb-2">Enlaces rápidos</h6>
-          <ul>
-            {FastLinks.map((link) => (
-              <li key={link.name} className=" mb-2">
-                <Link className="hover:text-[#FCD116]" to={link.link}>{link.name}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="sm:w-1/3 px-2 flex flex-col items-center gap-4">
-          <h6 className="text-2xl font-semibold  mb-2">Síguenos</h6>
-          <div className="flex justify-center space-x-4">
-            <Link to="#">
-              <Facebook />
-            </Link>
-            <Link to="#">
-              <Instagram />
-            </Link>
-            <Link to="#">
-              <Twitter />
-            </Link>
+
+        {/* Links Section */}
+        <div className="flex justify-between">
+          {footerSections.map((section) => (
+            <div key={section.title}>
+              <h4 className="text-2xl font-semibold mb-4 text-center">{section.title}</h4>
+              <ul className="flex gap-5">
+                {section.links.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      to={link.link}
+                      className="text-[#F5F5F5] hover:text-[#FCD116] transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="flex">
-                <input
-                    type="text"
-                    {...register("email",{required:"El correo es requerido",   
-                      pattern: {
-                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                      message: "Formato de correo inválido",
-                    }})}
-                    className="w-2/3 p-2 bg-[#fff] text-[#333] rounded-l-lg border-2 border-[#F5F5F5] focus:outline-none focus:border-[#FCD116]"
-                    placeholder="Ingresa tu correo electronico"
-                />
-               
-                <button type="submit" className="bg-[#078930] text-[#333333] hover:bg-[#FCD116] p-2 rounded-r-lg transition duration-150 cursor-pointer">
-                    Suscribirme
-                </button>
-                </div>
-                {errors.email && <span className="text-[#F5F5F5]">{errors.email.message}</span>}
-            </form>
-          
+             
+          ))}
         </div>
-      </section>
-      <section className="mx-4 p-2 border-t-2 border-[#F5F5F5]">
-        <p>© 2025 UniBus. Todos los derechos reservados.</p>
-      </section>
+
+
+        {/* Copyright Section */}
+        <div className="mt-8 border-t border-[#F5F5F5] pt-4 text-center">
+          <p className="text-sm">© 2025 DrivUp. Todos los derechos reservados.</p>
+        </div>
+      </div>
     </footer>
   );
 };
