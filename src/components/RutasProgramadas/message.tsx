@@ -48,21 +48,34 @@ const Message: React.FC<MessageProps> = ({
                     {lastMessage}
                 </p>
                 <div className="flex items-center mt-1 text-xs">
-                    {isRead ? (
-                        <span className="flex items-center text-[#5AAA95]">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            Leído
-                        </span>
-                    ) : (
-                        <span className="flex items-center text-[#4A4E69]/50">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
-                            Enviado
-                        </span>
-                    )}
+                    {/* Solo mostrar estado de lectura si el último mensaje es del usuario actual */}
+                    {lastMessage.includes('Tú:') ? (
+                        isRead ? (
+                            <span className="flex items-center text-[#5AAA95]">
+                                <div className="flex mr-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                Mensaje leído
+                            </span>
+                        ) : (
+                            <span className="flex items-center text-[#F2B134]">
+                                <div className="flex mr-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                Mensaje no leído
+                            </span>
+                        )
+                    ) : null}
                 </div>
             </div>
         </div>
