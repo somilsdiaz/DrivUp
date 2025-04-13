@@ -1,6 +1,6 @@
 import React from 'react';
-import Header from '../components/header';
-import Footer from '../components/footer';
+import Header from '../components/vistaSinAutenticacion/header';
+import Footer from '../components/vistaSinAutenticacion/footer';
 
 type MainLayoutProps = {
     children: React.ReactNode;
