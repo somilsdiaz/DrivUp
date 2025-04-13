@@ -14,10 +14,10 @@ const Bienvenida: React.FC = () => {
                     muted
                     playsInline
                 >
-                    <source src="/background.mp4" type="video/mp4" />
+                    <source src="/background.MP4" type="video/mp4" />
                 </video>
                 {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#2D5DA1]/90 via-[#2D5DA1]/75 to-[#2D5DA1]/60 z-10"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#000000]/60 via-[#2D5DA1]/50 to-[#326B90]/50 z-10"></div>
             </div>
 
             {/* Content Container */}
@@ -68,7 +68,7 @@ const Bienvenida: React.FC = () => {
                 </div>
                 
                 {/* Decorative Elements */}
-                <div className="hidden lg:block absolute right-10 top-5 z-20">
+                <div className="hidden lg:block absolute right-10 top-3 z-20">
                     <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg shadow-lg max-w-xs">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="bg-[#F2B134] h-10 w-10 rounded-full flex items-center justify-center">
