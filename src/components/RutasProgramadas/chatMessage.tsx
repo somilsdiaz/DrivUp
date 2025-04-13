@@ -58,15 +58,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     />
                     <div className="ml-3">
                         <h3 className="font-medium text-white">{recipientName}</h3>
-                        <span className="text-xs text-white/70">Conductor</span>
+                        <span className="text-xs text-white/70">Pasajero</span>
                     </div>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                    </button>
                     <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -115,22 +110,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     </div>
                 ))}
                 
-                {isTyping && (
-                    <div className="flex justify-start">
-                        <img 
-                            src={recipientImage} 
-                            alt={recipientName} 
-                            className="h-8 w-8 rounded-full object-cover mr-2 self-end mb-1"
-                        />
-                        <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-none shadow-sm">
-                            <div className="flex space-x-1">
-                                <div className="w-2 h-2 rounded-full bg-[#4A4E69]/40 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                <div className="w-2 h-2 rounded-full bg-[#4A4E69]/40 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                <div className="w-2 h-2 rounded-full bg-[#4A4E69]/40 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                
                 
                 <div ref={messagesEndRef} />
             </div>
