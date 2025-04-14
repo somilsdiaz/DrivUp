@@ -25,21 +25,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     currentUserId
 }) => {
     const [newMessage, setNewMessage] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
     const [showEmojis, setShowEmojis] = useState(false);
-    const [isRecording, setIsRecording] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Simular indicador de escritura después de un tiempo
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsTyping(messages.length > 0 && messages[messages.length - 1].senderId !== currentUserId);
-            setTimeout(() => setIsTyping(false), 3000);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, [messages, currentUserId]);
-    
     // Efecto para enfocar el input cuando se abre el chat
     useEffect(() => {
         if (inputRef.current) {
@@ -63,10 +52,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setShowEmojis(!showEmojis);
     };
     
-    const toggleRecording = () => {
-        setIsRecording(!isRecording);
-        // Aquí iría la lógica para grabar audio
-    };
 
     return (
         <motion.div 
@@ -88,10 +73,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     </div>
                     <div className="ml-3">
                         <h3 className="font-medium text-white">{recipientName}</h3>
-                        <span className="text-xs text-white/70 flex items-center">
-                            <span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-1"></span>
-                            En línea ahora
-                        </span>
                     </div>
                 </div>
                 <div className="flex space-x-2">
@@ -120,23 +101,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         Hoy
                     </span>
                 </div>
-                
-                {isTyping && (
-                    <div className="flex justify-start">
-                        <img 
-                            src={recipientImage} 
-                            alt={recipientName} 
-                            className="h-8 w-8 rounded-full object-cover mr-2 self-end mb-1"
-                        />
-                        <div className="bg-white px-4 py-3 rounded-2xl shadow-sm rounded-bl-none max-w-xs">
-                            <div className="flex space-x-1">
-                                <div className="w-2 h-2 rounded-full bg-[#4A4E69]/40 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                <div className="w-2 h-2 rounded-full bg-[#4A4E69]/40 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                <div className="w-2 h-2 rounded-full bg-[#4A4E69]/40 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                            </div>
-                        </div>
-                    </div>
-                )}
                 
                 <AnimatePresence>
                     {messages.map((message) => (
@@ -197,30 +161,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
             {/* Área de entrada de mensaje */}
             <div className="border-t p-4 bg-white sticky bottom-0 z-10 shadow-md">
-                <div className="flex items-center">
-                    <div className="flex space-x-1">
-                        <button className="p-2 text-[#4A4E69]/70 hover:text-[#2D5DA1] rounded-full transition-colors hover:bg-[#2D5DA1]/10" title="Adjuntar archivo">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                            </svg>
-                        </button>
-                        <button 
-                            className={`p-2 rounded-full transition-colors ${isRecording ? 'text-red-500 bg-red-100' : 'text-[#4A4E69]/70 hover:text-[#2D5DA1] hover:bg-[#2D5DA1]/10'}`} 
-                            onClick={toggleRecording}
-                            title="Grabar audio"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                            </svg>
-                        </button>
-                    </div>
-                    
+                <div className="flex items-center">    
                     <div className="relative flex-1 mx-2">
-                        {isRecording && (
-                            <div className="absolute -top-10 left-0 right-0 bg-white p-2 rounded-lg shadow-lg text-center text-sm text-red-500 font-medium flex items-center justify-center">
-                                <span className="animate-pulse mr-2">●</span> Grabando audio...
-                            </div>
-                        )}
                         <input
                             ref={inputRef}
                             type="text"

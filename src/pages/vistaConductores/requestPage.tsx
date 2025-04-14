@@ -115,11 +115,11 @@ const RequestPage: React.FC = () => {
                         transition={{ duration: 0.5 }}
                         className="mb-4"
                     >
-                        <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Centro de Comunicaciones</h1>
-                        <p className="text-[#4A4E69]/80 max-w-2xl">Gestiona tus conversaciones con pasajeros y mantén una comunicación efectiva para mejorar la experiencia de viaje.</p>
+                        <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Solicitudes de viaje</h1>
+                        <p className="text-[#4A4E69]/80 max-w-2xl">Utiliza el chat para comunicarte con los pasajeros que solicitan rutas programadas y establece de forma clara los términos del viaje.</p>
                     </motion.div>
                     
-                    <div className="flex h-[calc(100vh-180px)] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
+                    <div className="flex h-full] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
                         {/* Lista de mensajes (izquierda) */}
                         <div className="w-1/3 border-r overflow-y-auto relative">
                             <div className="p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] sticky top-0 z-10">
@@ -248,12 +248,6 @@ const RequestPage: React.FC = () => {
                                                 Notificaciones en tiempo real
                                             </div>
                                         </div>
-                                        <button className="bg-gradient-to-r from-[#2D5DA1] to-[#5AAA95] text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center mx-auto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                            </svg>
-                                            Iniciar nueva conversación
-                                        </button>
                                     </div>
                                 </motion.div>
                             )}
