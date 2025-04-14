@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import { Bell, Menu, User, ChevronDown, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import MenuResponsive from "./menuResponsive";
@@ -14,6 +14,12 @@ const Header: React.FC = () => {
         setIsMenuVisible(false);
     };
 
+    // Mover el scroll al top cada vez que cambia la ruta
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [location.pathname]); // Se ejecuta cuando cambia la ruta
+
+
     return (
         <header className="bg-gradient-to-r from-[#078930] to-[#0AAB4B] text-white p-4 shadow-lg sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center">
@@ -25,17 +31,20 @@ const Header: React.FC = () => {
                         className="lg:hidden p-2 rounded-lg hover:bg-[#0AAB4B] transition-colors">
                         <Menu size={24} />
                     </button>
-                    <Link to="/" className="text-2xl font-bold flex items-center space-x-2">
-                        <img src="./src/assets/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
-                        <span>UniBus</span>
+                    <Link 
+                        to="/" 
+                        className="text-2xl font-bold flex items-center space-x-2">
+                        <img src="/unibus-high-resolution-logo-grayscale-transparent.png" alt="UniBus Logo" className="h-11 w-10 mb-2 mr-3" />
+                        <span className=" m-0 p-0 text-[#4ade80]">Uni</span><span className="m-0 p-0 animate-pulse">Bus</span>
+
                     </Link>
                 </div>
                 {/* Componente MenuResponsive */}
                 <MenuResponsive isMenuVisible={isMenuVisible} closeMenu={closeMenu} />
 
                 {/*Elementos del header*/}
-                <nav className="hidden lg:flex space-x-6 items-center">
-                    <Link to="/" className="hover:text-[#FCD116] transition-colors font-medium">
+                <nav className="hidden lg:flex space-x-6 items-center text-[15.6px]">
+                    <Link to="/" className="hover:text-[#FCD116] transition-colors font-medium ml-12 ">
                         Inicio
                     </Link>
                     <Link to="/rutas" className="hover:text-[#FCD116] transition-colors font-medium">
@@ -59,7 +68,7 @@ const Header: React.FC = () => {
                         Contacto
                     </Link>
                     <Link to="/acerca-de" className="hover:text-[#FCD116] transition-colors font-medium">
-                        Acerca de nosotros
+                        Acerca de Unibus
                     </Link>
                 </nav>
 

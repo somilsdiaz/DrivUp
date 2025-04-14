@@ -6,8 +6,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 const Footer: React.FC = () => {
   const FastLinks: { name: string; link: string }[] = [
     { name: "Acerca de nosotros", link: "/acerca-de" },
-    { name: "Politica de privacidad", link: "#" },
-    { name: "Terminos y condiciones", link: "#" },
+    { name: "Politica de privacidad", link: "/politicas-de-privacidad" },
+    { name: "Terminos y condiciones", link: "/terminos-y-condiciones" },
     { name: "FAQ", link: "#" },
     { name: "Contacto", link: "/contacto" },
   ];
@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
   const onSubmit: SubmitHandler<Input> = (data) => console.log(data);
 
   return (
-    <footer className="bg-[#CF251F] text-white text-center py-4 flex flex-col gap-4 h-full">
+    <footer className="z-50 sticky bg-[#CF251F] text-white text-center py-4 flex flex-col gap-4 h-full ">
       <section className="flex justify-between max-[600px]:flex-col max-[600px]:items-center max-[600px]:gap-4">
         <div className="sm:w-1/3 px-2 ">
           <h6 className="text-2xl font-semibold mb-2">Unibus</h6>
@@ -66,7 +66,7 @@ const Footer: React.FC = () => {
                     placeholder="Ingresa tu correo electronico"
                 />
                
-                <button type="submit" className="bg-[#078930] text-[#333333] hover:bg-[#FCD116] p-2 rounded-r-lg">
+                <button type="submit" className="bg-[#078930] text-[#333333] hover:bg-[#FCD116] p-2 rounded-r-lg transition duration-150 cursor-pointer">
                     Suscribirme
                 </button>
                 </div>
