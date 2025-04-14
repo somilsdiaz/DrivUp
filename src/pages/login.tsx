@@ -14,44 +14,44 @@ const LoginPage = () => {
         handleSubmit,
         formState: { errors } } = useForm<LoginFormInputs>();
 
-        const onSubmit = async (data: LoginFormInputs) => {
-            setLoading(true); // Inicia el estado de carga
-            try {
-                const response = await fetch("https://unibus-backend.onrender.com/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email: data.email,
-                        password: data.password,
-                    }),
-                });
-        
-                const result = await response.json();
-                console.log("Respuesta del servidor:", result);
-        
-                if (!response.ok) {
-                    if (result.message) {
-                        throw new Error(result.message);
-                    }
-                    throw new Error("Email o contraseña incorrectos");
+    const onSubmit = async (data: LoginFormInputs) => {
+        setLoading(true); // Inicia el estado de carga
+        try {
+            const response = await fetch("https://unibus-backend.onrender.com/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                }),
+            });
+
+            const result = await response.json();
+            console.log("Respuesta del servidor:", result);
+
+            if (!response.ok) {
+                if (result.message) {
+                    throw new Error(result.message);
                 }
-        
-                setSuccessMessage("Inicio de sesión exitoso...");
-                localStorage.setItem("token", result.token);
-        
-                // Redirige inmediatamente después de guardar el token, o con tiempo de espera si es necesario
-                setTimeout(() => {
-                    navigate("/"); // Redirige al inicio
-                }, 5000); // Esto es opcional si prefieres un mensaje de éxito primero
-            } catch (error) {
-                console.error("Error al iniciar sesión:", error);
-                setErrorMessage(error instanceof Error ? error.message : "Error desconocido al iniciar sesión");
-            } finally {
-                setLoading(false); // Finaliza el estado de carga
+                throw new Error("Email o contraseña incorrectos");
             }
-        };        
+            setSuccessMessage("Inicio de sesión exitoso...");
+            localStorage.setItem("token", result.token);
+
+            // Redirige inmediatamente después de guardar el token, o con tiempo de espera si es necesario
+            setTimeout(() => {
+                setLoading(true)
+                navigate("/"); // Redirige al inicio
+            }, 300); // Esto es opcional si prefieres un mensaje de éxito primero
+        } catch (error) {
+            console.error("Error al iniciar sesión:", error);
+            setErrorMessage(error instanceof Error ? error.message : "Error desconocido al iniciar sesión");
+        } finally {
+            setLoading(false); // Finaliza el estado de carga
+        }
+    };
 
 
     const navigate = useNavigate();
@@ -70,13 +70,6 @@ const LoginPage = () => {
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                     Iniciar Sesión
                 </h2>
-                            {/* Mostrar el spinner si la carga está en proceso */}
-            {loading && (
-                <div className="flex justify-center mb-4">
-                    <div className="spinner-border animate-spin border-4 border-t-4 border-blue-500 rounded-full w-8 h-8" />
-                    <span className="ml-2 text-gray-700">Cargando...</span>
-                </div> )}
-
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="mb-4">
                         <label
@@ -124,6 +117,12 @@ const LoginPage = () => {
                         Iniciar Sesión
                     </button>
                 </form>
+                {/* Mostrar el spinner si la carga está en proceso */}
+                {loading && (
+                    <div className="flex justify-center mb-4 mt-4">
+                        <div className="spinner-border animate-spin border-4 border-t-4 border-black-500 rounded-full w-8 h-8" />
+                        <span className="ml-2 text-gray-700">Cargando...</span>
+                    </div>)}
                 {/* Mostrar mensaje de éxito si está presente */}
                 {successMessage && (
                     <div className="mt-4 p-3 bg-green-100 text-green-700">
