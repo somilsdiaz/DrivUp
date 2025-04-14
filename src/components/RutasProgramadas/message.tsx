@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface MessageProps {
     id: string;
@@ -19,39 +19,54 @@ const Message: React.FC<MessageProps> = ({
     isRead,
     onSelect
 }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+    
+    // Efecto de entrada para animación
+    useEffect(() => {
+        setIsVisible(true);
+    }, []);
+
     return (
         <div 
             onClick={() => onSelect(id)}
-            className={`flex items-center p-4 border-b cursor-pointer transition-all hover:bg-[#F8F9FA] ${isRead ? 'bg-white' : 'bg-[#F8F9FA]'}`}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className={`flex items-center p-4 border-b cursor-pointer transition-all duration-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${isHovered ? 'bg-[#F8F9FA] shadow-sm' : isRead ? 'bg-white' : 'bg-[#F8F9FA]/80'}`}
         >
             <div className="relative">
-                <img 
-                    src={profileImage} 
-                    alt={`${senderName}'s profile`} 
-                    className="w-12 h-12 rounded-full object-cover border-2 border-[#2D5DA1]/20"
-                />
+                <div className={`relative rounded-full overflow-hidden transition-transform duration-300 ${isHovered ? 'transform scale-105' : ''}`}>
+                    <img 
+                        src={profileImage} 
+                        alt={`${senderName}'s profile`} 
+                        className={`w-12 h-12 rounded-full object-cover border-2 ${!isRead ? 'border-[#F2B134]' : 'border-[#2D5DA1]/20'} transition-all duration-300`}
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-tr from-[#0a0d35]/10 to-transparent rounded-full ${isHovered ? 'opacity-70' : 'opacity-0'} transition-opacity duration-300`}></div>
+                </div>
                 {!isRead && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#F2B134] rounded-full border-2 border-white"></div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#F2B134] rounded-full border-2 border-white animate-pulse"></div>
                 )}
             </div>
             <div className="ml-4 flex-1 overflow-hidden">
                 <div className="flex justify-between items-center">
-                    <h3 className={`font-medium text-[#4A4E69] ${!isRead && 'font-bold'}`}>{senderName}</h3>
+                    <h3 className={`font-medium text-[#4A4E69] transition-all duration-300 ${!isRead ? 'font-bold text-[#0a0d35]' : ''} ${isHovered ? 'text-[#2D5DA1]' : ''}`}>{senderName}</h3>
                     <div className="flex items-center">
                         {!isRead && (
-                            <span className="mr-1 text-[#F2B134] text-xs font-medium">Nuevo</span>
+                            <span className="mr-1 text-[#F2B134] text-xs font-medium bg-[#F2B134]/10 px-2 py-0.5 rounded-full animate-pulse">
+                                Nuevo
+                            </span>
                         )}
-                        <span className="text-xs text-[#4A4E69]/70">{timestamp}</span>
+                        <span className="text-xs text-[#4A4E69]/70 ml-1">{timestamp}</span>
                     </div>
                 </div>
-                <p className={`text-sm text-[#4A4E69]/80 truncate ${!isRead && 'font-semibold'}`}>
+                <p className={`text-sm transition-all duration-300 ${!isRead ? 'text-[#4A4E69] font-semibold' : 'text-[#4A4E69]/80'} truncate`}>
                     {lastMessage}
                 </p>
                 <div className="flex items-center mt-1 text-xs">
                     {/* Solo mostrar estado de lectura si el último mensaje es del usuario actual */}
                     {lastMessage.includes('Tú:') ? (
                         isRead ? (
-                            <span className="flex items-center text-[#5AAA95]">
+                            <span className="flex items-center text-[#5AAA95] bg-[#5AAA95]/10 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#5AAA95]/20">
                                 <div className="flex mr-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -63,7 +78,7 @@ const Message: React.FC<MessageProps> = ({
                                 Mensaje leído
                             </span>
                         ) : (
-                            <span className="flex items-center text-[#F2B134]">
+                            <span className="flex items-center text-[#F2B134] bg-[#F2B134]/10 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#F2B134]/20">
                                 <div className="flex mr-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -76,6 +91,16 @@ const Message: React.FC<MessageProps> = ({
                             </span>
                         )
                     ) : null}
+                    
+                    {/* Indicador de tiempo de respuesta */}
+                    {!lastMessage.includes('Tú:') && (
+                        <span className="text-[#4A4E69]/60 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Responder
+                        </span>
+                    )}
                 </div>
             </div>
         </div>

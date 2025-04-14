@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import HeaderFooter from "../../layouts/headerFooterConductores";
 import Message from "../../components/RutasProgramadas/message";
 import ChatMessage from "../../components/RutasProgramadas/chatMessage";
+import { motion } from 'framer-motion';
 
 // Datos de ejemplo para la demostración
 const mockMessages = [
@@ -105,15 +106,33 @@ const RequestPage: React.FC = () => {
     }, [searchTerm]);
 
     return (
-        <main className="h-screen bg-[#F8F9FA]">
+        <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
             <HeaderFooter>
                 <div className="container mx-auto py-6 px-4 h-full">
-                    <div className="flex h-[calc(100vh-120px)] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="mb-4"
+                    >
+                        <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Centro de Comunicaciones</h1>
+                        <p className="text-[#4A4E69]/80 max-w-2xl">Gestiona tus conversaciones con pasajeros y mantén una comunicación efectiva para mejorar la experiencia de viaje.</p>
+                    </motion.div>
+                    
+                    <div className="flex h-[calc(100vh-180px)] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
                         {/* Lista de mensajes (izquierda) */}
-                        <div className="w-1/3 border-r overflow-y-auto">
-                            <div className="p-4 border-b bg-[#0a0d35] sticky top-0 z-10">
+                        <div className="w-1/3 border-r overflow-y-auto relative">
+                            <div className="p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] sticky top-0 z-10">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold text-white">Mensajes</h2>
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-white flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                            </svg>
+                                            Mensajes
+                                        </h2>
+                                        <p className="text-xs text-white/70">Conversaciones con pasajeros</p>
+                                    </div>
                                     <div className="flex space-x-2">
                                         <button className="p-1.5 rounded-full bg-[#2D5DA1]/20 text-white hover:bg-[#2D5DA1]/40 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,19 +147,39 @@ const RequestPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="mt-3 relative">
-                                    <input 
-                                        type="text" 
-                                        placeholder="Buscar mensajes..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 bg-[#2D5DA1]/20 text-white placeholder-white/60 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5AAA95]"
-                                    />
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white/60 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
+                                    <div className="relative group">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Buscar mensajes..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2.5 bg-[#2D5DA1]/20 text-white placeholder-white/60 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5AAA95] transition-all duration-300 group-hover:bg-[#2D5DA1]/30"
+                                        />
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white/60 absolute left-3 top-3 transition-all duration-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    {searchTerm && (
+                                        <div className="absolute right-2 top-2.5 text-xs text-white/80 bg-[#5AAA95] px-2 py-0.5 rounded-full">
+                                            {filteredMessages.length} resultados
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="divide-y divide-[#4A4E69]/10">
+                                <div className="p-2 bg-[#F8F9FA] sticky top-[73px] z-10 border-b">
+                                    <div className="flex justify-between items-center px-2">
+                                        <h3 className="text-sm font-medium text-[#4A4E69]">Conversaciones recientes</h3>
+                                        <div className="flex space-x-1">
+                                            <button className="text-xs px-2 py-1 rounded bg-white text-[#4A4E69] border border-[#4A4E69]/20 hover:bg-[#2D5DA1]/10 transition-colors">
+                                                Todos
+                                            </button>
+                                            <button className="text-xs px-2 py-1 rounded text-[#4A4E69]/60 hover:bg-white transition-colors">
+                                                No leídos
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                 {filteredMessages.length > 0 ? filteredMessages.map((message) => (
                                     <Message
                                         key={message.id}
@@ -164,7 +203,7 @@ const RequestPage: React.FC = () => {
                         </div>
                         
                         {/* Área de chat (derecha) */}
-                        <div className="w-2/3 flex flex-col bg-[#F8F9FA]">
+                        <div className="w-2/3 flex flex-col bg-[#F8F9FA] relative">
                             {selectedChat ? (
                                 <ChatMessage
                                     chatId={selectedChatData?.chatId || ''}
@@ -174,23 +213,49 @@ const RequestPage: React.FC = () => {
                                     currentUserId={selectedChatData?.currentUserId || ''}
                                 />
                             ) : (
-                                <div className="flex-1 flex flex-col items-center justify-center bg-[#F8F9FA]">
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="flex-1 flex flex-col items-center justify-center bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm"
+                                >
                                     <div className="text-center p-8 max-w-md">
-                                        <div className="w-28 h-28 bg-[#2D5DA1]/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-[#2D5DA1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div className="w-32 h-32 bg-gradient-to-br from-[#2D5DA1]/20 to-[#5AAA95]/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner relative overflow-hidden group transition-all duration-300 hover:shadow-lg">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-[#2D5DA1]/0 to-[#5AAA95]/0 group-hover:from-[#2D5DA1]/10 group-hover:to-[#5AAA95]/10 transition-all duration-500"></div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-[#2D5DA1] transition-transform duration-500 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-2xl font-medium text-[#4A4E69] mb-3">Tus mensajes</h3>
-                                        <p className="text-[#4A4E69]/70 mb-8 max-w-xs mx-auto">Selecciona un chat para ver la conversación completa y responder a tus mensajes.</p>
-                                        <button className="bg-[#2D5DA1] text-white px-6 py-2.5 rounded-lg hover:bg-[#2D5DA1]/90 transition-colors shadow-md flex items-center mx-auto">
+                                        <h3 className="text-2xl font-bold text-[#0a0d35] mb-3">Centro de Mensajes</h3>
+                                        <p className="text-[#4A4E69]/80 mb-4 max-w-xs mx-auto">Selecciona un chat para ver la conversación completa y responder a tus mensajes.</p>
+                                        <div className="flex flex-col space-y-3 mb-8">
+                                            <div className="flex items-center justify-center text-[#4A4E69]/70 text-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#5AAA95]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Respuesta rápida a pasajeros
+                                            </div>
+                                            <div className="flex items-center justify-center text-[#4A4E69]/70 text-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#5AAA95]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Historial de conversaciones
+                                            </div>
+                                            <div className="flex items-center justify-center text-[#4A4E69]/70 text-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#5AAA95]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Notificaciones en tiempo real
+                                            </div>
+                                        </div>
+                                        <button className="bg-gradient-to-r from-[#2D5DA1] to-[#5AAA95] text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center mx-auto">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                             </svg>
-                                            Nuevo mensaje
+                                            Iniciar nueva conversación
                                         </button>
                                     </div>
-                                </div>
+                                </motion.div>
                             )}
                         </div>
                     </div>
