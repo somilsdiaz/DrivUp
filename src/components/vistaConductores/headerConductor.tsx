@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Menu as MenuIcon } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
 
@@ -11,6 +11,8 @@ interface MenuItem {
 
 const Header: React.FC = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const profileMenuRef = useRef<HTMLDivElement>(null);
 
     const toggleMenu = () => {
         setIsMenuVisible((prev) => !prev);
@@ -20,13 +22,31 @@ const Header: React.FC = () => {
         setIsMenuVisible(false);
     };
 
-        // Define menu items
-        const menuItems: MenuItem[] = [
-            { label: "Buscar viaje", path: "/" },
-            { label: "Solicitudes", path: "/" },
-            { label: "Viajes programados", path: "/rutas" },
-            { label: "Contacto", path: "/contacto" }
-        ];
+    const toggleProfileMenu = () => {
+        setIsProfileMenuOpen((prev) => !prev);
+    };
+
+    // Close profile menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+                setIsProfileMenuOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    // Define menu items
+    const menuItems: MenuItem[] = [
+        { label: "Buscar viaje", path: "/" },
+        { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
+        { label: "Viajes programados", path: "/rutas" },
+        { label: "Contacto", path: "/contacto" }
+    ];
 
     // Mover el scroll al top cada vez que cambia la ruta
     useEffect(() => {
@@ -39,7 +59,7 @@ const Header: React.FC = () => {
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
                     <Link
-                        to="/"
+                        to="/dashboard/conductor"
                         className="text-2xl font-bold flex items-center space-x-2">
                         <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-16 w-16 mb-2 mr-3" />
                         <span className="m-0 p-0">Driv</span><span className="m-0 p-0 text-[#4ade80]">Up</span>
@@ -52,7 +72,7 @@ const Header: React.FC = () => {
                         <Link to="/" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Buscar Viaje
                         </Link>
-                        <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/conductor/solicitudes" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Solicitudes
                         </Link>
                         <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
@@ -61,16 +81,57 @@ const Header: React.FC = () => {
                     </div>
                 </nav>
 
-                {/* Actions - Far right */}
-                <div className="hidden md:flex items-center gap-4 flex-shrink-0">
-                    <button className="text-white hover:bg-[#2D5DA1]/80 px-3 py-1.5 rounded-md text-sm whitespace-nowrap">
-                        Iniciar Sesión
-                    </button>
-                    <button className="bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/90 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">
-                        Registrarse
-                    </button>
+                {/* User Profile - Far right */}
+                <div className="hidden md:flex items-center gap-2 flex-shrink-0 relative" ref={profileMenuRef}>
+                    <div
+                        className="flex items-center gap-2 cursor-pointer hover:bg-[#1a1f55] rounded-md px-3 py-1.5"
+                        onClick={toggleProfileMenu}
+                    >
+                        <div className="h-8 w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
+                            <img
+                                src="/avatar-placeholder.jpg"
+                                alt="Profile"
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
+                                }}
+                            />
+                        </div>
+                        <span className="text-sm font-medium">Usuario</span>
+                        <ChevronDown className="h-4 w-4" />
+                    </div>
+
+                    {/* Profile Dropdown Menu */}
+                    {isProfileMenuOpen && (
+                        <div className="absolute right-0 top-12 bg-[#0a0d35] border border-[#2D2D2D] rounded-md shadow-lg py-2 w-48 z-50">
+                            <div className="px-4 py-2 border-b border-[#2D2D2D]">
+                                <p className="text-sm font-medium">Usuario</p>
+                                <p className="text-xs text-gray-400">usuario@example.com</p>
+                            </div>
+                            <div className="py-1">
+                                <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                    <User className="h-4 w-4" />
+                                    Mi Perfil
+                                </Link>
+                                <Link to="/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                    <Settings className="h-4 w-4" />
+                                    Configuración
+                                </Link>
+                                <Link to="/ayuda" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                    <HelpCircle className="h-4 w-4" />
+                                    Ayuda/Soporte
+                                </Link>
+                                <div className="border-t border-[#2D2D2D] my-1"></div>
+                                <button className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left text-red-400">
+                                    <LogOut className="h-4 w-4" />
+                                    Cerrar Sesión
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                
+
                 {/* Mobile menu button - Far right on mobile */}
                 <button className="md:hidden text-white flex-shrink-0" onClick={toggleMenu}>
                     <MenuIcon className="h-6 w-6" />
@@ -78,11 +139,12 @@ const Header: React.FC = () => {
             </div>
 
             {/* Componente MenuResponsive */}
-            <MenuResponsive 
-                isMenuVisible={isMenuVisible} 
-                closeMenu={closeMenu} 
+            <MenuResponsive
+                isMenuVisible={isMenuVisible}
+                closeMenu={closeMenu}
                 menuItems={menuItems}
-            />        </header>
+            />
+        </header>
     );
 };
 
