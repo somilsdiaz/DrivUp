@@ -1,36 +1,38 @@
-import { useState} from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import logo from "../assets/drivup_darklogo.png";
 import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
     type FormValues = {
-         name: string;
-         second_name: string;
-         last_name: string;
-         second_last_name:string;
-         document_type: "cc" | "ti" | "passport" | "ce";
-         document_number: number;
-         email: string;
-         phone_number: number;
-         password: string;
-         confirm_password: string;
-         accept_data: boolean;
+        name: string;
+        second_name: string;
+        last_name: string;
+        second_last_name: string;
+        document_type: "cc" | "ti" | "passport" | "ce";
+        document_number: number;
+        email: string;
+        phone_number: number;
+        password: string;
+        confirm_password: string;
+        accept_data: boolean;
     };
     const {
         register,
         handleSubmit,
         formState: { errors },
         watch
-      } = useForm<FormValues>();
-    
-      const [successMessage, setSuccessMessage]= useState<string | null>(null); // Estado para el mensaje de éxito
-      const [errorMessage, setErrorMessage]=  useState<string | null>(null); // Estado para el mensaje de éxito
-      const navigate = useNavigate(); // Hook para redirección
-      const onSubmit = async (data: FormValues) => {
+    } = useForm<FormValues>();
+
+    const [successMessage, setSuccessMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate(); // Hook para redirección
+    const onSubmit = async (data: FormValues) => {
+        setLoading(true);
         try {
             console.log("Formulario enviado:", data);
-    
+
             const response = await fetch("https://unibus-backend.onrender.com/registro", {
                 method: "POST",
                 headers: {
@@ -38,31 +40,33 @@ const RegisterPage = () => {
                 },
                 body: JSON.stringify(data)
             });
-    
+
             const result = await response.json(); // Convertimos la respuesta en JSON
-    
+
             if (!response.ok) {
                 if (result.message) {
                     throw new Error(result.message); // Capturar el mensaje de error del backend
                 }
                 throw new Error("Error en el registro");
             }
-    
+
             setSuccessMessage("¡Ha sido registrado con éxito!");
-    
+
             setTimeout(() => {
                 navigate("/login");
-            }, 5000);
+            }, 300);
         } catch (error) {
             console.error("Error al enviar el formulario:", error);
-            
+
             // Muestra el mensaje de error en la interfaz
             if (error instanceof Error) {
                 setErrorMessage(error.message); // Mostrar mensaje de error del backend
             }
+        } finally {
+            setLoading(false); // Finaliza el estado de carga
         }
     };
-    
+
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -70,11 +74,12 @@ const RegisterPage = () => {
                 style={{ borderColor: "#122562" }}
             >
                 <div className="flex items-center justify-center ">
-                    <img src={logo} alt="Logo"/>
+                    <img src={logo} alt="Logo" />
                 </div>
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                     Registrar Usuario
                 </h2>
+                {/* Mostrar el spinner si la carga está en proceso */}
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div>
                         <label
@@ -91,8 +96,8 @@ const RegisterPage = () => {
                             {...register("name", { required: "Este campo es obligatorio." })}
                         ></input>
                         {errors.name && (
-                         <p className="text-red-500 text-sm mt-2">{errors.name.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.name.message}</p>
+                        )}
                     </div>
                     <div>
                         <label
@@ -124,8 +129,8 @@ const RegisterPage = () => {
                             {...register("last_name", { required: "Este campo es obligatorio." })}
                         ></input>
                         {errors.last_name && (
-                         <p className="text-red-500 text-sm mt-2">{errors.last_name.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.last_name.message}</p>
+                        )}
                     </div>
                     <div>
                         <label
@@ -142,8 +147,8 @@ const RegisterPage = () => {
                             {...register("second_last_name", { required: "Este campo es obligatorio." })}
                         ></input>
                         {errors.second_last_name && (
-                         <p className="text-red-500 text-sm mt-2">{errors.second_last_name.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.second_last_name.message}</p>
+                        )}
                     </div>
                     <div>
                         <label
@@ -164,8 +169,8 @@ const RegisterPage = () => {
                             <option value="ce">Tarjeta de extranjería</option>
                         </select>
                         {errors.document_type && (
-                         <p className="text-red-500 text-sm mt-2">{errors.document_type.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.document_type.message}</p>
+                        )}
                     </div>
                     <div>
                         <label
@@ -183,11 +188,12 @@ const RegisterPage = () => {
                             onInput={(e) => {
                                 // Aseguramos que e.target es un HTMLInputElement
                                 const input = e.target as HTMLInputElement;
-                                input.value = input.value.replace(/[^0-9]/g, "").slice(0,10);}}
+                                input.value = input.value.replace(/[^0-9]/g, "").slice(0, 10);
+                            }}
                         ></input>
                         {errors.document_number && (
-                         <p className="text-red-500 text-sm mt-2">{errors.document_number.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.document_number.message}</p>
+                        )}
                     </div>
                     <div className="mb-4">
                         <label
@@ -202,15 +208,16 @@ const RegisterPage = () => {
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="tucorreo@dominio.com"
                             {...register("email", {
-                                required:"Este campo es obligatorio.",
+                                required: "Este campo es obligatorio.",
                                 pattern: {
-                                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                                message:"Correo invalido."}
-                             })}
+                                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                                    message: "Correo invalido."
+                                }
+                            })}
                         />
                         {errors.email && (
-                         <p className="text-red-500 text-sm mt-2">{errors.email.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.email.message}</p>
+                        )}
                     </div>
                     <div className="mb-4">
                         <label
@@ -229,11 +236,12 @@ const RegisterPage = () => {
                             onInput={(e) => {
                                 // Aseguramos que e.target es un HTMLInputElement
                                 const input = e.target as HTMLInputElement;
-                                input.value = input.value.replace(/[^0-9]/g, "");}}
+                                input.value = input.value.replace(/[^0-9]/g, "");
+                            }}
                         />
                         {errors.phone_number && (
-                         <p className="text-red-500 text-sm mt-2">{errors.phone_number.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.phone_number.message}</p>
+                        )}
                     </div>
                     <div className="mb-4">
                         <label
@@ -250,8 +258,8 @@ const RegisterPage = () => {
                             {...register("password", { required: "Este campo es obligatorio." })}
                         />
                         {errors.password && (
-                         <p className="text-red-500 text-sm mt-2">{errors.password.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.password.message}</p>
+                        )}
                     </div>
                     <div className="mb-4">
                         <label
@@ -265,13 +273,14 @@ const RegisterPage = () => {
                             id="confirm_password"
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="********"
-                            {...register("confirm_password", { required: "Este campo es obligatorio.",
+                            {...register("confirm_password", {
+                                required: "Este campo es obligatorio.",
                                 validate: (value) => value === watch("password") || "Las contraseñas no coinciden"
-                             })}
+                            })}
                         />
                         {errors.confirm_password && (
-                         <p className="text-red-500 text-sm mt-2">{errors.confirm_password.message}</p>
-                         )}
+                            <p className="text-red-500 text-sm mt-2">{errors.confirm_password.message}</p>
+                        )}
                     </div>
                     <div className="mb-4">
                         <label className="flex items-center">
@@ -285,8 +294,8 @@ const RegisterPage = () => {
                                 Acepto el tratamiento de mis datos personales.
                             </span>
                             {errors.accept_data && (
-                         <p className="text-red-500 text-sm mt-2">{errors.accept_data.message}</p>
-                         )}
+                                <p className="text-red-500 text-sm mt-2">{errors.accept_data.message}</p>
+                            )}
                         </label>
                     </div>
                     <button
@@ -295,16 +304,21 @@ const RegisterPage = () => {
                         Registrar
                     </button>
                 </form>
-                      {/* Mostrar mensaje de éxito si está presente */}
-                      {successMessage && (
-                      <div className="mt-4 p-3 bg-green-100 text-green-700">
+                {loading && (
+                    <div className="flex justify-center mb-4 mt-4">
+                        <div className="spinner-border animate-spin border-4 border-t-4 border-black-500 rounded-full w-8 h-8" />
+                        <span className="ml-2 text-gray-700">Cargando...</span>
+                    </div>)}
+                {/* Mostrar mensaje de éxito si está presente */}
+                {successMessage && (
+                    <div className="mt-4 p-3 bg-green-100 text-green-700">
                         {successMessage}
-                      </div>)}
-                       {/* Mostrar mensaje de error si está presente */}
-                        {errorMessage && (
-                      <div className="mt-4 p-3 bg-red-100 text-red-700">
+                    </div>)}
+                {/* Mostrar mensaje de error si está presente */}
+                {errorMessage && (
+                    <div className="mt-4 p-3 bg-red-100 text-red-700">
                         {errorMessage}
-                      </div>)}
+                    </div>)}
                 <p className="text-center text-gray-600 mt-4">
                     ¿Ya tienes una cuenta?{" "}
                     <a href="/login" className="text-blue-500 hover:underline">
