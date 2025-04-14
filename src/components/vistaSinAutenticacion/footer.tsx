@@ -51,11 +51,11 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Links Section */}
-        <div className="flex justify-between">
+        <div className="flex justify-between max-[1000px]:flex-col gap-4">
           {footerSections.map((section) => (
             <div key={section.title}>
               <h4 className="text-2xl font-semibold mb-4 text-center">{section.title}</h4>
-              <ul className="flex gap-5">
+              <ul className="flex gap-5 max-[1000px]:flex-col text-center">
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <Link
