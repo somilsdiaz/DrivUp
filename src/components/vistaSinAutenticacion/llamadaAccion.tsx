@@ -7,8 +7,9 @@ export function LlamadaAccion(){
             <p>Ya sea que necesites un viaje o quieras
             generar ingresos como conductor, DrivUp es tu mejor opción.</p>
             <div className="flex gap-2 justify-center items-center">
-                <button className="p-2 text-[#4A4E69] font-bold bg-[#F2B134] rounded-sm cursor-pointer hover:bg-[#F2B134]/90 transition-all hover:transform">Descarga la app</button>
-                <button className="p-2 "><Link to="/como-funciona-">Conocer Mas</Link></button>
+                <button className="p-2 text-[#4A4E69] font-bold bg-[#F2B134] rounded-sm cursor-pointer hover:bg-[#F2B134]/90 transition-all transform hover:scale-110 group">
+                <Link to="/register">Registrate aqui</Link>
+                </button>
                 </div>
         </section>
     );
