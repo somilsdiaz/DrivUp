@@ -69,7 +69,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                             alt={`${recipientName}'s profile`} 
                             className="w-10 h-10 rounded-full object-cover border-2 border-white/30 transition-transform hover:scale-105"
                         />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border border-white"></div>
                     </div>
                     <div className="ml-3">
                         <h3 className="font-medium text-white">{recipientName}</h3>
