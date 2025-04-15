@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import InfoPasajeroProfile from './infoPasajeroProfile';
 
 interface Message {
     id: string;
@@ -26,6 +27,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
     const [newMessage, setNewMessage] = useState('');
     const [showEmojis, setShowEmojis] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,6 +54,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setShowEmojis(!showEmojis);
     };
     
+    const toggleInfoModal = () => {
+        setShowInfoModal(!showInfoModal);
+    };
 
     return (
         <motion.div 
@@ -75,10 +80,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     </div>
                 </div>
                 <div className="flex space-x-2">
-
-                    <button className="p-2 rounded-full hover:bg-white/10 transition-colors" title="Más opciones">
+                    <button 
+                        className="p-2 rounded-full hover:bg-white/10 transition-colors" 
+                        title="Información del contacto"
+                        onClick={toggleInfoModal}
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </button>
                 </div>
@@ -200,6 +208,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     </button>
                 </div>
             </div>
+
+            {/* Usar el componente InfoPasajeroProfile */}
+            <InfoPasajeroProfile
+                isOpen={showInfoModal}
+                onClose={toggleInfoModal}
+                name={recipientName}
+                image={recipientImage}
+            />
         </motion.div>
     );
 };
