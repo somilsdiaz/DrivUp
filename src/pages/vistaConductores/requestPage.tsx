@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FC } from "react"
+import { useState, useEffect, FC } from "react"
 import HeaderFooter from "../../layouts/headerFooterConductores";
 import Message from "../../components/RutasProgramadas/message";
 import ChatMessage from "../../components/RutasProgramadas/chatMessage";
@@ -38,22 +38,6 @@ const mockMessages = [
         timestamp: 'Ayer',
         isRead: false
     },
-    {
-        id: '45',
-        senderName: 'Ana Gómez',
-        profileImage: '/Somil_profile.webp',
-        lastMessage: 'Confirma la ruta por favor',
-        timestamp: 'Ayer',
-        isRead: false
-    },
-    {
-        id: '45',
-        senderName: 'Ana Gómez',
-        profileImage: '/Somil_profile.webp',
-        lastMessage: 'Confirma la ruta por favor',
-        timestamp: 'Ayer',
-        isRead: false
-    }
 ];
 
 // Definición de tipo para los mensajes de chat
@@ -149,7 +133,7 @@ const RequestPage: FC = () => {
                     
                     <div className="flex h-full] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
                         {/* Lista de mensajes (izquierda) */}
-                        <div className="w-1/3 border-r overflow-y-auto relative">
+                        <div className="w-1/3 border-r overflow-hidden relative flex flex-col">
                             <div className="p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] sticky top-0 z-10">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -194,8 +178,8 @@ const RequestPage: FC = () => {
                                     )}
                                 </div>
                             </div>
-                            <div className="divide-y divide-[#4A4E69]/10">
-                                <div className="p-2 bg-[#F8F9FA] sticky top-[73px] z-10 border-b">
+                            <div className="divide-y divide-[#4A4E69]/10 overflow-y-auto max-h-[calc(100vh-240px)] flex-1 scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
+                                <div className="p-2 bg-[#F8F9FA] sticky top-0 z-10 border-b">
                                     <div className="flex justify-between items-center px-2">
                                         <h3 className="text-sm font-medium text-[#4A4E69]">Conversaciones recientes</h3>
                                         <div className="flex space-x-1">
