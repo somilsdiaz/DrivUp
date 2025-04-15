@@ -146,16 +146,7 @@ const RequestPage: FC = () => {
                                         <p className="text-xs text-white/70">Conversaciones con pasajeros</p>
                                     </div>
                                     <div className="flex space-x-2">
-                                        <button className="p-1.5 rounded-full bg-[#2D5DA1]/20 text-white hover:bg-[#2D5DA1]/40 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                            </svg>
-                                        </button>
-                                        <button className="p-1.5 rounded-full bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/80 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                            </svg>
-                                        </button>
+ 
                                     </div>
                                 </div>
                                 <div className="mt-3 relative">
