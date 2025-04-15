@@ -32,7 +32,7 @@ const Message: React.FC<MessageProps> = ({
             onClick={() => onSelect(id)}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`flex items-center p-4 border-b cursor-pointer transition-all duration-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${isHovered ? 'bg-[#F8F9FA] shadow-sm' : isRead ? 'bg-white' : 'bg-[#F8F9FA]/80'}`}
+            className={`flex items-center p-4 cursor-pointer transition-all duration-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${isHovered ? 'bg-[#F8F9FA] shadow-sm' : isRead ? 'bg-white' : 'bg-[#F8F9FA]/80'}`}
         >
             <div className="relative">
                 <div className={`relative rounded-full overflow-hidden transition-transform duration-300 ${isHovered ? 'transform scale-105' : ''}`}>

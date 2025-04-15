@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, FC } from "react"
 import HeaderFooter from "../../layouts/headerFooterConductores";
 import Message from "../../components/RutasProgramadas/message";
 import ChatMessage from "../../components/RutasProgramadas/chatMessage";
@@ -37,6 +37,22 @@ const mockMessages = [
         lastMessage: 'Confirma la ruta por favor',
         timestamp: 'Ayer',
         isRead: false
+    },
+    {
+        id: '45',
+        senderName: 'Ana Gómez',
+        profileImage: '/Somil_profile.webp',
+        lastMessage: 'Confirma la ruta por favor',
+        timestamp: 'Ayer',
+        isRead: false
+    },
+    {
+        id: '45',
+        senderName: 'Ana Gómez',
+        profileImage: '/Somil_profile.webp',
+        lastMessage: 'Confirma la ruta por favor',
+        timestamp: 'Ayer',
+        isRead: false
     }
 ];
 
@@ -68,7 +84,7 @@ const mockChatMessages: ChatMessagesRecord = {
     ]
 };
 
-const RequestPage: React.FC = () => {
+const RequestPage: FC = () => {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
     const [selectedChatData, setSelectedChatData] = useState<{
         chatId: string;
@@ -95,15 +111,27 @@ const RequestPage: React.FC = () => {
     // Estado para filtrar mensajes
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredMessages, setFilteredMessages] = useState(mockMessages);
+    const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
 
-    // Filtrar mensajes cuando cambia el término de búsqueda
+    // Filtrar mensajes cuando cambia el término de búsqueda o el filtro activo
     useEffect(() => {
-        const filtered = mockMessages.filter(message => 
-            message.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            message.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        let filtered = mockMessages;
+        
+        // Aplicar filtro por estado de lectura
+        if (activeFilter === 'unread') {
+            filtered = filtered.filter(message => !message.isRead);
+        }
+        
+        // Aplicar filtro de búsqueda
+        if (searchTerm) {
+            filtered = filtered.filter(message => 
+                message.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                message.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        
         setFilteredMessages(filtered);
-    }, [searchTerm]);
+    }, [searchTerm, activeFilter, mockMessages]);
 
     return (
         <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
@@ -171,10 +199,16 @@ const RequestPage: React.FC = () => {
                                     <div className="flex justify-between items-center px-2">
                                         <h3 className="text-sm font-medium text-[#4A4E69]">Conversaciones recientes</h3>
                                         <div className="flex space-x-1">
-                                            <button className="text-xs px-2 py-1 rounded bg-white text-[#4A4E69] border border-[#4A4E69]/20 hover:bg-[#2D5DA1]/10 transition-colors">
+                                            <button 
+                                                className={`text-xs px-2 py-1 rounded ${activeFilter === 'all' ? 'bg-white text-[#4A4E69] border border-[#4A4E69]/20' : 'text-[#4A4E69]/60 hover:bg-white'} transition-colors`}
+                                                onClick={() => setActiveFilter('all')}
+                                            >
                                                 Todos
                                             </button>
-                                            <button className="text-xs px-2 py-1 rounded text-[#4A4E69]/60 hover:bg-white transition-colors">
+                                            <button 
+                                                className={`text-xs px-2 py-1 rounded ${activeFilter === 'unread' ? 'bg-white text-[#4A4E69] border border-[#4A4E69]/20' : 'text-[#4A4E69]/60 hover:bg-white'} transition-colors`}
+                                                onClick={() => setActiveFilter('unread')}
+                                            >
                                                 No leídos
                                             </button>
                                         </div>
