@@ -9,14 +9,19 @@ import TermCondition from '../pages/termConditionPage';
 import HomeConductor from '../pages/vistaConductores/homeConductor';
 import RequestPage from '../pages/vistaConductores/requestPage';
 import HomePasajeros from '../pages/vistaPasajeros/homePasajeros';
+import DriverRegister from '../pages/DriverRegister';
 
 const router = createBrowserRouter([
     {
-        path: "/login", // Ruta para el login
+        path: "/driver-register", 
+        element: <DriverRegister />,
+    },
+    {
+        path: "/login", 
         element: <Login />,
     },
     {
-        path: "/register", // Ruta para el login
+        path: "/register", 
         element: <Register />,
     },
     {
