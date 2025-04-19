@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import logo from "../assets/drivup_darklogo.png";
 import { useNavigate } from "react-router-dom";
@@ -7,9 +7,9 @@ const DriverRegister = () => {
     type FormValues = {
         //Detalles del Vehiculo.
         licencia_de_conducir: string;
-        fecha_de_vencimiento: Date;
+        fecha_de_vencimiento: String;
         foto_de_perfil: File; //maximo 2GB de tamaño.
-        marca_de_vehiculo: "Toyota" | "Honda" | "Ford" | "Chevrolet" | "Nissan" | "Hyundai" | "Kia" | "Volkswagen" | "BMW" | "Mercedes-Benz" | "Mazda" | "Audi" | "Renault" | "Peugeot" | "Fiat" | "Jeep" | "Subaru" | "Volvo" | "Mitsubishi" | "Tesla"; //Lista dropdown.
+        marca_de_vehiculo: "Toyota" | "Honda" | "Ford" | "Chevrolet" | "Nissan" | "Hyundai" | "Kia" | "Volkswagen" | "BMW" | "Lexus" | "Mercedes-Benz" | "Mazda" | "Audi" | "Renault" | "Peugeot" | "Fiat" | "Jeep" | "Subaru" | "Volvo" | "Mitsubishi" | "Tesla"; //Lista dropdown.
         modelo_de_vehiculo: string; //Lista dinamica tipo dropdown.
         año_del_vehiculo: number;
         color_del_vehiculo: string;
@@ -17,16 +17,81 @@ const DriverRegister = () => {
         Capacidad_de_pasajeros: number; //minimo 1.
 
         //Carga de documentos
-        tarjeta_de_propiedad_vehicular: File; //Maximo 5Gb de tamaño
-        seguro_del_vehiculo: File; // SOAT y poliza de responsabilidad civil, 5GB (multiple archivos)
-        foto_de_licencia: File; //escaneo de la foto de licencia de conducir ambos lados.
+        tarjeta_de_propiedad_vehicular: File[]; //Maximo 5Gb de tamaño
+        seguro_del_vehiculo: File[]; // SOAT y poliza de responsabilidad civil, 5GB (multiple archivos)
+        foto_de_licencia: File[]; //escaneo de la foto de licencia de conducir ambos lados.
     };
     const {
         register,
         handleSubmit,
+        setValue,
+        setError,
+        clearErrors,
         formState: { errors },
         watch
     } = useForm<FormValues>();
+
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value.replace(/\D/g, ""); // Remueve todo lo que no sea número
+
+        if (value.length > 8) value = value.slice(0, 8); // Limita a 8 dígitos
+
+        // Inserta los slashes
+        if (value.length >= 5) {
+            value = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+        } else if (value.length >= 3) {
+            value = `${value.slice(0, 2)}/${value.slice(2)}`;
+        }
+
+        setValue("fecha_de_vencimiento", value); // Asigna valor al campo del formulario
+    };
+
+    //refs
+
+    const [selectedFiles, setSelectedFiles] = useState<{
+        [key: string]: File[];
+    }>({
+
+        tarjeta_de_propiedad_vehicular: [],
+        seguro_del_vehiculo: [],
+        foto_de_licencia: [],
+    });
+
+    const fileInputRefs = {
+        foto_de_perfil: useRef<HTMLInputElement>(null),
+        tarjeta_de_propiedad_vehicular: useRef<HTMLInputElement>(null),
+        seguro_del_vehiculo: useRef<HTMLInputElement>(null),
+        foto_de_licencia: useRef<HTMLInputElement>(null),
+    };
+
+
+    const handleRemoveFile = (
+        fieldName: string,
+        indexToRemove: number,
+        inputRef: React.RefObject<HTMLInputElement>
+    ) => {
+        // Obtener los archivos actuales del campo
+        const currentFiles = watch(fieldName as any) as unknown as FileList | undefined;
+
+        if (!currentFiles) return;
+
+        // Crear un nuevo DataTransfer para manejar los archivos
+        const dataTransfer = new DataTransfer();
+
+        // Filtrar los archivos, eliminando el que coincide con el índice
+        Array.from(currentFiles)
+            .filter((_, i) => i !== indexToRemove)
+            .forEach((file) => dataTransfer.items.add(file));
+
+        // Actualizar el estado del formulario con los archivos filtrados
+        setValue(fieldName as any, dataTransfer.files);
+
+        // Actualizar el input file si existe
+        if (inputRef.current) {
+            inputRef.current.files = dataTransfer.files;
+        }
+    };
+
 
     const [successMessage, setSuccessMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
     const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
@@ -113,29 +178,67 @@ const DriverRegister = () => {
                             type="text"
                             id="fecha_de_vencimiento"
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="dd/mm/yyyy"
-                            {...register("fecha_de_vencimiento", { required: "Este campo es obligatorio." })}
+                            placeholder="dd/mm/yyyy Ej: 02/12/2045"
+                            {...register("fecha_de_vencimiento", {
+                                required: "Este campo es obligatorio.",
+                                pattern: {
+                                    value: /^\d{2}\/\d{2}\/\d{4}$/,
+                                    message: "El formato debe ser dd/mm/yyyy",
+                                },
+                                validate: (value) => {
+                                    const [day, month, year] = value.split("/").map(Number);
+                                    const date = new Date(year, month - 1, day);
+
+                                    const isValidDate =
+                                        date.getFullYear() === year &&
+                                        date.getMonth() === month - 1 &&
+                                        date.getDate() === day;
+
+                                    if (!isValidDate) return "La fecha ingresada no es válida.";
+
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0); // Eliminar horas para comparar solo fecha
+
+                                    if (date < today) {
+                                        return "La fecha no puede ser anterior a hoy.";
+                                    }
+
+                                    return true;
+                                },
+                            })}
+                            onChange={handleDateChange}
+                            maxLength={10} // opcional para evitar más caracteres
                         ></input>
                         {errors.fecha_de_vencimiento && (
                             <p className="text-red-500 text-sm mt-2">{errors.fecha_de_vencimiento.message}</p>
                         )}
                     </div>
                     <div>
-                    <label htmlFor="foto_de_perfil" className="block text-gray-700 font-medium mb-2">
+                        <label htmlFor="foto_de_perfil" className="block text-gray-700 font-medium mb-2">
                             Foto de perfil
                         </label>
 
                         <div className="flex items-center gap-4">
                             <label
                                 htmlFor="foto_de_perfil"
-                                className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
+                                className="cursor-pointer bg-[#5AAA95] hover:bg-[#295449] text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
                             >
                                 Seleccionar archivo
                             </label>
 
-                            <span className="text-sm text-gray-500 truncate w-64">
-                            {(watch("foto_de_perfil") as unknown as FileList)?.[0]?.name || "Ningún archivo seleccionado"}
-                            </span>
+                            {Array.from(watch("foto_de_perfil") as unknown as FileList || []).map((file, index) => (
+                                <li key={index} className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-500 truncate w-64">📎 {file.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveFile("foto_de_perfil", index, fileInputRefs["foto_de_perfil"])}
+                                        className="text-red-500 hover:text-red-700 text-sm transform transition-transform duration-200 hover:scale-125"
+                                        title="Eliminar archivo"
+                                    >
+                                        ❌
+                                    </button>
+                                </li>
+                            ))}
                         </div>
                         <input
                             type="file"
@@ -196,7 +299,7 @@ const DriverRegister = () => {
                         <select
                             id="modelo_de_vehiculo"
                             className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            {...register("modelo_de_vehiculo", { required: "Este campo es obligatorio." })}
+                          {...register("modelo_de_vehiculo", { required: "Este campo es obligatorio." })}
                         >
 
                         </select>
@@ -288,68 +391,136 @@ const DriverRegister = () => {
                         )}
                     </div>
                     <div>
-                    <label htmlFor="tarjeta_de_propiedad_vehicular" className="block text-gray-700 font-medium mb-2">
+                        <label htmlFor="tarjeta_de_propiedad_vehicular" className="block text-gray-700 font-medium mb-2">
                             Tarjeta de propiedad del vehiculo
                         </label>
 
                         <div className="flex items-center gap-4">
                             <label
                                 htmlFor="tarjeta_de_propiedad_vehicular"
-                                className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
+                                className="cursor-pointer bg-[#5AAA95] hover:bg-[#295449] text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
                             >
                                 Seleccionar archivo
                             </label>
-
-                            <span className="text-sm text-gray-500 truncate w-64">
-                            {(watch("tarjeta_de_propiedad_vehicular") as unknown as FileList)?.[0]?.name || "Ningún archivo seleccionado"}
-                            </span>
+                            <div className="flex flex-col mt-2">
+                                {Array.from(
+                                    (watch("tarjeta_de_propiedad_vehicular") as unknown as FileList) || []
+                                ).map((file, index) => (
+                                    <div key={index} className="flex items-center gap-2 mb-1">
+                                        <span className="text-sm text-gray-600 truncate w-64">{file.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleRemoveFile("tarjeta_de_propiedad_vehicular", index, fileInputRefs["tarjeta_de_propiedad_vehicular"])
+                                            }
+                                            className="text-red-500 hover:text-red-700 text-sm transform transition-transform duration-200 hover:scale-125"
+                                            title="Eliminar archivo"
+                                        >
+                                            ❌
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <input
                             type="file"
                             id="tarjeta_de_propiedad_vehicular"
-                            accept="application/pdf,image/*"
+                            multiple
                             className="hidden"
-                            {...register("tarjeta_de_propiedad_vehicular", {
-                                required: "Este campo es obligatorio.",
-                                validate: (fileList) =>
-                                    (fileList as unknown as FileList)?.[0]?.size <= 5 * 1024 * 1024 * 1024 ||
-                                    "El archivo no debe superar 5 GB.",
-                            })}
+                            {...register("tarjeta_de_propiedad_vehicular", { required: "Este campo es obligatorio." })}
+                            ref={fileInputRefs["tarjeta_de_propiedad_vehicular"]}
+                            onChange={(e) => {
+                                const field = "tarjeta_de_propiedad_vehicular"; // Cambia esto según el campo
+                                const newFiles = Array.from(e.target.files || []);
+                                const totalFiles = [...(selectedFiles[field] || []), ...newFiles];
+
+                                const isValid = totalFiles.every(file => file.size <= 5 * 1024 * 1024 * 1024);
+                                if (!isValid) {
+                                    setError(field, {
+                                        type: "manual",
+                                        message: "Cada archivo debe ser menor a 5 GB."
+                                    });
+                                    return;
+                                }
+
+                                clearErrors(field);
+                                setSelectedFiles(prev => ({ ...prev, [field]: totalFiles }));
+                                setValue(field, totalFiles);
+
+                                // Reset input
+                                if (fileInputRefs[field].current) {
+                                    fileInputRefs[field].current!.value = "";
+                                }
+                            }}
                         />
+
                         {errors.tarjeta_de_propiedad_vehicular && (
                             <p className="text-red-500 text-sm mt-2">{errors.tarjeta_de_propiedad_vehicular.message}</p>
                         )}
                     </div>
                     <div>
-                    <label htmlFor="seguro_del_vehiculo" className="block text-gray-700 font-medium mb-2">
+                        <label htmlFor="seguro_del_vehiculo" className="block text-gray-700 font-medium mb-2">
                             Seguro del vehiculo
                         </label>
 
                         <div className="flex items-center gap-4">
                             <label
                                 htmlFor="seguro_del_vehiculo"
-                                className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
+                                className="cursor-pointer bg-[#5AAA95] hover:bg-[#295449] text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
                             >
                                 Seleccionar archivo
                             </label>
-
-                            <span className="text-sm text-gray-500 truncate w-64">
-                            {(watch("seguro_del_vehiculo") as unknown as FileList)?.[0]?.name || "Ningún archivo seleccionado"}
-                            </span>
+                            <div className="flex flex-col mt-2">
+                                {Array.from(
+                                    (watch("seguro_del_vehiculo") as unknown as FileList) || []
+                                ).map((file, index) => (
+                                    <div key={index} className="flex items-center gap-2 mb-1">
+                                        <span className="text-sm text-gray-600 truncate w-64">{file.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleRemoveFile("seguro_del_vehiculo", index, fileInputRefs["seguro_del_vehiculo"])
+                                            }
+                                            className="text-red-500 hover:text-red-700 text-sm transform transition-transform duration-200 hover:scale-125"
+                                            title="Eliminar archivo"
+                                        >
+                                            ❌
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <input
                             type="file"
                             id="seguro_del_vehiculo"
-                            multiple
                             accept="application/pdf,image/*"
+                            multiple
                             className="hidden"
-                            {...register("seguro_del_vehiculo", {
-                                required: "Este campo es obligatorio.",
-                                validate: (fileList) =>
-                                    Array.from(fileList as unknown as FileList).every(
-                                        file => file.size <= 5 * 1024 * 1024 * 1024
-                                    ) || "Cada archivo debe ser menor a 5 GB.",
-                            })}
+                            {...register("seguro_del_vehiculo", { required: "Este campo es obligatorio." })}
+                            ref={fileInputRefs["seguro_del_vehiculo"]}
+                            onChange={(e) => {
+                                const field = "seguro_del_vehiculo"; // Cambia esto según el campo
+                                const newFiles = Array.from(e.target.files || []);
+                                const totalFiles = [...(selectedFiles[field] || []), ...newFiles];
+
+                                const isValid = totalFiles.every(file => file.size <= 5 * 1024 * 1024 * 1024);
+                                if (!isValid) {
+                                    setError(field, {
+                                        type: "manual",
+                                        message: "Cada archivo debe ser menor a 5 GB."
+                                    });
+                                    return;
+                                }
+
+                                clearErrors(field);
+                                setSelectedFiles(prev => ({ ...prev, [field]: totalFiles }));
+                                setValue(field, totalFiles);
+
+                                // Reset input
+                                if (fileInputRefs[field].current) {
+                                    fileInputRefs[field].current!.value = "";
+                                }
+                            }}
                         />
                         {errors.seguro_del_vehiculo && (
                             <p className="text-red-500 text-sm mt-2">{errors.seguro_del_vehiculo.message}</p>
@@ -363,27 +534,63 @@ const DriverRegister = () => {
                         <div className="flex items-center gap-4">
                             <label
                                 htmlFor="foto_de_licencia"
-                                className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
+                                className="cursor-pointer bg-[#5AAA95] hover:bg-[#295449] text-white px-4 py-2 rounded-lg shadow transition mb-4 mt-4"
                             >
                                 Seleccionar archivo
                             </label>
 
-                            <span className="text-sm text-gray-500 truncate w-64">
-                            {(watch("foto_de_licencia") as unknown as FileList)?.[0]?.name || "Ningún archivo seleccionado"}
-                            </span>
+                            <div className="flex flex-col mt-2">
+                                {Array.from(
+                                    (watch("foto_de_licencia") as unknown as FileList) || []
+                                ).map((file, index) => (
+                                    <div key={index} className="flex items-center gap-2 mb-1">
+                                        <span className="text-sm text-gray-600 truncate w-64">{file.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleRemoveFile("foto_de_licencia", index, fileInputRefs["foto_de_licencia"])
+                                            }
+                                            className="text-red-500 hover:text-red-700 text-sm transform transition-transform duration-200 hover:scale-125"
+                                            title="Eliminar archivo"
+                                        >
+                                            ❌
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         <input
                             type="file"
                             id="foto_de_licencia"
-                            accept="image/*"
+                            accept="application/pdf,image/*"
+                            multiple
                             className="hidden"
-                            {...register("foto_de_licencia", {
-                                required: "Este campo es obligatorio.",
-                                validate: (fileList) =>
-                                    (fileList as unknown as FileList)?.[0]?.size <= 5 * 1024 * 1024 * 1024 ||
-                                    "El archivo no debe superar 5 GB.",
-                            })}
+                            {...register("foto_de_licencia", { required: "Este campo es obligatorio." })}
+                            ref ={fileInputRefs["foto_de_licencia"]}
+                            onChange={(e) => {
+                                const field = "foto_de_licencia"; // Cambia esto según el campo
+                                const newFiles = Array.from(e.target.files || []);
+                                const totalFiles = [...(selectedFiles[field] || []), ...newFiles];
+
+                                const isValid = totalFiles.every(file => file.size <= 5 * 1024 * 1024 * 1024);
+                                if (!isValid) {
+                                    setError(field, {
+                                        type: "manual",
+                                        message: "Cada archivo debe ser menor a 5 GB."
+                                    });
+                                    return;
+                                }
+
+                                clearErrors(field);
+                                setSelectedFiles(prev => ({ ...prev, [field]: totalFiles }));
+                                setValue(field, totalFiles);
+
+                                // Reset input
+                                if (fileInputRefs[field].current) {
+                                    fileInputRefs[field].current!.value = "";
+                                }
+                            }}
                         />
                         {errors.foto_de_licencia && (
                             <p className="text-red-500 text-sm mt-2">{errors.foto_de_licencia.message}</p>
