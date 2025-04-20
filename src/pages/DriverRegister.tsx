@@ -31,6 +31,189 @@ const DriverRegister = () => {
         watch
     } = useForm<FormValues>();
 
+    const modelosPorMarca: Record<string, string[]> = {
+        Toyota: [
+            "Corolla",
+            "Hilux",
+            "Yaris",
+            "Camry",
+            "Hiace",
+            "ProAce",
+            "Granvia",
+            "Sienna"
+        ],
+        Honda: [
+            "Civic",
+            "Accord",
+            "CR-V",
+            "Fit",
+            "Odyssey",
+            "Stepwgn",
+            "Freed"
+        ],
+        Ford: [
+            "Focus",
+            "Fiesta",
+            "Mustang",
+            "Explorer",
+            "Transit custom",
+            "Tourneo",
+            "Econoline (E-Series)"
+        ],
+        Chevrolet: [
+            "Spark",
+            "Cruze",
+            "Tracker",
+            "Camaro",
+            "Express Van",
+            "N300",
+            "Astro",
+            "Venture"
+        ],
+        Nissan: [
+            "Sentra",
+            "Versa",
+            "Altima",
+            "Frontier",
+            "NV Passenger series",
+            "Urvan / Caravan",
+            "NV200 / Evalia",
+            "Interstar",
+            "Townstar"
+
+        ],
+        Hyundai: [
+            "Elantra",
+            "Tucson",
+            "Santa Fe",
+            "Accent",
+            "H-1 / Starex",
+            "Staria",
+            "H350 / Solati"
+        ],
+        Kia: [
+            "Rio",
+            "Sportage",
+            "Sorento",
+            "Cerato",
+            "Carnival",
+            "PV5 Light Camper"
+        ],
+        Volkswagen: [
+            "Golf",
+            "Jetta",
+            "Tiguan",
+            "Polo",
+            "Transporter",
+            "Multivan",
+            "Caddy",
+            "ID. Buzz"
+        ],
+        BMW: [
+            "Serie 1",
+            "Serie 3",
+            "X5",
+            "Z4",
+            "i3"
+        ],
+        "Mercedes-Benz": [
+            "Clase A",
+            "Clase C",
+            "Clase E",
+            "GLA",
+            "Sprinter",
+            "Vito",
+            "V-Class"
+        ],
+        Mazda: [
+            "Mazda 3",
+            "Mazda CX-5",
+            "Mazda 6",
+            "MX-5",
+            "Mazda MPV",
+            "Mazda Bongo"
+        ],
+        Audi: [
+            "A3",
+            "A4",
+            "Q5",
+            "Q7",
+            "TT"
+        ],
+        Renault: [
+            "Duster",
+            "Logan",
+            "Sandero",
+            "Kwid",
+            "Kangoo",
+            "Trafic",
+            "Master"
+        ],
+        Peugeot: [
+            "208",
+            "308",
+            "2008",
+            "3008",
+            "Partner",
+            "Traveller",
+            "Expert",
+            "Boxer"
+        ],
+        Lexus: [
+            "UX",
+            "NX",
+            "RX",
+            "IS",
+            "LM"
+        ],
+        Fiat: [
+            "Uno",
+            "Mobi",
+            "Cronos",
+            "Toro",
+            "Doblò",
+            "Scudo",
+            "Ducato"
+        ],
+        Jeep: [
+            "Renegade",
+            "Compass",
+            "Wrangler",
+            "Cherokee",
+        ],
+        Subaru: [
+            "Impreza",
+            "Forester",
+            "Outback",
+            "XV",
+            "Sambar"
+        ],
+        Volvo: [
+            "XC40",
+            "XC60",
+            "XC90",
+            "S60",
+            "EM90"
+        ],
+        Mitsubishi: [
+            "Lancer",
+            "Outlander",
+            "Montero",
+            "ASX",
+            "Delica",
+            "L300"
+        ],
+        Tesla: [
+            "Model S",
+            "Model 3",
+            "Model X",
+            "Model Y",
+            "Cybertruck"
+        ]
+    };
+    const [marcaSeleccionada, setMarcaSeleccionada] = useState<string>("");
+
+
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, ""); // Remueve todo lo que no sea número
 
@@ -262,8 +445,13 @@ const DriverRegister = () => {
                         <select
                             id="marca_de_vehiculo"
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            {...register("marca_de_vehiculo", { required: "Este campo es obligatorio." })}
+                            {...register("marca_de_vehiculo", {
+                                required: "Este campo es obligatorio.",
+                                onChange: (e) => setMarcaSeleccionada(e.target.value)
+                            })}
+
                         >
+                            <option value="">Selecciona una marca</option>
                             <option value="Toyota">Toyota</option>
                             <option value="Honda">Honda</option>
                             <option value="Ford">Ford</option>
@@ -278,6 +466,7 @@ const DriverRegister = () => {
                             <option value="Audi">Audi</option>
                             <option value="Renault">Renault</option>
                             <option value="Peugeot">Peugeot</option>
+                            <option value="Lexus">Lexus</option>
                             <option value="Fiat">Fiat</option>
                             <option value="Jeep">Jeep</option>
                             <option value="Subaru">Subaru</option>
@@ -299,9 +488,15 @@ const DriverRegister = () => {
                         <select
                             id="modelo_de_vehiculo"
                             className="block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          {...register("modelo_de_vehiculo", { required: "Este campo es obligatorio." })}
+                            {...register("modelo_de_vehiculo", { required: "Este campo es obligatorio." })}
                         >
-
+                            <option value="">Selecciona un modelo</option>
+                            {marcaSeleccionada &&
+                                modelosPorMarca[marcaSeleccionada]?.map((modelo) => (
+                                    <option key={modelo} value={modelo}>
+                                        {modelo}
+                                    </option>
+                                ))}
                         </select>
                         {errors.modelo_de_vehiculo && (
                             <p className="text-red-500 text-sm mt-2">{errors.modelo_de_vehiculo.message}</p>
@@ -567,7 +762,7 @@ const DriverRegister = () => {
                             multiple
                             className="hidden"
                             {...register("foto_de_licencia", { required: "Este campo es obligatorio." })}
-                            ref ={fileInputRefs["foto_de_licencia"]}
+                            ref={fileInputRefs["foto_de_licencia"]}
                             onChange={(e) => {
                                 const field = "foto_de_licencia"; // Cambia esto según el campo
                                 const newFiles = Array.from(e.target.files || []);
