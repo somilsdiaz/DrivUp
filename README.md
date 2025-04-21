@@ -1,11 +1,8 @@
 # DrivUp
 
-### Front-end: https://drivup.onrender.com
-### Back-end: https://drivup-backend.onrender.com
+> ### Front-end: https://drivup.onrender.com
+> ### Back-end: https://drivup-backend.onrender.com
 
-
-
-```
 
 ## Installation
 
