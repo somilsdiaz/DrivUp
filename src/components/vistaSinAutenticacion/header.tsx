@@ -27,7 +27,8 @@ const Header: React.FC = () => {
         { label: "Viajes inmediatos", path: "/solicitar-mi-ruta" },
         { label: "Reserva tu viaje", path: "/mis-solicitudes" },
         { label: "Quienes somos", path: "/acerca-de" },
-        { label: "Contacto", path: "/contacto" }
+        { label: "Contacto", path: "/contacto" },
+        { label: "Iniciar Sesión", path: "/login" },
     ];
 
     // Mover el scroll al top cada vez que cambia la ruta
@@ -82,14 +83,19 @@ const Header: React.FC = () => {
 
                 {/* Actions - Far right */}
                 <div className="hidden md:flex items-center gap-2 lg:gap-4">
-                    <button className="text-white hover:bg-[#2D5DA1]/80 px-2 lg:px-3 py-1.5 rounded-md text-sm whitespace-nowrap">
-                        Iniciar Sesión
-                    </button>
-                    <button className="bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/90 px-2 lg:px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">
-                        Registrarse
-                    </button>
+                    <Link to="/login">
+                        <button className="text-white hover:bg-[#2D5DA1]/80 px-2 lg:px-3 py-1.5 rounded-md text-sm whitespace-nowrap">
+                            Iniciar Sesión
+                        </button>
+                    </Link>
+                    <Link to="/register">
+                        <button className="bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/90 px-2 lg:px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">
+                            Registrarse
+                        </button>
+                    </Link>
+
                 </div>
-                
+
                 {/* Mobile menu button - Far right on mobile */}
                 <button className="md:hidden text-white flex-shrink-0" onClick={toggleMenu}>
                     <MenuIcon className="h-6 w-6" />
@@ -97,9 +103,9 @@ const Header: React.FC = () => {
             </div>
 
             {/* Componente MenuResponsive */}
-            <MenuResponsive 
-                isMenuVisible={isMenuVisible} 
-                closeMenu={closeMenu} 
+            <MenuResponsive
+                isMenuVisible={isMenuVisible}
+                closeMenu={closeMenu}
                 menuItems={menuItems}
             />
         </header>

@@ -43,7 +43,7 @@ const LoginPage = () => {
             // Redirige inmediatamente después de guardar el token, o con tiempo de espera si es necesario
             setTimeout(() => {
                 setLoading(true)
-                navigate("/"); // Redirige al inicio
+                navigate("/dashboard/pasajero"); // Redirige al inicio
             }, 300); // Esto es opcional si prefieres un mensaje de éxito primero
         } catch (error) {
             console.error("Error al iniciar sesión:", error);

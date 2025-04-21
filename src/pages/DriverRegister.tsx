@@ -8,7 +8,7 @@ const DriverRegister = () => {
         //Detalles del Vehiculo.
         licencia_de_conducir: string;
         fecha_de_vencimiento: String;
-        foto_de_perfil: File; //maximo 2GB de tamaño.
+        foto_de_perfil: FileList | File; //maximo 2GB de tamaño.
         marca_de_vehiculo: "Toyota" | "Honda" | "Ford" | "Chevrolet" | "Nissan" | "Hyundai" | "Kia" | "Volkswagen" | "BMW" | "Lexus" | "Mercedes-Benz" | "Mazda" | "Audi" | "Renault" | "Peugeot" | "Fiat" | "Jeep" | "Subaru" | "Volvo" | "Mitsubishi" | "Tesla"; //Lista dropdown.
         modelo_de_vehiculo: string; //Lista dinamica tipo dropdown.
         año_del_vehiculo: number;
@@ -286,7 +286,18 @@ const DriverRegister = () => {
         setLoading(true);
         try {
             console.log("Formulario enviado:", data);
-
+            // validacion de los archivos adjuntados y requeridos obligatoriamente
+            if (!data.tarjeta_de_propiedad_vehicular || data.tarjeta_de_propiedad_vehicular.length === 0) {
+                throw new Error("Debe cargar al menos un archivo de tarjeta de propiedad vehicular.");
+            }
+            
+            if (!data.seguro_del_vehiculo || data.seguro_del_vehiculo.length === 0) {
+                throw new Error("Debe cargar al menos un archivo de seguro del vehículo.");
+            }
+            
+            if (!data.foto_de_licencia || data.foto_de_licencia.length === 0) {
+                throw new Error("Debe cargar al menos una foto de licencia.");
+            }
 
             // 🔐 Obtener el token guardado del usuario autenticado
             const token = localStorage.getItem("token"); // o donde lo estés guardando
@@ -302,29 +313,39 @@ const DriverRegister = () => {
             formData.append("fecha_de_vencimiento", data.fecha_de_vencimiento.toString());
             formData.append("marca_de_vehiculo", data.marca_de_vehiculo);
             formData.append("modelo_de_vehiculo", data.modelo_de_vehiculo);
-            formData.append("año_del_vehiculo", data.año_del_vehiculo.toString());
-            formData.append("color_del_vehiculo", data.color_del_vehiculo);
+            formData.append("anio_del_vehiculo", data.año_del_vehiculo.toString());            formData.append("color_del_vehiculo", data.color_del_vehiculo);
             formData.append("placa_del_vehiculo", data.placa_del_vehiculo);
             formData.append("Capacidad_de_pasajeros", data.Capacidad_de_pasajeros.toString());
 
             // Archivos individuales
-
-            formData.append("foto_de_perfil", data.foto_de_perfil);
+            //fix bug related with foto-de-perfil undefine/null
+            if ('length' in data.foto_de_perfil && data.foto_de_perfil.length > 0) {
+                formData.append("foto_de_perfil", data.foto_de_perfil[0]);
+            } else if (data.foto_de_perfil instanceof File) {
+                formData.append("foto_de_perfil", data.foto_de_perfil);
+            } else {
+                throw new Error("Debe seleccionar una foto de perfil.");
+            }
             
 
-
             // Archivos múltiples
-            data.tarjeta_de_propiedad_vehicular.forEach((file) => {
-                formData.append("tarjeta_de_propiedad_vehicular", file);
-            });
+            if (data.tarjeta_de_propiedad_vehicular.length > 0) {
+                data.tarjeta_de_propiedad_vehicular.forEach((file) => {
+                    formData.append("tarjeta_de_propiedad_vehicular", file);
+                });
+            }
 
-            data.seguro_del_vehiculo.forEach((file) => {
-                formData.append("seguro_del_vehiculo", file);
-            });
+            if (data.seguro_del_vehiculo.length > 0) {
+                data.seguro_del_vehiculo.forEach((file) => {
+                    formData.append("seguro_del_vehiculo", file);
+                });
+            }
 
-            data.foto_de_licencia.forEach((file) => {
-                formData.append("foto_de_licencia", file);
-            });
+            if (data.foto_de_licencia.length > 0) {
+                data.foto_de_licencia.forEach((file) => {
+                    formData.append("foto_de_licencia", file);
+                });
+            }
 
             const response = await fetch("http://localhost:5000/Registro-Conductor", { //quizas otro path
                 method: "POST",
@@ -346,7 +367,7 @@ const DriverRegister = () => {
             setSuccessMessage("¡Ha sido registrado con éxito!");
 
             setTimeout(() => {
-                navigate("/");
+                navigate("/dashboard/conductor");
             }, 300);
         } catch (error) {
             console.error("Error al enviar el formulario:", error);
@@ -555,7 +576,9 @@ const DriverRegister = () => {
                             id="año_del_vehiculo"
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Ej: 2021"
-                            {...register("año_del_vehiculo", { required: "Este campo es obligatorio." })}
+                            {...register("año_del_vehiculo", 
+                                { required: "Este campo es obligatorio." , valueAsNumber: true }
+                            )}
                             onInput={(e) => {
                                 // Aseguramos que e.target es un HTMLInputElement
                                 const input = e.target as HTMLInputElement;
