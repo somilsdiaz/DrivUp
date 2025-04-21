@@ -253,25 +253,27 @@ const DriverRegister = () => {
         indexToRemove: number,
         inputRef: React.RefObject<HTMLInputElement>
     ) => {
-        // Obtener los archivos actuales del campo
-        const currentFiles = watch(fieldName as any) as unknown as FileList | undefined;
-
-        if (!currentFiles) return;
-
-        // Crear un nuevo DataTransfer para manejar los archivos
-        const dataTransfer = new DataTransfer();
-
-        // Filtrar los archivos, eliminando el que coincide con el índice
-        Array.from(currentFiles)
-            .filter((_, i) => i !== indexToRemove)
-            .forEach((file) => dataTransfer.items.add(file));
-
-        // Actualizar el estado del formulario con los archivos filtrados
-        setValue(fieldName as any, dataTransfer.files);
-
-        // Actualizar el input file si existe
-        if (inputRef.current) {
-            inputRef.current.files = dataTransfer.files;
+        // Obtener archivos actuales del estado (selectedFiles)
+        const currentFiles = selectedFiles[fieldName] || [];
+    
+        // Filtrar el archivo a eliminar
+        const updatedFiles = currentFiles.filter((_, i) => i !== indexToRemove);
+    
+        // Actualizar el estado de selectedFiles
+        setSelectedFiles((prev) => ({
+            ...prev,
+            [fieldName]: updatedFiles,
+        }));
+    
+        // Sincronizar con react-hook-form
+        setValue(fieldName as any, updatedFiles.length > 0 ? updatedFiles : undefined);
+    
+        // Limpiar errores si los hay
+        clearErrors?.(fieldName as any);
+    
+        // 🔥 Muy importante: limpiar el input file real si ya no hay archivos
+        if (inputRef.current && updatedFiles.length === 0) {
+            inputRef.current.value = '';
         }
     };
 
@@ -285,35 +287,74 @@ const DriverRegister = () => {
         try {
             console.log("Formulario enviado:", data);
 
-            // const response = await fetch("https://unibus-backend.onrender.com/registro", { //quizas otro path
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json"
-            //     },
-            //     body: JSON.stringify(data)
-            // });
 
-            // const result = await response.json(); // Convertimos la respuesta en JSON
+            // 🔐 Obtener el token guardado del usuario autenticado
+            const token = localStorage.getItem("token"); // o donde lo estés guardando
 
-            // if (!response.ok) {
-            //     if (result.message) {
-            //         throw new Error(result.message); // Capturar el mensaje de error del backend
-            //     }
-            //     throw new Error("Error en el registro");
-            // }
+            if (!token) {
+                throw new Error("Usuario no autenticado. Por favor inicia sesión.");
+            }
+
+            const formData = new FormData();
+
+            // Campos de texto
+            formData.append("licencia_de_conducir", data.licencia_de_conducir);
+            formData.append("fecha_de_vencimiento", data.fecha_de_vencimiento.toString());
+            formData.append("marca_de_vehiculo", data.marca_de_vehiculo);
+            formData.append("modelo_de_vehiculo", data.modelo_de_vehiculo);
+            formData.append("año_del_vehiculo", data.año_del_vehiculo.toString());
+            formData.append("color_del_vehiculo", data.color_del_vehiculo);
+            formData.append("placa_del_vehiculo", data.placa_del_vehiculo);
+            formData.append("Capacidad_de_pasajeros", data.Capacidad_de_pasajeros.toString());
+
+            // Archivos individuales
+
+            formData.append("foto_de_perfil", data.foto_de_perfil);
+            
+
+
+            // Archivos múltiples
+            data.tarjeta_de_propiedad_vehicular.forEach((file) => {
+                formData.append("tarjeta_de_propiedad_vehicular", file);
+            });
+
+            data.seguro_del_vehiculo.forEach((file) => {
+                formData.append("seguro_del_vehiculo", file);
+            });
+
+            data.foto_de_licencia.forEach((file) => {
+                formData.append("foto_de_licencia", file);
+            });
+
+            const response = await fetch("http://localhost:5000/Registro-Conductor", { //quizas otro path
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const result = await response.json(); // Convertimos la respuesta en JSON
+
+            if (!response.ok) {
+                if (result.message) {
+                    throw new Error(result.message || "Error en el registro"); // Capturar el mensaje de error del backend
+                }
+                throw new Error("Error en el registro");
+            }
 
             setSuccessMessage("¡Ha sido registrado con éxito!");
 
             setTimeout(() => {
                 navigate("/");
             }, 300);
-            // } catch (error) {
-            //     console.error("Error al enviar el formulario:", error);
+        } catch (error) {
+            console.error("Error al enviar el formulario:", error);
 
-            //     // Muestra el mensaje de error en la interfaz
-            //     if (error instanceof Error) {
-            //         setErrorMessage(error.message); // Mostrar mensaje de error del backend
-            //     }
+            // Muestra el mensaje de error en la interfaz
+            if (error instanceof Error) {
+                setErrorMessage(error.message); // Mostrar mensaje de error del backend
+            }
         } finally {
             setLoading(false); // Finaliza el estado de carga
         }
@@ -428,7 +469,7 @@ const DriverRegister = () => {
                             id="foto_de_perfil"
                             className="hidden"
                             accept="image/*"
-                            {...register("foto_de_perfil", { required: "Este campo es obligatorio." })}
+                            {...register("foto_de_perfil", { required: "Este campo es obligatorio."})}
                         />
                         {errors.foto_de_perfil && (
                             <p className="text-red-500 text-sm mt-2">{errors.foto_de_perfil.message}</p>
