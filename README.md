@@ -1,47 +1,17 @@
-# UniBus
+# DrivUp
 
-UniBus is a web application designed to revolutionize public transportation in Barranquilla by connecting users with efficient services, optimizing fleet distribution in real-time, and improving the travel experience through intelligent data analysis.
+### Front-end: https://drivup.onrender.com
+### Back-end: https://drivup-backend.onrender.com
 
-## Features
 
-- User authentication (login/register)
-- View and search available bus routes 
-- News section with latest updates
-- Contact form for feedback
-- Privacy policy page
-- Responsive design
-- Route request system
-- Real-time route optimization
 
-## Technologies Used
-
-- React.js
-- TypeScript
-- Tailwind CSS
-- React Router DOM
-- Framer Motion
-- Lucide React Icons
-- React Hook Form
-- Vite
-
-## Project Structure
-
-```bash
-src/
-├── assets/              # Images and Static assets
-├── components/          # Reusable UI components
-├── contexts/            # React context providers
-├── layouts/             # Layout components
-├── pages/               # Page components
-├── routes/              # Route configurations
-└── services/            # API services
 ```
 
 ## Installation
 
 1. Clone the repository:
     ```sh
-    git clone  https://github.com/somilsdiaz/UniBus
+    git clone  https://github.com/somilsdiaz/DrivUp
     cd uUnibus   ```
 
 2. Install dependencies:
