@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import InfoPasajeroProfile from './infoPasajeroProfile';
 
 interface Message {
     id: string;
@@ -26,6 +27,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
     const [newMessage, setNewMessage] = useState('');
     const [showEmojis, setShowEmojis] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,6 +54,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setShowEmojis(!showEmojis);
     };
     
+    const toggleInfoModal = () => {
+        setShowInfoModal(!showInfoModal);
+    };
 
     return (
         <motion.div 
@@ -69,33 +74,26 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                             alt={`${recipientName}'s profile`} 
                             className="w-10 h-10 rounded-full object-cover border-2 border-white/30 transition-transform hover:scale-105"
                         />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border border-white"></div>
                     </div>
                     <div className="ml-3">
                         <h3 className="font-medium text-white">{recipientName}</h3>
                     </div>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="p-2 rounded-full hover:bg-white/10 transition-colors" title="Llamada de voz">
+                    <button 
+                        className="p-2 rounded-full hover:bg-white/10 transition-colors" 
+                        title="Información del contacto"
+                        onClick={toggleInfoModal}
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                    </button>
-                    <button className="p-2 rounded-full hover:bg-white/10 transition-colors" title="Videollamada">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                    </button>
-                    <button className="p-2 rounded-full hover:bg-white/10 transition-colors" title="Más opciones">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </button>
                 </div>
             </div>
 
             {/* Área de mensajes */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light max-h-[calc(100vh-220px)] scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
                 <div className="text-center my-4">
                     <span className="inline-block px-3 py-1 text-xs bg-white text-[#4A4E69]/70 rounded-full shadow-sm border border-[#4A4E69]/10">
                         Hoy
@@ -210,6 +208,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     </button>
                 </div>
             </div>
+
+            {/* Usar el componente InfoPasajeroProfile */}
+            <InfoPasajeroProfile
+                isOpen={showInfoModal}
+                onClose={toggleInfoModal}
+                name={recipientName}
+                image={recipientImage}
+            />
         </motion.div>
     );
 };

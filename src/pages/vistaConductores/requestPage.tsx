@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import { useState, useEffect, FC } from "react"
 import HeaderFooter from "../../layouts/headerFooterConductores";
 import Message from "../../components/RutasProgramadas/message";
 import ChatMessage from "../../components/RutasProgramadas/chatMessage";
@@ -37,7 +37,7 @@ const mockMessages = [
         lastMessage: 'Confirma la ruta por favor',
         timestamp: 'Ayer',
         isRead: false
-    }
+    },
 ];
 
 // Definición de tipo para los mensajes de chat
@@ -68,7 +68,7 @@ const mockChatMessages: ChatMessagesRecord = {
     ]
 };
 
-const RequestPage: React.FC = () => {
+const RequestPage: FC = () => {
     const [selectedChat, setSelectedChat] = useState<string | null>(null);
     const [selectedChatData, setSelectedChatData] = useState<{
         chatId: string;
@@ -95,15 +95,27 @@ const RequestPage: React.FC = () => {
     // Estado para filtrar mensajes
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredMessages, setFilteredMessages] = useState(mockMessages);
+    const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
 
-    // Filtrar mensajes cuando cambia el término de búsqueda
+    // Filtrar mensajes cuando cambia el término de búsqueda o el filtro activo
     useEffect(() => {
-        const filtered = mockMessages.filter(message => 
-            message.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            message.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        let filtered = mockMessages;
+        
+        // Aplicar filtro por estado de lectura
+        if (activeFilter === 'unread') {
+            filtered = filtered.filter(message => !message.isRead);
+        }
+        
+        // Aplicar filtro de búsqueda
+        if (searchTerm) {
+            filtered = filtered.filter(message => 
+                message.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                message.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        
         setFilteredMessages(filtered);
-    }, [searchTerm]);
+    }, [searchTerm, activeFilter, mockMessages]);
 
     return (
         <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
@@ -121,7 +133,7 @@ const RequestPage: React.FC = () => {
                     
                     <div className="flex h-full] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
                         {/* Lista de mensajes (izquierda) */}
-                        <div className="w-1/3 border-r overflow-y-auto relative">
+                        <div className="w-1/3 border-r overflow-hidden relative flex flex-col">
                             <div className="p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] sticky top-0 z-10">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -134,16 +146,7 @@ const RequestPage: React.FC = () => {
                                         <p className="text-xs text-white/70">Conversaciones con pasajeros</p>
                                     </div>
                                     <div className="flex space-x-2">
-                                        <button className="p-1.5 rounded-full bg-[#2D5DA1]/20 text-white hover:bg-[#2D5DA1]/40 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                            </svg>
-                                        </button>
-                                        <button className="p-1.5 rounded-full bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/80 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                            </svg>
-                                        </button>
+ 
                                     </div>
                                 </div>
                                 <div className="mt-3 relative">
@@ -166,15 +169,21 @@ const RequestPage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                            <div className="divide-y divide-[#4A4E69]/10">
-                                <div className="p-2 bg-[#F8F9FA] sticky top-[73px] z-10 border-b">
+                            <div className="divide-y divide-[#4A4E69]/10 overflow-y-auto max-h-[calc(100vh-240px)] flex-1 scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
+                                <div className="p-2 bg-[#F8F9FA] sticky top-0 z-10 border-b">
                                     <div className="flex justify-between items-center px-2">
                                         <h3 className="text-sm font-medium text-[#4A4E69]">Conversaciones recientes</h3>
                                         <div className="flex space-x-1">
-                                            <button className="text-xs px-2 py-1 rounded bg-white text-[#4A4E69] border border-[#4A4E69]/20 hover:bg-[#2D5DA1]/10 transition-colors">
+                                            <button 
+                                                className={`text-xs px-2 py-1 rounded ${activeFilter === 'all' ? 'bg-white text-[#4A4E69] border border-[#4A4E69]/20' : 'text-[#4A4E69]/60 hover:bg-white'} transition-colors`}
+                                                onClick={() => setActiveFilter('all')}
+                                            >
                                                 Todos
                                             </button>
-                                            <button className="text-xs px-2 py-1 rounded text-[#4A4E69]/60 hover:bg-white transition-colors">
+                                            <button 
+                                                className={`text-xs px-2 py-1 rounded ${activeFilter === 'unread' ? 'bg-white text-[#4A4E69] border border-[#4A4E69]/20' : 'text-[#4A4E69]/60 hover:bg-white'} transition-colors`}
+                                                onClick={() => setActiveFilter('unread')}
+                                            >
                                                 No leídos
                                             </button>
                                         </div>
