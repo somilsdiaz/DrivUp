@@ -46,7 +46,7 @@ const Header: React.FC = () => {
     const menuItems: MenuItem[] = [
         { label: "Solicitar viaje", path: "/" },
         { label: "Mis viajes", path: "/" },
-        { label: "Mis reservas", path: "/" },
+        { label: "Solicitar conductores", path: "/solicitar-conductor" },
         { label: "Mi cuenta", path: "/" },
         { label: "Contacto", path: "/" }
     ];
@@ -83,8 +83,8 @@ const Header: React.FC = () => {
                         <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Mis Viajes
                         </Link>
-                        <Link to="/acerca-de" className="text-sm font-medium hover:underline whitespace-nowrap">
-                            Mis Reservas
+                        <Link to="/solicitar-conductor" className="text-sm font-medium hover:underline whitespace-nowrap">
+                            Solicitar conductor
                         </Link>
                     </div>
                 </nav>

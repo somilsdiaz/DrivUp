@@ -1,9 +1,8 @@
 import { useState, useEffect, FC } from "react"
-import HeaderFooter from "../../layouts/headerFooterConductores";
-import Message from "../../components/RutasProgramadas/message";
-import ChatMessage from "../../components/RutasProgramadas/chatMessage";
+import Message from "./RutasProgramadas/message";
+import ChatMessage from "./RutasProgramadas/chatMessage";
 import { motion } from 'framer-motion';
-import { getUserId } from "../../utils/auth";
+import { getUserId } from "../utils/auth";
 
 // Interface for API conversation data
 interface ConversationData {
@@ -207,7 +206,6 @@ const RequestPage: FC = () => {
 
     return (
         <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
-            <HeaderFooter>
                 <div className="container mx-auto py-6 px-4 h-full">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -401,7 +399,6 @@ const RequestPage: FC = () => {
                         </div>
                     </div>
                 </div>
-            </HeaderFooter>
         </main>
     );
 }
