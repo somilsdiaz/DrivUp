@@ -51,6 +51,7 @@ const RequestPage: FC = () => {
         chatId: number;
         recipientName: string;
         recipientImage: string;
+        recipientId: number;
         messages: ChatMessage[];
         currentUserId: string;
     } | null>(null);
@@ -146,6 +147,7 @@ const RequestPage: FC = () => {
                 chatId: id,
                 recipientName: `${selectedConversation.passenger_name} ${selectedConversation.passenger_last_name}`,
                 recipientImage: '/Somil_profile.webp', // Default image until we have real profile images
+                recipientId: selectedConversation.passenger_id,
                 messages: [], // Temporarily empty until messages are fetched
                 currentUserId: getUserId() || ''
             });
@@ -334,6 +336,7 @@ const RequestPage: FC = () => {
                                         chatId={selectedChatData?.chatId.toString() || ''}
                                         recipientName={selectedChatData?.recipientName || ''}
                                         recipientImage={selectedChatData?.recipientImage || ''}
+                                        recipientId={selectedChatData?.recipientId || 0}
                                         messages={selectedChatData?.messages || []}
                                         currentUserId={selectedChatData?.currentUserId || ''}
                                     />
