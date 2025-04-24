@@ -3,42 +3,21 @@ import HeaderFooter from "../../layouts/headerFooterConductores";
 import Message from "../../components/RutasProgramadas/message";
 import ChatMessage from "../../components/RutasProgramadas/chatMessage";
 import { motion } from 'framer-motion';
+import { getUserId } from "../../utils/auth";
 
-// Datos de ejemplo para la demostración
-const mockMessages = [
-    {
-        id: '1',
-        senderName: 'Carlos Rodríguez',
-        profileImage: '/Somil_profile.webp',
-        lastMessage: '¿A qué hora llegarás a la estación?',
-        timestamp: '10:30',
-        isRead: false
-    },
-    {
-        id: '2',
-        senderName: 'María López',
-        profileImage: '/Somil_profile.webp',
-        lastMessage: 'Gracias por el viaje de hoy',
-        timestamp: '09:15',
-        isRead: true
-    },
-    {
-        id: '3',
-        senderName: 'Juan Pérez',
-        profileImage: '/Somil_profile.webp',
-        lastMessage: '¿Puedes recogerme mañana?',
-        timestamp: 'Ayer',
-        isRead: true
-    },
-    {
-        id: '4',
-        senderName: 'Ana Gómez',
-        profileImage: '/Somil_profile.webp',
-        lastMessage: 'Confirma la ruta por favor',
-        timestamp: 'Ayer',
-        isRead: false
-    },
-];
+// Interface for API conversation data
+interface ConversationData {
+    id: number;
+    user_id: number;
+    passenger_id: number;
+    last_message_at: string;
+    user_name: string;
+    user_last_name: string;
+    passenger_name: string;
+    passenger_last_name: string;
+    last_message: string;
+    unread_count: string;
+}
 
 // Definición de tipo para los mensajes de chat
 interface ChatMessage {
@@ -48,74 +27,97 @@ interface ChatMessage {
     timestamp: string;
 }
 
-// Definición de tipo para el objeto mockChatMessages con índice de tipo string
-type ChatMessagesRecord = Record<string, ChatMessage[]>;
-
-const mockChatMessages: ChatMessagesRecord = {
-    '1': [
-        { id: 'c1', senderId: 'user123', text: 'Hola, ¿cómo estás?', timestamp: '10:25' },
-        { id: 'c2', senderId: '1', text: '¿A qué hora llegarás a la estación?', timestamp: '10:30' },
-    ],
-    '2': [
-        { id: 'c3', senderId: 'user123', text: 'El viaje estuvo muy bien', timestamp: '09:10' },
-        { id: 'c4', senderId: '2', text: 'Gracias por el viaje de hoy', timestamp: '09:15' },
-    ],
-    '3': [
-        { id: 'c5', senderId: '3', text: '¿Puedes recogerme mañana?', timestamp: 'Ayer 18:45' },
-    ],
-    '4': [
-        { id: 'c6', senderId: '4', text: 'Confirma la ruta por favor', timestamp: 'Ayer 20:30' },
-    ]
-};
-
 const RequestPage: FC = () => {
-    const [selectedChat, setSelectedChat] = useState<string | null>(null);
+    const [conversations, setConversations] = useState<ConversationData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    
+    const [selectedChat, setSelectedChat] = useState<number | null>(null);
     const [selectedChatData, setSelectedChatData] = useState<{
-        chatId: string;
+        chatId: number;
         recipientName: string;
         recipientImage: string;
         messages: ChatMessage[];
         currentUserId: string;
     } | null>(null);
 
-    const handleSelectChat = (id: string) => {
+    // Estado para filtrar mensajes
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredConversations, setFilteredConversations] = useState<ConversationData[]>([]);
+    const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
+
+    // Fetch conversations from API
+    useEffect(() => {
+        const fetchConversations = async () => {
+            setIsLoading(true);
+            setError(null);
+            
+            const userId = getUserId();
+            
+            if (!userId) {
+                setError("No user ID found. Please log in again.");
+                setIsLoading(false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5000/conversations/${userId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch conversations: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                setConversations(data);
+                setIsLoading(false);
+            } catch (err) {
+                console.error('Error fetching conversations:', err);
+                setError(err instanceof Error ? err.message : 'Failed to fetch conversations');
+                setIsLoading(false);
+            }
+        };
+        
+        fetchConversations();
+    }, []);
+
+    // Handle chat selection
+    const handleSelectChat = (id: number) => {
         setSelectedChat(id);
-        const selectedMessage = mockMessages.find(msg => msg.id === id);
-        if (selectedMessage) {
+        const selectedConversation = conversations.find(conv => conv.id === id);
+        
+        if (selectedConversation) {
+            // For now, we'll use empty messages until we implement fetching chat messages
             setSelectedChatData({
                 chatId: id,
-                recipientName: selectedMessage.senderName,
-                recipientImage: selectedMessage.profileImage,
-                messages: mockChatMessages[id] || [],
-                currentUserId: 'user123'
+                recipientName: `${selectedConversation.passenger_name} ${selectedConversation.passenger_last_name}`,
+                recipientImage: '/Somil_profile.webp', // Default image until we have real profile images
+                messages: [], // This will be populated when we implement message fetching
+                currentUserId: getUserId() || ''
             });
+            
+            // TODO: Fetch actual messages for this conversation
         }
     };
 
-    // Estado para filtrar mensajes
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filteredMessages, setFilteredMessages] = useState(mockMessages);
-    const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
-
-    // Filtrar mensajes cuando cambia el término de búsqueda o el filtro activo
+    // Filter conversations when search term or filter changes
     useEffect(() => {
-        let filtered = mockMessages;
+        let filtered = conversations;
         
-        // Aplicar filtro por estado de lectura
+        // Apply unread filter
         if (activeFilter === 'unread') {
-            filtered = filtered.filter(message => !message.isRead);
+            filtered = filtered.filter(conversation => parseInt(conversation.unread_count) > 0);
         }
         
-        // Aplicar filtro de búsqueda
+        // Apply search filter
         if (searchTerm) {
-            filtered = filtered.filter(message => 
-                message.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                message.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+            filtered = filtered.filter(conversation => 
+                `${conversation.passenger_name} ${conversation.passenger_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                conversation.last_message.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
         
-        setFilteredMessages(filtered);
-    }, [searchTerm, activeFilter, mockMessages]);
+        setFilteredConversations(filtered);
+    }, [searchTerm, activeFilter, conversations]);
 
     return (
         <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
@@ -164,7 +166,7 @@ const RequestPage: FC = () => {
                                     </div>
                                     {searchTerm && (
                                         <div className="absolute right-2 top-2.5 text-xs text-white/80 bg-[#5AAA95] px-2 py-0.5 rounded-full">
-                                            {filteredMessages.length} resultados
+                                            {filteredConversations.length} resultados
                                         </div>
                                     )}
                                 </div>
@@ -189,16 +191,31 @@ const RequestPage: FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {filteredMessages.length > 0 ? filteredMessages.map((message) => (
+                                
+                                {isLoading ? (
+                                    <div className="p-6 text-center text-[#4A4E69]/70">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-[#4A4E69]/30 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        <p>Cargando conversaciones...</p>
+                                    </div>
+                                ) : error ? (
+                                    <div className="p-6 text-center text-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-red-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p>{error}</p>
+                                    </div>
+                                ) : filteredConversations.length > 0 ? filteredConversations.map((conversation) => (
                                     <Message
-                                        key={message.id}
-                                        id={message.id}
-                                        senderName={message.senderName}
-                                        profileImage={message.profileImage}
-                                        lastMessage={message.lastMessage}
-                                        timestamp={message.timestamp}
-                                        isRead={message.isRead}
-                                        onSelect={handleSelectChat}
+                                        key={conversation.id}
+                                        id={conversation.id.toString()}
+                                        senderName={`${conversation.passenger_name} ${conversation.passenger_last_name}`}
+                                        profileImage="/Somil_profile.webp"
+                                        lastMessage={conversation.last_message}
+                                        timestamp={new Date(conversation.last_message_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                        isRead={parseInt(conversation.unread_count) === 0}
+                                        onSelect={(id) => handleSelectChat(parseInt(id))}
                                     />
                                 )) : (
                                     <div className="p-6 text-center text-[#4A4E69]/70">
@@ -215,7 +232,7 @@ const RequestPage: FC = () => {
                         <div className="w-2/3 flex flex-col bg-[#F8F9FA] relative">
                             {selectedChat ? (
                                 <ChatMessage
-                                    chatId={selectedChatData?.chatId || ''}
+                                    chatId={selectedChatData?.chatId.toString() || ''}
                                     recipientName={selectedChatData?.recipientName || ''}
                                     recipientImage={selectedChatData?.recipientImage || ''}
                                     messages={selectedChatData?.messages || []}
