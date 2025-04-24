@@ -15,13 +15,17 @@ import PublicRoute from '../components/PublicRoute';
 import RoleBasedRoute from '../components/RoleBasedRoute';
 
 const router = createBrowserRouter([
+    //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
+    //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
+    //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
+
     {
-        path: "/driver-register", 
+        path: "/driver-register",
         element: (
             //proteger la ruta para que solo los pasajeros puedan acceder
             <ProtectedRoute>
-                <RoleBasedRoute 
-                    allowedRoles={["pasajero"]} 
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
                     redirectPath="/dashboard/pasajero"
                 >
                     <DriverRegister />
@@ -30,7 +34,7 @@ const router = createBrowserRouter([
         ),
     },
     {
-        path: "/login", 
+        path: "/login",
         element: (
             <PublicRoute>
                 <Login />
@@ -38,7 +42,7 @@ const router = createBrowserRouter([
         ),
     },
     {
-        path: "/register", 
+        path: "/register",
         element: (
             <PublicRoute>
                 <Register />
@@ -47,7 +51,11 @@ const router = createBrowserRouter([
     },
     {
         path: "/",
-        element: <Inicio />,
+        element: (
+            <PublicRoute>
+                <Inicio />,
+            </PublicRoute>
+        )
     },
     {
         path: "/contacto",
@@ -58,20 +66,20 @@ const router = createBrowserRouter([
         element: <About />,
     },
     {
-        path: "/politicas-de-privacidad", 
+        path: "/politicas-de-privacidad",
         element: <PrivacyPolicy />,
     },
     {
-        path:"/Terminos-y-condiciones",
-        element:<TermCondition/>
+        path: "/Terminos-y-condiciones",
+        element: <TermCondition />
     },
     {
-        path:"/dashboard/conductor",
+        path: "/dashboard/conductor",
         //proteger la ruta para que solo los conductores puedan acceder
         element: (
             <ProtectedRoute>
-                <RoleBasedRoute 
-                    allowedRoles={["conductor y pasajero"]} 
+                <RoleBasedRoute
+                    allowedRoles={["conductor y pasajero"]}
                     redirectPath="/dashboard/pasajero"
                 >
                     <HomeConductor />
@@ -80,12 +88,12 @@ const router = createBrowserRouter([
         )
     },
     {
-        path:"/dashboard/conductor/solicitudes",
+        path: "/dashboard/conductor/solicitudes",
         //proteger la ruta para que solo los conductores puedan acceder
         element: (
             <ProtectedRoute>
-                <RoleBasedRoute 
-                    allowedRoles={["conductor y pasajero"]} 
+                <RoleBasedRoute
+                    allowedRoles={["conductor y pasajero"]}
                     redirectPath="/dashboard/pasajero"
                 >
                     <RequestPage />
@@ -94,7 +102,7 @@ const router = createBrowserRouter([
         )
     },
     {
-        path:"/dashboard/pasajero",
+        path: "/dashboard/pasajero",
         //proteger la ruta para que solo los pasajeros puedan acceder
         element: (
             <ProtectedRoute>
