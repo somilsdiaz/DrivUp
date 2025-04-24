@@ -226,8 +226,8 @@ const RequestPage: FC = () => {
                         transition={{ duration: 0.5 }}
                         className="mb-4"
                     >
-                        <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Solicitudes de viaje</h1>
-                        <p className="text-[#4A4E69]/80 max-w-2xl">Utiliza el chat para comunicarte con los pasajeros que solicitan rutas programadas y establece de forma clara los términos del viaje.</p>
+                        <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Mensajes</h1>
+                        <p className="text-[#4A4E69]/80 max-w-2xl">Utiliza el chat para establecer de forma clara los detalles y acuerdos/terminos del viaje.</p>
                     </motion.div>
                     
                     <div className="flex h-full] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">

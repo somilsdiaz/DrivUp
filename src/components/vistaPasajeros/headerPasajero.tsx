@@ -47,6 +47,7 @@ const Header: React.FC = () => {
         { label: "Solicitar viaje", path: "/" },
         { label: "Mis viajes", path: "/" },
         { label: "Solicitar conductores", path: "/solicitar-conductor" },
+        { label: "Bandeja de mensajes", path: "/mi-bandeja-de-mensajes" },
         { label: "Mi cuenta", path: "/" },
         { label: "Contacto", path: "/" }
     ];
@@ -85,6 +86,9 @@ const Header: React.FC = () => {
                         </Link>
                         <Link to="/solicitar-conductor" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Solicitar conductor
+                        </Link>
+                        <Link to="/mi-bandeja-de-mensajes" className="text-sm font-medium hover:underline whitespace-nowrap">
+                            Bandeja de mensajes
                         </Link>
                     </div>
                 </nav>
