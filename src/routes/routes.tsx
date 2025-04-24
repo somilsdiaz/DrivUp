@@ -10,19 +10,40 @@ import HomeConductor from '../pages/vistaConductores/homeConductor';
 import RequestPage from '../pages/vistaConductores/requestPage';
 import HomePasajeros from '../pages/vistaPasajeros/homePasajeros';
 import DriverRegister from '../pages/DriverRegister';
+import ProtectedRoute from '../components/ProtectedRoute';
+import PublicRoute from '../components/PublicRoute';
+import RoleBasedRoute from '../components/RoleBasedRoute';
 
 const router = createBrowserRouter([
     {
         path: "/driver-register", 
-        element: <DriverRegister />,
+        element: (
+            //proteger la ruta para que solo los pasajeros puedan acceder
+            <ProtectedRoute>
+                <RoleBasedRoute 
+                    allowedRoles={["pasajero"]} 
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <DriverRegister />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
     },
     {
         path: "/login", 
-        element: <Login />,
+        element: (
+            <PublicRoute>
+                <Login />
+            </PublicRoute>
+        ),
     },
     {
         path: "/register", 
-        element: <Register />,
+        element: (
+            <PublicRoute>
+                <Register />
+            </PublicRoute>
+        ),
     },
     {
         path: "/",
@@ -46,15 +67,40 @@ const router = createBrowserRouter([
     },
     {
         path:"/dashboard/conductor",
-        element:<HomeConductor></HomeConductor>
+        //proteger la ruta para que solo los conductores puedan acceder
+        element: (
+            <ProtectedRoute>
+                <RoleBasedRoute 
+                    allowedRoles={["conductor y pasajero"]} 
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <HomeConductor />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        )
     },
     {
         path:"/dashboard/conductor/solicitudes",
-        element:<RequestPage></RequestPage>
+        //proteger la ruta para que solo los conductores puedan acceder
+        element: (
+            <ProtectedRoute>
+                <RoleBasedRoute 
+                    allowedRoles={["conductor y pasajero"]} 
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <RequestPage />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        )
     },
     {
         path:"/dashboard/pasajero",
-        element:<HomePasajeros/>
+        //proteger la ruta para que solo los pasajeros puedan acceder
+        element: (
+            <ProtectedRoute>
+                <HomePasajeros />
+            </ProtectedRoute>
+        )
     }
 ]);
 
