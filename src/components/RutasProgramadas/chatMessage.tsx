@@ -18,6 +18,7 @@ interface ChatMessageProps {
     recipientId: number;
     messages: Message[];
     currentUserId: string;
+    onMessageSent: (conversationId: number, messageText: string) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -26,7 +27,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     recipientImage,
     recipientId,
     messages,
-    currentUserId
+    currentUserId,
+    onMessageSent
 }) => {
     const [newMessage, setNewMessage] = useState('');
     const [showEmojis, setShowEmojis] = useState(false);
@@ -113,19 +115,21 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setSendError(null);
         setIsSending(true);
         
+        const messageText = newMessage.trim();
+        
         // Create message object
         const messageData = {
             conversationId: parseInt(chatId),
             senderId: parseInt(currentUserId),
             receiverId: recipientId,
-            messageText: newMessage.trim()
+            messageText
         };
         
         // Create optimistic message to show immediately
         const optimisticMessage: Message = {
             id: `temp-${Date.now()}`,
             senderId: currentUserId,
-            text: newMessage.trim(),
+            text: messageText,
             timestamp: new Date().toLocaleString([], {
                 hour: '2-digit',
                 minute: '2-digit'
@@ -156,6 +160,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 
                 setIsSending(false);
             }
+            
+            // Update conversation in the parent component
+            onMessageSent(parseInt(chatId), messageText);
             
             // Clear input
             setNewMessage('');

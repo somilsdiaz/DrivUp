@@ -188,6 +188,23 @@ const RequestPage: FC = () => {
         setFilteredConversations(filtered);
     }, [searchTerm, activeFilter, conversations]);
 
+    // Handle message sent
+    const handleMessageSent = (conversationId: number, messageText: string) => {
+        // Update the conversations list with new last message
+        setConversations(prevConversations => 
+            prevConversations.map(conv => 
+                conv.id === conversationId 
+                    ? { 
+                        ...conv, 
+                        last_message: messageText,
+                        last_message_at: new Date().toISOString(),
+                        unread_count: "0" // Reset unread since we're the sender
+                    } 
+                    : conv
+            )
+        );
+    };
+
     return (
         <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
             <HeaderFooter>
@@ -339,6 +356,7 @@ const RequestPage: FC = () => {
                                         recipientId={selectedChatData?.recipientId || 0}
                                         messages={selectedChatData?.messages || []}
                                         currentUserId={selectedChatData?.currentUserId || ''}
+                                        onMessageSent={handleMessageSent}
                                     />
                                 </>
                             ) : (
