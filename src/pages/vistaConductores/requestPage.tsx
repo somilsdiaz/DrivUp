@@ -19,6 +19,20 @@ interface ConversationData {
     unread_count: string;
 }
 
+// Interface for API message data
+interface MessageData {
+    id: number;
+    conversation_id: number;
+    sender_id: number;
+    receiver_id: number;
+    message_text: string;
+    is_read: boolean;
+    sent_at: string;
+    read_at: string | null;
+    sender_name: string;
+    sender_last_name: string;
+}
+
 // Definición de tipo para los mensajes de chat
 interface ChatMessage {
     id: string;
@@ -40,6 +54,9 @@ const RequestPage: FC = () => {
         messages: ChatMessage[];
         currentUserId: string;
     } | null>(null);
+    
+    const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+    const [messagesError, setMessagesError] = useState<string | null>(null);
 
     // Estado para filtrar mensajes
     const [searchTerm, setSearchTerm] = useState('');
@@ -80,22 +97,72 @@ const RequestPage: FC = () => {
         fetchConversations();
     }, []);
 
+    // Fetch messages for a conversation
+    const fetchMessages = async (conversationId: number) => {
+        setIsLoadingMessages(true);
+        setMessagesError(null);
+        
+        try {
+            const response = await fetch(`http://localhost:5000/conversations/${conversationId}/messages`);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch messages: ${response.status}`);
+            }
+            
+            const data: MessageData[] = await response.json();
+            
+            // Transform API message data to the format expected by ChatMessage component
+            const formattedMessages: ChatMessage[] = data.map(message => ({
+                id: message.id.toString(),
+                senderId: message.sender_id.toString(),
+                text: message.message_text,
+                timestamp: new Date(message.sent_at).toLocaleString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                })
+            }));
+            
+            return formattedMessages;
+        } catch (err) {
+            console.error('Error fetching messages:', err);
+            setMessagesError(err instanceof Error ? err.message : 'Failed to fetch messages');
+            return [];
+        } finally {
+            setIsLoadingMessages(false);
+        }
+    };
+
     // Handle chat selection
-    const handleSelectChat = (id: number) => {
+    const handleSelectChat = async (id: number) => {
         setSelectedChat(id);
         const selectedConversation = conversations.find(conv => conv.id === id);
         
         if (selectedConversation) {
-            // For now, we'll use empty messages until we implement fetching chat messages
+            // Show loading state while fetching messages
             setSelectedChatData({
                 chatId: id,
                 recipientName: `${selectedConversation.passenger_name} ${selectedConversation.passenger_last_name}`,
                 recipientImage: '/Somil_profile.webp', // Default image until we have real profile images
-                messages: [], // This will be populated when we implement message fetching
+                messages: [], // Temporarily empty until messages are fetched
                 currentUserId: getUserId() || ''
             });
             
-            // TODO: Fetch actual messages for this conversation
+            // Fetch messages for this conversation
+            const messages = await fetchMessages(id);
+            
+            // Update state with fetched messages
+            setSelectedChatData(prev => {
+                if (prev && prev.chatId === id) {
+                    return {
+                        ...prev,
+                        messages: messages
+                    };
+                }
+                return prev;
+            });
         }
     };
 
@@ -231,13 +298,46 @@ const RequestPage: FC = () => {
                         {/* Área de chat (derecha) */}
                         <div className="w-2/3 flex flex-col bg-[#F8F9FA] relative">
                             {selectedChat ? (
-                                <ChatMessage
-                                    chatId={selectedChatData?.chatId.toString() || ''}
-                                    recipientName={selectedChatData?.recipientName || ''}
-                                    recipientImage={selectedChatData?.recipientImage || ''}
-                                    messages={selectedChatData?.messages || []}
-                                    currentUserId={selectedChatData?.currentUserId || ''}
-                                />
+                                <>
+                                    {isLoadingMessages && (
+                                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                                            <div className="flex flex-col items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#2D5DA1] animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                                <p className="mt-2 text-[#4A4E69]">Cargando mensajes...</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {messagesError && (
+                                        <div className="absolute inset-0 bg-white/90 flex items-center justify-center z-10">
+                                            <div className="bg-red-50 p-4 rounded-lg border border-red-200 max-w-md">
+                                                <div className="flex">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <div>
+                                                        <h3 className="text-red-800 font-medium">Error al cargar mensajes</h3>
+                                                        <p className="text-red-700 text-sm mt-1">{messagesError}</p>
+                                                        <button 
+                                                            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1 px-3 rounded-md text-sm transition-colors"
+                                                            onClick={() => handleSelectChat(selectedChat)}
+                                                        >
+                                                            Intentar de nuevo
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <ChatMessage
+                                        chatId={selectedChatData?.chatId.toString() || ''}
+                                        recipientName={selectedChatData?.recipientName || ''}
+                                        recipientImage={selectedChatData?.recipientImage || ''}
+                                        messages={selectedChatData?.messages || []}
+                                        currentUserId={selectedChatData?.currentUserId || ''}
+                                    />
+                                </>
                             ) : (
                                 <motion.div 
                                     initial={{ opacity: 0 }}
