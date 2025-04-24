@@ -10,23 +10,52 @@ import HomeConductor from '../pages/vistaConductores/homeConductor';
 import RequestPage from '../pages/vistaConductores/requestPage';
 import HomePasajeros from '../pages/vistaPasajeros/homePasajeros';
 import DriverRegister from '../pages/DriverRegister';
+import ProtectedRoute from '../components/ProtectedRoute';
+import PublicRoute from '../components/PublicRoute';
+import RoleBasedRoute from '../components/RoleBasedRoute';
 
 const router = createBrowserRouter([
+    //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
+    //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
+    //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
+
     {
-        path: "/driver-register", 
-        element: <DriverRegister />,
+        path: "/driver-register",
+        element: (
+            //proteger la ruta para que solo los pasajeros puedan acceder
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <DriverRegister />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
     },
     {
-        path: "/login", 
-        element: <Login />,
+        path: "/login",
+        element: (
+            <PublicRoute>
+                <Login />
+            </PublicRoute>
+        ),
     },
     {
-        path: "/register", 
-        element: <Register />,
+        path: "/register",
+        element: (
+            <PublicRoute>
+                <Register />
+            </PublicRoute>
+        ),
     },
     {
         path: "/",
-        element: <Inicio />,
+        element: (
+            <PublicRoute>
+                <Inicio />,
+            </PublicRoute>
+        )
     },
     {
         path: "/contacto",
@@ -37,24 +66,49 @@ const router = createBrowserRouter([
         element: <About />,
     },
     {
-        path: "/politicas-de-privacidad", 
+        path: "/politicas-de-privacidad",
         element: <PrivacyPolicy />,
     },
     {
-        path:"/Terminos-y-condiciones",
-        element:<TermCondition/>
+        path: "/Terminos-y-condiciones",
+        element: <TermCondition />
     },
     {
-        path:"/dashboard/conductor",
-        element:<HomeConductor></HomeConductor>
+        path: "/dashboard/conductor",
+        //proteger la ruta para que solo los conductores puedan acceder
+        element: (
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["conductor y pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <HomeConductor />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        )
     },
     {
-        path:"/dashboard/conductor/solicitudes",
-        element:<RequestPage></RequestPage>
+        path: "/dashboard/conductor/solicitudes",
+        //proteger la ruta para que solo los conductores puedan acceder
+        element: (
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["conductor y pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <RequestPage />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        )
     },
     {
-        path:"/dashboard/pasajero",
-        element:<HomePasajeros/>
+        path: "/dashboard/pasajero",
+        //proteger la ruta para que solo los pasajeros puedan acceder
+        element: (
+            <ProtectedRoute>
+                <HomePasajeros />
+            </ProtectedRoute>
+        )
     }
 ]);
 

@@ -39,6 +39,7 @@ const LoginPage = () => {
             }
             setSuccessMessage("Inicio de sesión exitoso...");
             localStorage.setItem("token", result.token);
+            localStorage.setItem("userId", result.userId);
 
             // Redirige inmediatamente después de guardar el token, o con tiempo de espera si es necesario
             setTimeout(() => {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
+import { logout } from "../../utils/auth";
 
 //MenuItem interface to match the one in menuResponsive.tsx
 interface MenuItem {
@@ -13,6 +14,7 @@ const Header: React.FC = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
 
     const toggleMenu = () => {
         setIsMenuVisible((prev) => !prev);
@@ -53,6 +55,11 @@ const Header: React.FC = () => {
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [location.pathname]); // Se ejecuta cuando cambia la ruta
+
+    const handleLogout = () => {
+        logout();
+        navigate("/");
+    };
 
     return (
         <header className="sticky top-0 z-40 border-b bg-[#003E69] text-white">
@@ -124,7 +131,10 @@ const Header: React.FC = () => {
                                     Ayuda/Soporte
                                 </Link>
                                 <div className="border-t border-[#276A9C] my-1"></div>
-                                <button className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left text-red-300">
+                                <button 
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left text-red-300"
+                                >
                                     <LogOut className="h-4 w-4" />
                                     Cerrar Sesión
                                 </button>
