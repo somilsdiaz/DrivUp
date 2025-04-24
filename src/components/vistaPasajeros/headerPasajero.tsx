@@ -83,7 +83,7 @@ const Header: React.FC = () => {
                         <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Mis Viajes
                         </Link>
-                        <Link to="/acerca-de" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/pasajero/conductordetalles" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Mis Reservas
                         </Link>
                     </div>

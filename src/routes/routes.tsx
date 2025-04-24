@@ -13,6 +13,7 @@ import DriverRegister from '../pages/DriverRegister';
 import ProtectedRoute from '../components/ProtectedRoute';
 import PublicRoute from '../components/PublicRoute';
 import RoleBasedRoute from '../components/RoleBasedRoute';
+import { DetallesConductor } from '../pages/vistaPasajeros/detallesConductor';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -107,6 +108,15 @@ const router = createBrowserRouter([
         element: (
             <ProtectedRoute>
                 <HomePasajeros />
+            </ProtectedRoute>
+        )
+    },
+    {
+        path: "/dashboard/pasajero/conductordetalles",
+        //proteger la ruta para que solo los conductores puedan acceder
+        element: (
+            <ProtectedRoute>
+                    <DetallesConductor />
             </ProtectedRoute>
         )
     }
