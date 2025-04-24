@@ -141,14 +141,27 @@ const RequestPage: FC = () => {
         const selectedConversation = conversations.find(conv => conv.id === id);
         
         if (selectedConversation) {
+            const currentUserId = getUserId() || '';
+            const isUser = currentUserId === selectedConversation.user_id.toString();
+            
+            // Determine the recipient name based on who the current user is
+            const recipientName = isUser 
+                ? `${selectedConversation.passenger_name} ${selectedConversation.passenger_last_name}`
+                : `${selectedConversation.user_name} ${selectedConversation.user_last_name}`;
+            
+            // Determine the recipient ID based on who the current user is
+            const recipientId = isUser
+                ? selectedConversation.passenger_id
+                : selectedConversation.user_id;
+            
             // Show loading state while fetching messages
             setSelectedChatData({
                 chatId: id,
-                recipientName: `${selectedConversation.passenger_name} ${selectedConversation.passenger_last_name}`,
+                recipientName: recipientName,
                 recipientImage: '/Somil_profile.webp', // Default image until we have real profile images
-                recipientId: selectedConversation.passenger_id,
+                recipientId: recipientId,
                 messages: [], // Temporarily empty until messages are fetched
-                currentUserId: getUserId() || ''
+                currentUserId: currentUserId
             });
             
             // Fetch messages for this conversation
@@ -290,18 +303,28 @@ const RequestPage: FC = () => {
                                         </svg>
                                         <p>{error}</p>
                                     </div>
-                                ) : filteredConversations.length > 0 ? filteredConversations.map((conversation) => (
-                                    <Message
-                                        key={conversation.id}
-                                        id={conversation.id.toString()}
-                                        senderName={`${conversation.passenger_name} ${conversation.passenger_last_name}`}
-                                        profileImage="/Somil_profile.webp"
-                                        lastMessage={conversation.last_message}
-                                        timestamp={new Date(conversation.last_message_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                        isRead={parseInt(conversation.unread_count) === 0}
-                                        onSelect={(id) => handleSelectChat(parseInt(id))}
-                                    />
-                                )) : (
+                                ) : filteredConversations.length > 0 ? filteredConversations.map((conversation) => {
+                                    const currentUserId = getUserId() || '';
+                                    const isUser = currentUserId === conversation.user_id.toString();
+                                    
+                                    // Determine the correct name to display based on who the current user is
+                                    const displayName = isUser
+                                        ? `${conversation.passenger_name} ${conversation.passenger_last_name}`
+                                        : `${conversation.user_name} ${conversation.user_last_name}`;
+                                    
+                                    return (
+                                        <Message
+                                            key={conversation.id}
+                                            id={conversation.id.toString()}
+                                            senderName={displayName}
+                                            profileImage="/Somil_profile.webp"
+                                            lastMessage={conversation.last_message}
+                                            timestamp={new Date(conversation.last_message_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                            isRead={parseInt(conversation.unread_count) === 0}
+                                            onSelect={(id) => handleSelectChat(parseInt(id))}
+                                        />
+                                    );
+                                }) : (
                                     <div className="p-6 text-center text-[#4A4E69]/70">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-[#4A4E69]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
