@@ -43,7 +43,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
     // Initialize Socket.io connection
     useEffect(() => {
-        const socketInstance = io('http://localhost:5000');
+        const socketInstance = io('https://drivup-backend.onrender.com');
         setSocket(socketInstance);
 
         // Authenticate user with socket
@@ -146,7 +146,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 socket.emit('send_message', messageData);
             } else {
                 // Fallback to REST API if socket not available
-                const response = await fetch('http://localhost:5000/messages', {
+                const response = await fetch('https://drivup-backend.onrender.com/messages', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

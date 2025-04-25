@@ -78,7 +78,7 @@ const RequestPage: FC = () => {
             }
             
             try {
-                const response = await fetch(`http://localhost:5000/conversations/${userId}`);
+                const response = await fetch(`https://drivup-backend.onrender.com/conversations/${userId}`);
                 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch conversations: ${response.status}`);
@@ -103,7 +103,7 @@ const RequestPage: FC = () => {
         setMessagesError(null);
         
         try {
-            const response = await fetch(`http://localhost:5000/conversations/${conversationId}/messages`);
+            const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversationId}/messages`);
             
             if (!response.ok) {
                 throw new Error(`Failed to fetch messages: ${response.status}`);
@@ -226,8 +226,8 @@ const RequestPage: FC = () => {
                         transition={{ duration: 0.5 }}
                         className="mb-4"
                     >
-                        <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Mensajes</h1>
-                        <p className="text-[#4A4E69]/80 max-w-2xl">Utiliza el chat para establecer de forma clara los detalles y acuerdos/terminos del viaje.</p>
+                        <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Ponerse de acuerdo es fácil</h1>
+                        <p className="text-[#4A4E69]/80 max-w-3xl">Utiliza el chat para comunicarte con otros usuarios del sistema -ya seas conductor o pasajero- Define horarios, puntos de encuentro y los terminos del viaje de manera colaborativa y efectiva.</p>
                     </motion.div>
                     
                     <div className="flex h-full] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
@@ -242,7 +242,7 @@ const RequestPage: FC = () => {
                                             </svg>
                                             Mensajes
                                         </h2>
-                                        <p className="text-xs text-white/70">Conversaciones con pasajeros</p>
+                                        <p className="text-xs text-white/70">Mis conversaciones</p>
                                     </div>
                                     <div className="flex space-x-2">
  
