@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import InfoPasajeroProfile from './infoPasajeroProfile';
 import { motion } from 'framer-motion';
 import { Message, ChatMessageProps } from './chatMessage/chatTypes';
-import { processMessagesWithDateSeparators } from './chatMessage/messageUtils';
-import MessageBubble from './chatMessage/MessageBubble';
-import DateSeparator from './chatMessage/DateSeparator';
-import EmojiPicker from './chatMessage/EmojiPicker';
+import ChatHeader from './chatMessage/ChatHeader';
+import MessageList from './chatMessage/MessageList';
+import MessageInput from './chatMessage/MessageInput';
+import ErrorMessage from './chatMessage/ErrorMessage';
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
     chatId,
@@ -568,68 +568,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setShowInfoModal(!showInfoModal);
     };
 
-    // Renderizar los mensajes junto con los separadores de fecha
-    const renderMessagesWithSeparators = () => {
-        const processedMessages = processMessagesWithDateSeparators(localMessages);
-        
-        // Get current highlighted message ID - will change when highlightedMessageChanged updates
-        const currentHighlightedMessageId = localStorage.getItem('scrollToMessageId');
-        const highlightedIds = localStorage.getItem('highlightedMessageIds');
-        
-        // Parse all highlighted message IDs if available
-        let matchedMessageIds: string[] = [];
-        if (highlightedIds) {
-            try {
-                matchedMessageIds = JSON.parse(highlightedIds);
-            } catch (e) {
-                console.error("Error parsing highlighted IDs:", e);
-                if (currentHighlightedMessageId) {
-                    matchedMessageIds = [currentHighlightedMessageId];
-                }
-            }
-        } else if (currentHighlightedMessageId) {
-            matchedMessageIds = [currentHighlightedMessageId];
-        }
-        
-        console.log(`Rendering messages, highlighted IDs:`, matchedMessageIds, `change count: ${highlightedMessageChanged}`);
-        
-        // Determine the ID of the last real message for highlighting if needed
-        const lastMessageId = localMessages.length > 0 ? localMessages[localMessages.length - 1].id : null;
-        
-        // If 'last' is in the matched IDs and we have messages, replace it with the actual last message ID
-        if (matchedMessageIds.includes('last') && lastMessageId) {
-            // Replace 'last' with the actual ID
-            matchedMessageIds = matchedMessageIds.map(id => id === 'last' ? lastMessageId : id);
-        }
-        
-        return processedMessages.map((item) => {
-            if ('isSeparator' in item) {
-                return <DateSeparator key={`separator-${item.date}`} separator={item} />;
-            }
-
-            const isFromCurrentUser = item.senderId === currentUserId;
-            
-            // Check if this message ID is in the list of highlighted messages
-            const isHighlightedMessage = matchedMessageIds.includes(item.id);
-            
-            return (
-                <div 
-                    id={`message-${item.id}`} 
-                    key={item._originalId || item.id}
-                    className={isHighlightedMessage ? 'scroll-mt-8' : ''}
-                    data-highlighted={isHighlightedMessage ? 'true' : undefined}
-                >
-                    <MessageBubble
-                        message={item}
-                        isCurrentUser={isFromCurrentUser}
-                        recipientImage={recipientImage}
-                        recipientName={recipientName}
-                    />
-                </div>
-            );
-        });
-    };
-
     return (
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -638,110 +576,40 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             className="flex flex-col h-full bg-white rounded-lg shadow-lg overflow-hidden"
         >
             {/* Chat header */}
-            <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] text-white sticky top-0 z-10">
-                <div className="flex items-center">
-                    <div className="relative">
-                        <img 
-                            src={recipientImage} 
-                            alt={`${recipientName}'s profile`} 
-                            className="w-10 h-10 rounded-full object-cover border-2 border-white/30 transition-transform hover:scale-105"
-                        />
-                    </div>
-                    <div className="ml-3">
-                        <h3 className="font-medium text-white">{recipientName}</h3>
-                    </div>
-                </div>
-                <div className="flex space-x-2">
-                    <button 
-                        className="p-2 rounded-full hover:bg-white/10 transition-colors" 
-                        title="Información del contacto"
-                        onClick={toggleInfoModal}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            <ChatHeader 
+                recipientName={recipientName}
+                recipientImage={recipientImage}
+                toggleInfoModal={toggleInfoModal}
+            />
 
             {/* Message area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light max-h-[calc(100vh-220px)] scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
-                {renderMessagesWithSeparators()}
-                
-                {/* Error message */}
-                {sendError && (
-                    <div className="bg-red-50 p-3 rounded-lg text-red-700 text-sm border border-red-200 shadow-sm flex items-start">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                            <p>{sendError}</p>
-                            <button 
-                                className="text-red-800 hover:text-red-900 underline text-xs mt-1"
-                                onClick={() => setSendError(null)}
-                            >
-                                Cerrar
-                            </button>
-                        </div>
-                    </div>
-                )}
-                
-                <div ref={messagesEndRef} />
-            </div>
+            <MessageList 
+                messages={localMessages}
+                currentUserId={currentUserId}
+                recipientName={recipientName}
+                recipientImage={recipientImage}
+                messagesEndRef={messagesEndRef}
+                highlightedMessageChanged={highlightedMessageChanged}
+            />
+            
+            {/* Error message */}
+            {sendError && (
+                <ErrorMessage 
+                    error={sendError} 
+                    onClose={() => setSendError(null)} 
+                />
+            )}
 
             {/* Message input area */}
-            <div className="border-t p-4 bg-white sticky bottom-0 z-10 shadow-md">
-                <div className="flex items-center">    
-                    <div className="relative flex-1 mx-2">
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Escribe un mensaje..."
-                            className="w-full border border-[#4A4E69]/20 rounded-full py-3 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#2D5DA1] focus:border-transparent shadow-sm"
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                            disabled={isSending}
-                        />
-                        <button 
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4A4E69]/50 hover:text-[#5AAA95] transition-colors"
-                            onClick={toggleEmojiPicker}
-                            disabled={isSending}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </button>
-                        
-                        {showEmojis && (
-                            <EmojiPicker onEmojiSelect={(emoji) => setNewMessage(prev => prev + emoji)} />
-                        )}
-                    </div>
-                    
-                    <button
-                        onClick={handleSendMessage}
-                        className={`ml-2 rounded-full p-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#F2B134] ${
-                            isSending 
-                                ? 'bg-[#F2B134]/70 text-[#4A4E69]/70 cursor-wait' 
-                                : newMessage.trim() === '' 
-                                ? 'bg-[#F2B134]/50 text-[#4A4E69]/50 cursor-not-allowed' 
-                                : 'bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/80 shadow-md hover:shadow-lg transform hover:scale-105'
-                        }`}
-                        disabled={newMessage.trim() === '' || isSending}
-                    >
-                        {isSending ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
-                        )}
-                        <span className="sr-only">Enviar mensaje</span>
-                    </button>
-                </div>
-            </div>
+            <MessageInput 
+                newMessage={newMessage}
+                setNewMessage={setNewMessage}
+                handleSendMessage={handleSendMessage}
+                isSending={isSending}
+                showEmojis={showEmojis}
+                toggleEmojiPicker={toggleEmojiPicker}
+                inputRef={inputRef}
+            />
 
             {/* User InfoPasajeroProfile component */}
             <InfoPasajeroProfile
