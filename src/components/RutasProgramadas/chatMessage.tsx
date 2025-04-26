@@ -537,7 +537,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         
         return (
             <AnimatePresence mode="sync" initial={false}>
-                {processedMessages.map((item, index) => {
+                {processedMessages.map((item) => {
                     // Renderizar separador de fecha
                     if ('isSeparator' in item) {
                         return (

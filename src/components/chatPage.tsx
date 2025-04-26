@@ -1,8 +1,8 @@
-import { useState, useEffect, FC, useRef } from "react"
+import { useState, useEffect, FC } from "react"
 import Message from "./RutasProgramadas/message";
 import ChatMessage from "./RutasProgramadas/chatMessage";
 import { motion } from 'framer-motion';
-import { getUserId, getUserRole } from "../utils/auth";
+import { getUserId } from "../utils/auth";
 import { io, Socket } from 'socket.io-client';
 import { MessageStatus } from "./RutasProgramadas/message";
 
@@ -52,7 +52,7 @@ const RequestPage: FC = () => {
     const [conversations, setConversations] = useState<ConversationData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     const [selectedChat, setSelectedChat] = useState<number | null>(null);
     const [selectedChatData, setSelectedChatData] = useState<{
         chatId: number;
@@ -63,7 +63,7 @@ const RequestPage: FC = () => {
         currentUserId: string;
         recipientRole?: string;
     } | null>(null);
-    
+
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [messagesError, setMessagesError] = useState<string | null>(null);
     const [socket, setSocket] = useState<Socket | null>(null);
@@ -90,7 +90,7 @@ const RequestPage: FC = () => {
         // Listen for new messages from socket
         socketInstance.on('new_message', (message) => {
             console.log('New message received from socket:', message);
-            
+
             // Update conversation list when receiving a new message
             setConversations(prevConversations => {
                 return prevConversations.map(conv => {
@@ -101,8 +101,8 @@ const RequestPage: FC = () => {
                             last_message_at: message.sent_at,
                             last_sender_id: message.sender_id,
                             is_read: message.sender_id.toString() === userId,
-                            unread_count: message.sender_id.toString() === userId 
-                                ? "0" 
+                            unread_count: message.sender_id.toString() === userId
+                                ? "0"
                                 : (parseInt(conv.unread_count) + 1).toString()
                         };
                     }
@@ -113,15 +113,15 @@ const RequestPage: FC = () => {
             // If the chat is currently selected, handle the message
             if (selectedChat === message.conversation_id && selectedChatData) {
                 const isFromCurrentUser = message.sender_id.toString() === userId;
-                
+
                 // Verify this message belongs to the currently selected chat
                 if (selectedChatData.chatId !== message.conversation_id) {
                     console.log('Message is for a different chat than currently selected, ignoring');
                     return;
                 }
-                
+
                 console.log(`Message is for current chat (${selectedChatData.chatId}), from current user: ${isFromCurrentUser}`);
-                
+
                 // Create the message object
                 const messageDate = new Date(message.sent_at);
                 const newMsg: ChatMessage = {
@@ -136,47 +136,47 @@ const RequestPage: FC = () => {
                     status: isFromCurrentUser ? (message.is_read ? 'read' as MessageStatus : 'delivered' as MessageStatus) : undefined,
                     is_read: message.is_read
                 };
-                
+
                 // CRITICAL: We need to ensure we keep all existing messages
                 setSelectedChatData(prev => {
                     if (!prev || prev.chatId !== message.conversation_id) {
                         console.log('Chat data changed during update, skipping message update');
                         return prev;
                     }
-                    
+
                     // First check if this exact message already exists in our messages array
                     const messageAlreadyExists = prev.messages.some(m => m.id === newMsg.id);
                     if (messageAlreadyExists) {
                         console.log('Message already exists, not adding duplicate');
                         return prev;
                     }
-                    
+
                     // If the message is from the current user, check for temp message to replace
                     if (isFromCurrentUser) {
-                        const hasTempMessage = prev.messages.some(m => 
+                        const hasTempMessage = prev.messages.some(m =>
                             m.id.startsWith('temp-') && m.text === newMsg.text
                         );
-                        
+
                         if (hasTempMessage) {
                             console.log('Replacing temp message with confirmed one');
                             // Replace temp message with the confirmed one
                             return {
                                 ...prev,
-                                messages: prev.messages.map(m => 
+                                messages: prev.messages.map(m =>
                                     (m.id.startsWith('temp-') && m.text === newMsg.text)
-                                        ? newMsg 
+                                        ? newMsg
                                         : m
                                 )
                             };
                         }
                     }
-                    
+
                     // Add the new message to the existing ones
                     console.log('Adding new message to chat');
-                        return {
-                            ...prev,
-                            messages: [...prev.messages, newMsg]
-                        };
+                    return {
+                        ...prev,
+                        messages: [...prev.messages, newMsg]
+                    };
                 });
             }
         });
@@ -184,7 +184,7 @@ const RequestPage: FC = () => {
         // Listen for messages being read
         socketInstance.on('messages_read', (data) => {
             console.log('Messages read event:', data);
-            
+
             // Update conversations to mark messages as read
             setConversations(prevConversations => {
                 return prevConversations.map(conv => {
@@ -198,17 +198,17 @@ const RequestPage: FC = () => {
                     return conv;
                 });
             });
-            
+
             // IMPORTANT: Also update the status of messages in the currently selected chat
             if (selectedChat === data.conversationId && selectedChatData) {
                 // Update all messages sent by current user to "read" status
                 setSelectedChatData(prev => {
                     if (!prev) return prev;
-                    
+
                     // Get current userId to identify which messages to update
                     const currentUserId = getUserId();
                     if (!currentUserId) return prev;
-                    
+
                     // Update all messages from the current user to "read" status
                     const updatedMessages = prev.messages.map(msg => {
                         if (msg.senderId === currentUserId) {
@@ -220,7 +220,7 @@ const RequestPage: FC = () => {
                         }
                         return msg;
                     });
-                    
+
                     return {
                         ...prev,
                         messages: updatedMessages
@@ -240,24 +240,24 @@ const RequestPage: FC = () => {
         const fetchConversations = async () => {
             setIsLoading(true);
             setError(null);
-            
+
             const userId = getUserId();
-            
+
             if (!userId) {
                 setError("No user ID found. Please log in again.");
                 setIsLoading(false);
                 return;
             }
-            
+
             try {
                 const response = await fetch(`https://drivup-backend.onrender.com/conversations/${userId}`);
-                
+
                 if (!response.ok) {
                     throw new Error(`Failed to fetch conversations: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                
+
                 // Obtenemos los roles de los usuarios
                 const conversationsWithRoles = await Promise.all(
                     data.map(async (conversation: ConversationData) => {
@@ -265,7 +265,7 @@ const RequestPage: FC = () => {
                         const currentUserId = userId;
                         const isUser = currentUserId === conversation.user_id.toString();
                         const otherUserId = isUser ? conversation.passenger_id : conversation.user_id;
-                        
+
                         try {
                             // Llamar al endpoint para obtener el rol
                             const roleResponse = await fetch(`https://drivup-backend.onrender.com/usuarios/${otherUserId}/role`);
@@ -279,12 +279,12 @@ const RequestPage: FC = () => {
                         } catch (error) {
                             console.error(`Error obteniendo rol para usuario ${otherUserId}:`, error);
                         }
-                        
+
                         // Si hay error, devolver la conversación sin rol
                         return conversation;
                     })
                 );
-                
+
                 setConversations(conversationsWithRoles);
                 setIsLoading(false);
             } catch (err) {
@@ -293,7 +293,7 @@ const RequestPage: FC = () => {
                 setIsLoading(false);
             }
         };
-        
+
         fetchConversations();
     }, []);
 
@@ -301,29 +301,29 @@ const RequestPage: FC = () => {
     const fetchMessages = async (conversationId: number) => {
         setIsLoadingMessages(true);
         setMessagesError(null);
-        
+
         try {
             const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversationId}/messages`);
-            
+
             if (!response.ok) {
                 throw new Error(`Failed to fetch messages: ${response.status}`);
             }
-            
+
             const data: MessageData[] = await response.json();
             console.log('Fetched messages from API:', data);
-            
+
             // Transform API message data to the format expected by ChatMessage component
             const userId = getUserId();
             const formattedMessages: ChatMessage[] = data.map(message => {
                 // Parse the sent_at date
                 const sentDate = new Date(message.sent_at);
-                
+
                 // Determine message status for messages sent by current user
                 let messageStatus: MessageStatus | undefined = undefined;
                 if (message.sender_id.toString() === userId) {
                     messageStatus = message.is_read ? 'read' as MessageStatus : 'delivered' as MessageStatus;
                 }
-                
+
                 return {
                     id: message.id.toString(),
                     senderId: message.sender_id.toString(),
@@ -340,7 +340,7 @@ const RequestPage: FC = () => {
                     is_read: message.is_read // Pasar la propiedad is_read para referencia
                 };
             });
-            
+
             return formattedMessages;
         } catch (err) {
             console.error('Error fetching messages:', err);
@@ -354,34 +354,34 @@ const RequestPage: FC = () => {
     // Handle chat selection
     const handleSelectChat = async (id: number) => {
         console.log('Selecting chat ID:', id);
-        
+
         // If selecting the same chat, just return
         if (selectedChat === id) return;
-        
+
         // Clear current chat data before loading new one to avoid message leakage between chats
         if (selectedChat !== id) {
             setSelectedChatData(null);
         }
-        
+
         // Update the selected chat ID
         setSelectedChat(id);
-        
+
         const selectedConversation = conversations.find(conv => conv.id === id);
-        
+
         if (selectedConversation) {
             const currentUserId = getUserId() || '';
             const isUser = currentUserId === selectedConversation.user_id.toString();
-            
+
             // Determine the recipient name based on who the current user is
-            const recipientName = isUser 
+            const recipientName = isUser
                 ? `${selectedConversation.passenger_name} ${selectedConversation.passenger_last_name}`
                 : `${selectedConversation.user_name} ${selectedConversation.user_last_name}`;
-            
+
             // Determine the recipient ID based on who the current user is
             const recipientId = isUser
                 ? selectedConversation.passenger_id
                 : selectedConversation.user_id;
-            
+
             // Show loading state while fetching messages
             setSelectedChatData({
                 chatId: id,
@@ -392,18 +392,18 @@ const RequestPage: FC = () => {
                 currentUserId: currentUserId,
                 recipientRole: selectedConversation.recipientRole
             });
-            
+
             // If there are unread messages, mark them as read when opening the chat
             if (parseInt(selectedConversation.unread_count) > 0) {
                 // Update the local state immediately to show messages as read
                 setConversations(prevConversations => {
-                    return prevConversations.map(conv => 
-                        conv.id === id 
-                            ? { ...conv, unread_count: "0" } 
+                    return prevConversations.map(conv =>
+                        conv.id === id
+                            ? { ...conv, unread_count: "0" }
                             : conv
                     );
                 });
-                
+
                 // If socket connection is available, emit mark_as_read event
                 if (socket && socket.connected) {
                     socket.emit('mark_as_read', {
@@ -413,22 +413,22 @@ const RequestPage: FC = () => {
                     console.log('Marked messages as read for conversation:', id);
                 }
             }
-            
+
             // Fetch messages for this conversation
             const messages = await fetchMessages(id);
-            
+
             // Update the chat data with fetched messages
             if (messages.length > 0) {
                 // Make sure we're still on the same chat (user might have switched during API call)
-            setSelectedChatData(prev => {
-                if (prev && prev.chatId === id) {
-                    return {
-                        ...prev,
+                setSelectedChatData(prev => {
+                    if (prev && prev.chatId === id) {
+                        return {
+                            ...prev,
                             messages: messages // Replace with freshly fetched messages
-                    };
-                }
-                return prev;
-            });
+                        };
+                    }
+                    return prev;
+                });
             }
         }
     };
@@ -436,20 +436,20 @@ const RequestPage: FC = () => {
     // Filter conversations when search term or filter changes
     useEffect(() => {
         let filtered = conversations;
-        
+
         // Apply unread filter
         if (activeFilter === 'unread') {
             filtered = filtered.filter(conversation => parseInt(conversation.unread_count) > 0);
         }
-        
+
         // Apply search filter
         if (searchTerm) {
-            filtered = filtered.filter(conversation => 
+            filtered = filtered.filter(conversation =>
                 `${conversation.passenger_name} ${conversation.passenger_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 conversation.last_message.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-        
+
         setFilteredConversations(filtered);
     }, [searchTerm, activeFilter, conversations]);
 
@@ -458,21 +458,21 @@ const RequestPage: FC = () => {
         // Update the conversations list with new last message
         setConversations(prevConversations => {
             const currentUserId = getUserId();
-            const updatedConversations = prevConversations.map(conv => 
-                conv.id === conversationId 
-                    ? { 
-                        ...conv, 
+            const updatedConversations = prevConversations.map(conv =>
+                conv.id === conversationId
+                    ? {
+                        ...conv,
                         last_message: messageText,
                         last_message_at: new Date().toISOString(),
                         last_sender_id: currentUserId ? parseInt(currentUserId) : undefined,
                         is_read: false,
                         unread_count: "0" // Reset unread since we're the sender
-                    } 
+                    }
                     : conv
             );
-            
+
             // Sort conversations by last_message_at (most recent first)
-            return [...updatedConversations].sort((a, b) => 
+            return [...updatedConversations].sort((a, b) =>
                 new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
             );
         });
@@ -481,7 +481,7 @@ const RequestPage: FC = () => {
     return (
         <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
             <div className="container mx-auto py-6 px-4 h-full">
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
@@ -490,10 +490,10 @@ const RequestPage: FC = () => {
                     <h1 className="text-3xl font-bold text-[#0a0d35] mb-2">Ponerse de acuerdo es fácil</h1>
                     <p className="text-[#4A4E69]/80 max-w-3xl">Utiliza el chat para comunicarte con otros usuarios del sistema -ya seas conductor o pasajero- Define horarios, puntos de encuentro y los terminos del viaje de manera colaborativa y efectiva.</p>
                 </motion.div>
-                
+
                 <div className="flex h-full] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
                     {/* Lista de mensajes (izquierda) */}
-                        <div className="w-1/3 border-r overflow-hidden relative flex flex-col">
+                    <div className="w-1/3 border-r overflow-hidden relative flex flex-col">
                         <div className="p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] sticky top-0 z-10">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -506,13 +506,13 @@ const RequestPage: FC = () => {
                                     <p className="text-xs text-white/70">Mis conversaciones</p>
                                 </div>
                                 <div className="flex space-x-2">
- 
-                                    </div>
+
+                                </div>
                             </div>
                             <div className="mt-3 relative">
                                 <div className="relative group">
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="Buscar mensajes..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -534,13 +534,13 @@ const RequestPage: FC = () => {
                                 <div className="flex justify-between items-center px-2">
                                     <h3 className="text-sm font-medium text-[#4A4E69]">Conversaciones recientes</h3>
                                     <div className="flex space-x-1">
-                                        <button 
+                                        <button
                                             className={`text-xs px-2 py-1 rounded ${activeFilter === 'all' ? 'bg-white text-[#4A4E69] border border-[#4A4E69]/20' : 'text-[#4A4E69]/60 hover:bg-white'} transition-colors`}
                                             onClick={() => setActiveFilter('all')}
                                         >
                                             Todos
                                         </button>
-                                        <button 
+                                        <button
                                             className={`text-xs px-2 py-1 rounded ${activeFilter === 'unread' ? 'bg-white text-[#4A4E69] border border-[#4A4E69]/20' : 'text-[#4A4E69]/60 hover:bg-white'} transition-colors`}
                                             onClick={() => setActiveFilter('unread')}
                                         >
@@ -549,7 +549,7 @@ const RequestPage: FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {isLoading ? (
                                 <div className="p-6 text-center text-[#4A4E69]/70">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-[#4A4E69]/30 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -564,42 +564,42 @@ const RequestPage: FC = () => {
                                     </svg>
                                     <p>{error}</p>
                                 </div>
-                                ) : filteredConversations.length > 0 ? filteredConversations.map((conversation) => {
-                                    const currentUserId = getUserId() || '';
-                                    const isUser = currentUserId === conversation.user_id.toString();
-                                    
-                                    // Determine the correct name to display based on who the current user is
-                                    const displayName = isUser
-                                        ? `${conversation.passenger_name} ${conversation.passenger_last_name}`
-                                        : `${conversation.user_name} ${conversation.user_last_name}`;
-                                    
-                                    // Determine if the last message is from the current user
-                                    const isFromCurrentUser = conversation.last_sender_id !== undefined ? 
-                                        conversation.last_sender_id.toString() === currentUserId : 
-                                        false;
-                                    
-                                    // Determine message status based on read status
-                                    let messageStatus: MessageStatus = 'sent';
-                                    if (isFromCurrentUser) {
-                                        messageStatus = conversation.is_read === true ? 'read' : 'delivered';
-                                    }
-                                    
-                                    return (
-                                        <Message
-                                            key={conversation.id}
-                                            id={conversation.id.toString()}
-                                            senderName={displayName}
-                                            profileImage="/Somil_profile.webp"
-                                            lastMessage={conversation.last_message}
-                                            timestamp={new Date(conversation.last_message_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                            isRead={parseInt(conversation.unread_count) === 0}
-                                            messageStatus={messageStatus}
-                                            isFromCurrentUser={isFromCurrentUser}
-                                            recipientRole={conversation.recipientRole}
-                                            onSelect={(id) => handleSelectChat(parseInt(id))}
-                                        />
-                                    );
-                                }) : (
+                            ) : filteredConversations.length > 0 ? filteredConversations.map((conversation) => {
+                                const currentUserId = getUserId() || '';
+                                const isUser = currentUserId === conversation.user_id.toString();
+
+                                // Determine the correct name to display based on who the current user is
+                                const displayName = isUser
+                                    ? `${conversation.passenger_name} ${conversation.passenger_last_name}`
+                                    : `${conversation.user_name} ${conversation.user_last_name}`;
+
+                                // Determine if the last message is from the current user
+                                const isFromCurrentUser = conversation.last_sender_id !== undefined ?
+                                    conversation.last_sender_id.toString() === currentUserId :
+                                    false;
+
+                                // Determine message status based on read status
+                                let messageStatus: MessageStatus = 'sent';
+                                if (isFromCurrentUser) {
+                                    messageStatus = conversation.is_read === true ? 'read' : 'delivered';
+                                }
+
+                                return (
+                                    <Message
+                                        key={conversation.id}
+                                        id={conversation.id.toString()}
+                                        senderName={displayName}
+                                        profileImage="/Somil_profile.webp"
+                                        lastMessage={conversation.last_message}
+                                        timestamp={new Date(conversation.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        isRead={parseInt(conversation.unread_count) === 0}
+                                        messageStatus={messageStatus}
+                                        isFromCurrentUser={isFromCurrentUser}
+                                        recipientRole={conversation.recipientRole}
+                                        onSelect={(id) => handleSelectChat(parseInt(id))}
+                                    />
+                                );
+                            }) : (
                                 <div className="p-6 text-center text-[#4A4E69]/70">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-[#4A4E69]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -609,7 +609,7 @@ const RequestPage: FC = () => {
                             )}
                         </div>
                     </div>
-                    
+
                     {/* Área de chat (derecha) */}
                     <div className="w-2/3 flex flex-col bg-[#F8F9FA] relative">
                         {selectedChat ? (
@@ -634,7 +634,7 @@ const RequestPage: FC = () => {
                                                 <div>
                                                     <h3 className="text-red-800 font-medium">Error al cargar mensajes</h3>
                                                     <p className="text-red-700 text-sm mt-1">{messagesError}</p>
-                                                    <button 
+                                                    <button
                                                         className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1 px-3 rounded-md text-sm transition-colors"
                                                         onClick={() => handleSelectChat(selectedChat)}
                                                     >
@@ -657,7 +657,7 @@ const RequestPage: FC = () => {
                                 />
                             </>
                         ) : (
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5 }}
