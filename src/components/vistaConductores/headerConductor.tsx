@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
-import { logout } from "../../utils/auth";
+import { logout, getUserId } from "../../utils/auth";
 
 // Define the MenuItem interface to match the one in menuResponsive.tsx
 interface MenuItem {
@@ -13,8 +13,32 @@ interface MenuItem {
 const Header: React.FC = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [userName, setUserName] = useState("Usuario");
+    const [userEmail, setUserEmail] = useState("usuario@example.com");
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+
+    // Fetch user data
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userId = getUserId();
+            if (!userId) return;
+            
+            try {
+                const response = await fetch(`https://drivup-backend.onrender.com/usuario/${userId}`);
+                if (!response.ok) throw new Error("Error fetching user data");
+                
+                const userData = await response.json();
+                // Format name to display first name and first last name
+                setUserName(`${userData.name} ${userData.last_name}`);
+                setUserEmail(userData.email);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+        
+        fetchUserData();
+    }, []);
 
     const toggleMenu = () => {
         setIsMenuVisible((prev) => !prev);
@@ -105,7 +129,7 @@ const Header: React.FC = () => {
                                 }}
                             />
                         </div>
-                        <span className="text-sm font-medium">Usuario</span>
+                        <span className="text-sm font-medium">{userName}</span>
                         <ChevronDown className="h-4 w-4" />
                     </div>
 
@@ -113,8 +137,8 @@ const Header: React.FC = () => {
                     {isProfileMenuOpen && (
                         <div className="absolute right-0 top-12 bg-[#0a0d35] border border-[#2D2D2D] rounded-md shadow-lg py-2 w-48 z-50">
                             <div className="px-4 py-2 border-b border-[#2D2D2D]">
-                                <p className="text-sm font-medium">Usuario</p>
-                                <p className="text-xs text-gray-400">usuario@example.com</p>
+                                <p className="text-sm font-medium">{userName}</p>
+                                <p className="text-xs text-gray-400">{userEmail}</p>
                             </div>
                             <div className="py-1">
                                 <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
