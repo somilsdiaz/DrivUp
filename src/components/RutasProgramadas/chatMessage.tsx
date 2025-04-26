@@ -206,8 +206,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         const hasHighlightedMessage = localStorage.getItem('scrollToMessageId') !== null;
         
         // desactivamos scroll automático si hay un mensaje destacado
+        // or enable it if we're switching to a chat without highlighted messages
         setPreventAutoScroll(hasHighlightedMessage);
-    }, [chatId]);
+        
+        // Clean up highlighted elements when component unmounts or chatId changes
+        return () => {
+            document.querySelectorAll('[data-highlighted="true"]').forEach(el => {
+                el.classList.remove('bg-[#F2B134]/10', 'bg-[#F2B134]/20');
+                el.removeAttribute('data-highlighted');
+            });
+        };
+    }, [chatId, messages]);
 
     // Update local messages when prop messages change (this will run for the same chatId)
     useEffect(() => {
@@ -396,11 +405,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                             }
                         }, 5000);
                     }
-                    
-                    // después de 3 segundos, permitimos de nuevo el scroll automático
-                    setTimeout(() => {
-                        setPreventAutoScroll(false);
-                    }, 3000);
                 }
                 
                 if (!foundAnyMessage) {
@@ -464,6 +468,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         
         // Add message to the UI immediately
         setLocalMessages(prev => [...prev, optimisticMessage]);
+        
+        // After sending a message, enable auto-scroll to show the new message
+        // This helps if the user was previously viewing highlighted messages
+        setPreventAutoScroll(false);
         
         try {
             // Try to send via socket first if available
