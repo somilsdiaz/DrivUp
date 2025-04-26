@@ -1,29 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import InfoPasajeroProfile from './infoPasajeroProfile';
-import { Socket } from 'socket.io-client';
-import { MessageStatus } from './message';
-
-interface Message {
-    id: string;
-    senderId: string;
-    text: string;
-    timestamp: string;
-    status?: MessageStatus;
-    _originalId?: string;
-    fullDate?: Date;
-}
-
-interface ChatMessageProps {
-    chatId: string;
-    recipientName: string;
-    recipientImage: string;
-    recipientId: number;
-    messages: Message[];
-    currentUserId: string;
-    onMessageSent: (conversationId: number, messageText: string) => void;
-    socket: Socket | null;
-}
+import { motion } from 'framer-motion';
+import { Message, ChatMessageProps } from './chatMessage/chatTypes';
+import { processMessagesWithDateSeparators } from './chatMessage/messageUtils';
+import MessageBubble from './chatMessage/MessageBubble';
+import DateSeparator from './chatMessage/DateSeparator';
+import EmojiPicker from './chatMessage/EmojiPicker';
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
     chatId,
@@ -73,7 +56,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                 ...msg, 
                                 id: message.id.toString(),
                                 _originalId: msg.id, // Keep original ID for stable rendering
-                                status: 'delivered' as MessageStatus,
+                                status: 'delivered' as const,
                                 timestamp: new Date(message.sent_at || Date.now()).toLocaleString([], {
                                     hour: '2-digit',
                                     minute: '2-digit'
@@ -93,7 +76,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                     ...msg, 
                                     id: message.id.toString(),
                                     _originalId: msg.id, // Keep original ID for key stability
-                                    status: 'delivered' as MessageStatus,
+                                    status: 'delivered' as const,
                                     timestamp: new Date(message.sent_at || Date.now()).toLocaleString([], {
                                         hour: '2-digit',
                                         minute: '2-digit'
@@ -112,7 +95,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                 hour: '2-digit',
                                 minute: '2-digit'
                             }),
-                            status: 'delivered' as MessageStatus
+                            status: 'delivered' as const
                         };
                         return [...prev, newConfirmedMessage];
                     }
@@ -246,7 +229,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 return {
                     ...msg,
                     // Default to 'delivered' if is_read is undefined, otherwise use 'read' if is_read is true
-                    status: (msg as any).is_read === true ? 'read' as MessageStatus : 'delivered' as MessageStatus
+                    status: (msg as any).is_read === true ? 'read' : 'delivered'
                 };
             }
             
@@ -277,14 +260,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setLocalMessages(result);
     }, [messages, currentUserId]);
 
-    // Efecto para enfocar el input cuando se abre el chat
+    // Focus input when chat opens
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
     }, [chatId]);
 
-    // Desplazarse al último mensaje cuando cambian los mensajes
+    // Scroll to last message when messages change
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [localMessages]);
@@ -379,158 +362,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setShowInfoModal(!showInfoModal);
     };
 
-    // Render message status indicators
-    const renderMessageStatus = (message: Message) => {
-        if (message.senderId !== currentUserId) return null;
-        
-        switch (message.status) {
-            case 'read':
-                return (
-                    <div className="flex items-center space-x-1">
-                        <div className="flex relative transform scale-110">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-[#5AAA95] drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 -ml-1.5 text-[#5AAA95] drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        </div>
-                    </div>
-                );
-            case 'delivered':
-                return (
-                    <div className="flex items-center space-x-1">
-                        <div className="flex relative transform scale-105">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-[#F2B134] drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 -ml-1.5 text-[#F2B134] drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        </div>
-                    </div>
-                );
-            case 'sent':
-                return (
-                    <div className="flex items-center space-x-1">
-                        <div className="relative transform scale-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-[#4A4E69]/70 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        </div>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
-    // Agregar función para procesar mensajes y añadir separadores por día
-    const processMessagesWithDateSeparators = (messages: Message[]) => {
-        if (!messages || messages.length === 0) return [];
-        
-        // Función para obtener una cadena de fecha descriptiva
-        const getDateLabel = (date: Date) => {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            
-            const messageDate = new Date(date);
-            messageDate.setHours(0, 0, 0, 0);
-            
-            if (messageDate.getTime() === today.getTime()) {
-                return "Hoy";
-            } else if (messageDate.getTime() === yesterday.getTime()) {
-                return "Ayer";
-            } else {
-                return messageDate.toLocaleDateString('es-ES', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-            }
-        };
-        
-        // Convertir las cadenas de timestamp a objetos Date
-        const messagesWithDates = messages.map(msg => {
-            // Intentar extraer la fecha del timestamp
-            // Primero intentamos con el formato completo, y si falla usamos un formato más simple
-            let fullDate;
-            if (msg.timestamp.includes('/')) {
-                // Formato con fecha completa: "dd/mm/yyyy, hh:mm"
-                const parts = msg.timestamp.split(', ');
-                const dateParts = parts[0].split('/');
-                if (dateParts.length === 3) {
-                    fullDate = new Date(
-                        parseInt(dateParts[2]), // año
-                        parseInt(dateParts[1]) - 1, // mes (0-11)
-                        parseInt(dateParts[0]) // día
-                    );
-                } else {
-                    fullDate = new Date(); // En caso de error, usar fecha actual
-                }
-            } else {
-                // Formato simple "hh:mm" - asumimos fecha actual
-                fullDate = new Date();
-            }
-            
-            return {
-                ...msg,
-                fullDate
-            };
-        });
-        
-        // Ordenar mensajes por fecha (más antiguos primero)
-        messagesWithDates.sort((a, b) => {
-            if (a.id.startsWith('temp-') && !b.id.startsWith('temp-')) return 1;
-            if (!a.id.startsWith('temp-') && b.id.startsWith('temp-')) return -1;
-            
-            const dateA = a.fullDate || new Date();
-            const dateB = b.fullDate || new Date();
-            return dateA.getTime() - dateB.getTime();
-        });
-        
-        // Agrupar mensajes por día
-        const groupedByDate: { [key: string]: Message[] } = {};
-        
-        messagesWithDates.forEach(msg => {
-            const date = msg.fullDate || new Date();
-            const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD
-            
-            if (!groupedByDate[dateString]) {
-                groupedByDate[dateString] = [];
-            }
-            
-            groupedByDate[dateString].push(msg);
-        });
-        
-        // Crear un array con separadores de fecha
-        const result: (Message | { isSeparator: true, label: string, date: string })[] = [];
-        
-        // Ordenar las fechas (más antiguas primero)
-        const sortedDates = Object.keys(groupedByDate).sort();
-        
-        sortedDates.forEach(dateString => {
-            // Añadir el separador
-            const firstMessage = groupedByDate[dateString][0];
-            const date = firstMessage.fullDate || new Date();
-            const label = getDateLabel(date);
-            
-            result.push({ 
-                isSeparator: true, 
-                label, 
-                date: dateString 
-            });
-            
-            // Añadir los mensajes de ese día
-            result.push(...groupedByDate[dateString]);
-        });
-        
-        return result;
-    };
-
     // Renderizar los mensajes junto con los separadores de fecha
     const renderMessagesWithSeparators = () => {
         const processedMessages = processMessagesWithDateSeparators(localMessages);
@@ -538,74 +369,21 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         return (
             <AnimatePresence mode="sync" initial={false}>
                 {processedMessages.map((item) => {
-                    // Renderizar separador de fecha
+                    // Render date separator
                     if ('isSeparator' in item) {
-                        return (
-                            <motion.div 
-                                key={`sep-${item.date}`}
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0 }}
-                                className="text-center my-4"
-                            >
-                                <span className="inline-block px-3 py-1 text-xs bg-white text-[#4A4E69]/70 rounded-full shadow-sm border border-[#4A4E69]/10">
-                                    {item.label}
-                                </span>
-                            </motion.div>
-                        );
+                        return <DateSeparator key={`sep-${item.date}`} separator={item} />;
                     }
                     
-                    // Renderizar mensaje normal
+                    // Render normal message
                     const message = item as Message;
                     return (
-                        <motion.div 
+                        <MessageBubble
                             key={message._originalId || message.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ 
-                                opacity: 1, 
-                                y: 0,
-                                transition: { 
-                                    type: "spring", 
-                                    stiffness: 500, 
-                                    damping: 30,
-                                    mass: 1
-                                }
-                            }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            layout
-                            layoutId={message._originalId || message.id}
-                            className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
-                        >
-                            {message.senderId !== currentUserId && (
-                                <img 
-                                    src={recipientImage} 
-                                    alt={recipientName} 
-                                    className="h-8 w-8 rounded-full object-cover mr-2 self-end mb-1"
-                                />
-                            )}
-                            <motion.div 
-                                layout
-                                layoutId={`bubble-${message._originalId || message.id}`}
-                                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm transition-all hover:shadow-md ${
-                                    message.senderId === currentUserId 
-                                        ? 'bg-gradient-to-r from-[#2D5DA1] to-[#2D5DA1]/90 text-white rounded-br-none' 
-                                        : 'bg-white text-[#4A4E69] rounded-bl-none'
-                                }`}
-                            >
-                                <p className="leading-relaxed">{message.text}</p>
-                                <motion.div 
-                                    layout
-                                    className="flex items-center justify-end mt-1 space-x-1"
-                                >
-                                    <span className={`text-xs ${message.senderId === currentUserId ? 'text-white/70' : 'text-[#4A4E69]/60'}`}>
-                                        {message.timestamp}
-                                    </span>
-                                    <motion.div layout>
-                                        {renderMessageStatus(message)}
-                                    </motion.div>
-                                </motion.div>
-                            </motion.div>
-                        </motion.div>
+                            message={message}
+                            isCurrentUser={message.senderId === currentUserId}
+                            recipientImage={recipientImage}
+                            recipientName={recipientName}
+                        />
                     );
                 })}
             </AnimatePresence>
@@ -619,7 +397,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             transition={{ duration: 0.3 }}
             className="flex flex-col h-full bg-white rounded-lg shadow-lg overflow-hidden"
         >
-            {/* Header del chat */}
+            {/* Chat header */}
             <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] text-white sticky top-0 z-10">
                 <div className="flex items-center">
                     <div className="relative">
@@ -646,7 +424,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 </div>
             </div>
 
-            {/* Área de mensajes */}
+            {/* Message area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light max-h-[calc(100vh-220px)] scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
                 {renderMessagesWithSeparators()}
                 
@@ -671,7 +449,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Área de entrada de mensaje */}
+            {/* Message input area */}
             <div className="border-t p-4 bg-white sticky bottom-0 z-10 shadow-md">
                 <div className="flex items-center">    
                     <div className="relative flex-1 mx-2">
@@ -696,17 +474,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         </button>
                         
                         {showEmojis && (
-                            <div className="absolute bottom-12 right-0 bg-white rounded-lg shadow-xl p-2 border border-gray-200 grid grid-cols-6 gap-1 w-64">
-                                {['😊', '😂', '❤️', '👍', '🙏', '😍', '😎', '🔥', '🎉', '👋', '😢', '🤔'].map(emoji => (
-                                    <button 
-                                        key={emoji} 
-                                        className="text-xl p-1 hover:bg-gray-100 rounded transition-colors"
-                                        onClick={() => setNewMessage(prev => prev + emoji)}
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
-                            </div>
+                            <EmojiPicker onEmojiSelect={(emoji) => setNewMessage(prev => prev + emoji)} />
                         )}
                     </div>
                     
@@ -735,7 +503,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 </div>
             </div>
 
-            {/* Usar el componente InfoPasajeroProfile */}
+            {/* User InfoPasajeroProfile component */}
             <InfoPasajeroProfile
                 isOpen={showInfoModal}
                 onClose={toggleInfoModal}
