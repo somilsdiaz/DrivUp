@@ -12,6 +12,7 @@ interface MessageProps {
     isRead: boolean;
     messageStatus?: MessageStatus;
     isFromCurrentUser: boolean;
+    recipientRole?: string;
     onSelect: (id: string) => void;
 }
 
@@ -24,6 +25,7 @@ const Message: React.FC<MessageProps> = ({
     isRead,
     messageStatus = 'sent',
     isFromCurrentUser,
+    recipientRole,
     onSelect
 }) => {
     const [isHovered, setIsHovered] = useState(false);
