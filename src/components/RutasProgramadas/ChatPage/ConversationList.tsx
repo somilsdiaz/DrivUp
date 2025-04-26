@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import Message, { MessageStatus } from "../message";
 import { ConversationListProps } from "../../../types/chat";
 import { getUserId } from "../../../utils/auth";
@@ -9,10 +9,44 @@ const ConversationList: FC<ConversationListProps> = ({
     searchTerm,
     activeFilter,
     filteredConversations,
+    selectedChat,
     onSearchChange,
     onFilterChange,
     onSelectChat
 }) => {
+    // Efecto para actualizar las coincidencias en el chat actual cuando se busca
+    useEffect(() => {
+        if (selectedChat && searchTerm.trim()) {
+            // Buscar si hay coincidencias en el chat actual
+            const currentOpenedChat = filteredConversations.find(
+                conv => conv.id === selectedChat
+            );
+            
+            if (currentOpenedChat?.highlightedMessage) {
+                // Hay coincidencias en el chat actual, activar highlighting
+                localStorage.removeItem('scrollToMessageId');
+                localStorage.removeItem('highlightedMessageIds');
+                localStorage.removeItem('totalMatches');
+                
+                const matchedIds = currentOpenedChat.highlightedMessage.matchedMessageIds || [];
+                const totalMatches = currentOpenedChat.highlightedMessage.totalMatches || 1;
+                
+                localStorage.setItem('scrollToMessageId', currentOpenedChat.highlightedMessage.id || '');
+                localStorage.setItem('highlightedMessageIds', JSON.stringify(matchedIds));
+                localStorage.setItem('totalMatches', totalMatches.toString());
+                
+                // Disparar evento para notificar al chat que debe resaltar los mensajes
+                window.dispatchEvent(new CustomEvent('highlightUpdated', {
+                    detail: {
+                        highlightedMessageId: currentOpenedChat.highlightedMessage.id,
+                        matchedMessageIds: matchedIds,
+                        totalMatches: totalMatches
+                    }
+                }));
+            }
+        }
+    }, [searchTerm, filteredConversations, selectedChat]);
+
     return (
         <div className="w-1/3 border-r overflow-hidden relative flex flex-col">
             <div className="p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] sticky top-0 z-10">
