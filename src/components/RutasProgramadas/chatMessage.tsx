@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AnimatePresence } from 'framer-motion';
 import InfoPasajeroProfile from './infoPasajeroProfile';
 import { motion } from 'framer-motion';
 import { Message, ChatMessageProps } from './chatMessage/chatTypes';
@@ -272,6 +271,40 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [localMessages]);
 
+    // actualiza el elemento al que hacemos scroll cuando se monta el componente
+    useEffect(() => {
+        // efecto secundario para hacer scroll al final de los mensajes
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // verificamos si hay un mensaje destacado al que debemos hacer scroll
+        const scrollToMessageId = localStorage.getItem('scrollToMessageId');
+        if (scrollToMessageId) {
+            console.log("Intentando hacer scroll al mensaje:", scrollToMessageId);
+            
+            // buscamos el elemento
+            const messageElement = document.getElementById(`message-${scrollToMessageId}`);
+            if (messageElement) {
+                // hacemos scroll con una pequeña animación
+                setTimeout(() => {
+                    messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // resaltamos el mensaje
+                    messageElement.classList.add('bg-[#F2B134]/20');
+                    setTimeout(() => {
+                        messageElement.classList.remove('bg-[#F2B134]/20');
+                        messageElement.classList.add('bg-[#F2B134]/10');
+                    }, 1000);
+                }, 500);
+                
+                // limpiamos después de usar
+                localStorage.removeItem('scrollToMessageId');
+            } else {
+                console.log("Mensaje destacado no encontrado en el DOM");
+            }
+        }
+    }, [messages]);
+
     const handleSendMessage = async () => {
         if (newMessage.trim() === '' || isSending) return;
         
@@ -366,28 +399,31 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const renderMessagesWithSeparators = () => {
         const processedMessages = processMessagesWithDateSeparators(localMessages);
         
-        return (
-            <AnimatePresence mode="sync" initial={false}>
-                {processedMessages.map((item) => {
-                    // Render date separator
-                    if ('isSeparator' in item) {
-                        return <DateSeparator key={`sep-${item.date}`} separator={item} />;
-                    }
-                    
-                    // Render normal message
-                    const message = item as Message;
-                    return (
-                        <MessageBubble
-                            key={message._originalId || message.id}
-                            message={message}
-                            isCurrentUser={message.senderId === currentUserId}
-                            recipientImage={recipientImage}
-                            recipientName={recipientName}
-                        />
-                    );
-                })}
-            </AnimatePresence>
-        );
+        return processedMessages.map((item) => {
+            if ('isSeparator' in item) {
+                return <DateSeparator key={`separator-${item.date}`} separator={item} />;
+            }
+
+            const isFromCurrentUser = item.senderId === currentUserId;
+            
+            // identificamos si este es el mensaje destacado
+            const isHighlightedMessage = item.id === localStorage.getItem('scrollToMessageId');
+            
+            return (
+                <div 
+                    id={`message-${item.id}`} 
+                    key={item._originalId || item.id}
+                    className={isHighlightedMessage ? 'scroll-mt-8' : ''}
+                >
+                    <MessageBubble
+                        message={item}
+                        isCurrentUser={isFromCurrentUser}
+                        recipientImage={recipientImage}
+                        recipientName={recipientName}
+                    />
+                </div>
+            );
+        });
     };
 
     return (

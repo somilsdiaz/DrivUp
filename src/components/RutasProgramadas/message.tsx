@@ -14,6 +14,8 @@ interface MessageProps {
     isFromCurrentUser: boolean;
     onSelect: (id: string) => void;
     recipientRole?: string;
+    isHighlighted?: boolean;
+    highlightedMessageId?: string;
 }
 
 const Message: React.FC<MessageProps> = ({
@@ -26,7 +28,9 @@ const Message: React.FC<MessageProps> = ({
     messageStatus = 'sent',
     isFromCurrentUser,
     onSelect,
-    recipientRole = 'pasajero'
+    recipientRole = 'pasajero',
+    isHighlighted = false,
+    highlightedMessageId
 }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
@@ -100,12 +104,29 @@ const Message: React.FC<MessageProps> = ({
         return null;
     };
 
+    // funcion para manejar clic en el mensaje
+    const handleClick = () => {
+        // pasamos el id del mensaje destacado si existe, para hacer scroll
+        onSelect(id);
+        
+        // guardamos el id del mensaje destacado para recuperarlo después
+        if (isHighlighted && highlightedMessageId) {
+            localStorage.setItem('scrollToMessageId', highlightedMessageId);
+        }
+    };
+
     return (
         <div 
-            onClick={() => onSelect(id)}
+            onClick={handleClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`flex items-center p-4 cursor-pointer transition-all duration-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${isHovered ? 'bg-[#F8F9FA] shadow-sm' : isRead ? 'bg-white' : 'bg-[#F8F9FA]/80'}`}
+            className={`flex items-center p-4 cursor-pointer transition-all duration-300 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            } ${
+                isHighlighted ? 'bg-[#F2B134]/10 hover:bg-[#F2B134]/20' : 
+                isHovered ? 'bg-[#F8F9FA] shadow-sm' : 
+                isRead ? 'bg-white' : 'bg-[#F8F9FA]/80'
+            }`}
         >
             <div className="relative">
                 <div className={`relative rounded-full overflow-hidden transition-transform duration-300 ${isHovered ? 'transform scale-105' : ''}`}>
@@ -142,10 +163,22 @@ const Message: React.FC<MessageProps> = ({
                                 Nuevo
                             </span>
                         )}
+                        {isHighlighted && (
+                            <span className="mr-1 text-[#5AAA95] text-xs font-medium bg-[#5AAA95]/10 px-2 py-0.5 rounded-full flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Coincidencia
+                            </span>
+                        )}
                         <span className="text-xs text-[#4A4E69]/70 ml-1">{timestamp}</span>
                     </div>
                 </div>
-                <p className={`text-sm transition-all duration-300 ${!isRead && !isFromCurrentUser ? 'text-[#4A4E69] font-semibold' : 'text-[#4A4E69]/80'} truncate`}>
+                <p className={`text-sm transition-all duration-300 ${
+                    isHighlighted ? 'text-[#2D5DA1] font-semibold' :
+                    !isRead && !isFromCurrentUser ? 'text-[#4A4E69] font-semibold' : 
+                    'text-[#4A4E69]/80'
+                } truncate`}>
                     {isFromCurrentUser ? `Tú: ${lastMessage}` : lastMessage}
                 </p>
                 <div className="flex items-center mt-1 text-xs">

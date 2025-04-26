@@ -103,6 +103,15 @@ const ConversationList: FC<ConversationListProps> = ({
                     if (isFromCurrentUser) {
                         messageStatus = conversation.is_read === true ? 'read' : 'delivered';
                     }
+                    
+                    // Si hay un mensaje destacado por búsqueda, lo usamos en lugar del último mensaje
+                    let lastMessageText = conversation.last_message;
+                    let isHighlighted = false;
+                    
+                    if (conversation.highlightedMessage) {
+                        lastMessageText = conversation.highlightedMessage.text;
+                        isHighlighted = true;
+                    }
 
                     return (
                         <Message
@@ -110,12 +119,14 @@ const ConversationList: FC<ConversationListProps> = ({
                             id={conversation.id.toString()}
                             senderName={displayName}
                             profileImage="/Somil_profile.webp"
-                            lastMessage={conversation.last_message}
+                            lastMessage={lastMessageText}
                             timestamp={new Date(conversation.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             isRead={parseInt(conversation.unread_count) === 0}
                             messageStatus={messageStatus}
                             isFromCurrentUser={isFromCurrentUser}
                             recipientRole={conversation.recipientRole}
+                            isHighlighted={isHighlighted}
+                            highlightedMessageId={conversation.highlightedMessage?.id}
                             onSelect={(id) => onSelectChat(parseInt(id))}
                         />
                     );

@@ -18,6 +18,12 @@ export interface ConversationData {
     last_sender_id?: number;
     is_read?: boolean;
     recipientRole?: string;
+    // información para destacar mensajes en búsqueda
+    highlightedMessage?: {
+        id: string;
+        text: string;
+        originalIndex?: number;
+    };
 }
 
 // Interface for API message data

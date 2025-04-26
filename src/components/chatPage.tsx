@@ -404,7 +404,15 @@ const RequestPage: FC = () => {
             console.log("Ejecutando filtrado con término:", searchTerm);
             
             // aplica filtro de no leidos primero sobre todas las conversaciones
-            let filtered = [...conversations];
+            let filtered = [...conversations].map(conv => ({
+                ...conv, 
+                highlightedMessage: undefined as {
+                    id: string;
+                    text: string;
+                    originalIndex?: number;
+                } | undefined
+            }));
+            
             if (activeFilter === 'unread') {
                 filtered = filtered.filter(conversation => parseInt(conversation.unread_count) > 0);
             }
@@ -434,9 +442,17 @@ const RequestPage: FC = () => {
                 
                 // busca en el ultimo mensaje
                 const lastMessage = conversation.last_message.toLowerCase();
+                const lastMessageMatches = lastMessage.includes(searchTermLower);
                 
-                return otherUserName.includes(searchTermLower) || 
-                       lastMessage.includes(searchTermLower);
+                // si hay coincidencia en el ultimo mensaje, lo destacamos
+                if (lastMessageMatches) {
+                    conversation.highlightedMessage = {
+                        id: 'last', // usamos 'last' como id para el ultimo mensaje
+                        text: conversation.last_message,
+                    };
+                }
+                
+                return otherUserName.includes(searchTermLower) || lastMessageMatches;
             });
             
             // busqueda avanzada en historial de mensajes
@@ -466,11 +482,30 @@ const RequestPage: FC = () => {
                             const messages = await response.json();
                             
                             // busca en el contenido de cada mensaje
-                            const hasMatchingMessage = messages.some((message: { message_text: string }) => 
-                                message.message_text.toLowerCase().includes(searchTermLower)
-                            );
+                            let matchingMessage = null;
+                            let matchingIndex = -1;
                             
-                            return hasMatchingMessage ? conversation : null;
+                            // buscamos el primer mensaje que coincida (podria modificarse para el más reciente)
+                            for (let i = 0; i < messages.length; i++) {
+                                const message = messages[i];
+                                if (message.message_text.toLowerCase().includes(searchTermLower)) {
+                                    matchingMessage = message;
+                                    matchingIndex = i;
+                                    break;
+                                }
+                            }
+                            
+                            if (matchingMessage) {
+                                // guardamos la informacion del mensaje destacado
+                                conversation.highlightedMessage = {
+                                    id: matchingMessage.id.toString(),
+                                    text: matchingMessage.message_text,
+                                    originalIndex: matchingIndex
+                                };
+                                return conversation;
+                            }
+                            
+                            return null;
                         } catch (error) {
                             console.error(`Error buscando en mensajes para conversacion ${conversation.id}:`, error);
                             return null;
@@ -479,7 +514,14 @@ const RequestPage: FC = () => {
                 );
                 
                 // combina resultados de ambas busquedas
-                const matchingFromHistory = matchingByMessageHistory.filter((conv): conv is ConversationData => conv !== null);
+                const matchingFromHistory = matchingByMessageHistory.filter((conv): conv is ConversationData & {
+                    highlightedMessage: {
+                        id: string;
+                        text: string;
+                        originalIndex?: number;
+                    } | undefined;
+                } => conv !== null);
+                
                 const finalResults = [...matchingByBasicInfo, ...matchingFromHistory];
                 
                 console.log(`Búsqueda completada. Encontradas ${finalResults.length} conversaciones.`);
