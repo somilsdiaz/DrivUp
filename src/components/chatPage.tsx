@@ -8,10 +8,12 @@ import ChatContainer from "./RutasProgramadas/ChatPage/ChatContainer";
 import { MessageStatus } from "./RutasProgramadas/message";
 
 const RequestPage: FC = () => {
+    // estados principales para las conversaciones
     const [conversations, setConversations] = useState<ConversationData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // estados para el chat seleccionado
     const [selectedChat, setSelectedChat] = useState<number | null>(null);
     const [selectedChatData, setSelectedChatData] = useState<{
         chatId: number;
@@ -23,16 +25,17 @@ const RequestPage: FC = () => {
         recipientRole?: string;
     } | null>(null);
 
+    // estados para cargar mensajes
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [messagesError, setMessagesError] = useState<string | null>(null);
     const [socket, setSocket] = useState<Socket | null>(null);
 
-    // Estado para filtrar mensajes
+    // estados para filtrar conversaciones
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredConversations, setFilteredConversations] = useState<ConversationData[]>([]);
     const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
 
-    // Initialize Socket.io connection
+    // inicializa conexion con socket.io
     useEffect(() => {
         const userId = getUserId();
         if (!userId) return;
@@ -40,17 +43,17 @@ const RequestPage: FC = () => {
         const socketInstance = io('https://drivup-backend.onrender.com');
         setSocket(socketInstance);
 
-        // Authenticate user with socket
+        // autentica usuario en el socket
         socketInstance.on('connect', () => {
             console.log('Connected to socket server');
             socketInstance.emit('authenticate', userId);
         });
 
-        // Listen for new messages from socket
+        // escucha nuevos mensajes del socket
         socketInstance.on('new_message', (message) => {
             console.log('New message received from socket:', message);
 
-            // Update conversation list when receiving a new message
+            // actualiza lista de conversaciones al recibir nuevo mensaje
             setConversations(prevConversations => {
                 return prevConversations.map(conv => {
                     if (conv.id === message.conversation_id) {
@@ -69,11 +72,11 @@ const RequestPage: FC = () => {
                 });
             });
 
-            // If the chat is currently selected, handle the message
+            // si el chat esta seleccionado, maneja el mensaje
             if (selectedChat === message.conversation_id && selectedChatData) {
                 const isFromCurrentUser = message.sender_id.toString() === userId;
 
-                // Verify this message belongs to the currently selected chat
+                // verifica que el mensaje pertenece al chat actual
                 if (selectedChatData.chatId !== message.conversation_id) {
                     console.log('Message is for a different chat than currently selected, ignoring');
                     return;
@@ -81,7 +84,7 @@ const RequestPage: FC = () => {
 
                 console.log(`Message is for current chat (${selectedChatData.chatId}), from current user: ${isFromCurrentUser}`);
 
-                // Create the message object
+                // crea objeto de mensaje
                 const messageDate = new Date(message.sent_at);
                 const newMsg: ChatMessage = {
                     id: message.id.toString(),
@@ -91,26 +94,26 @@ const RequestPage: FC = () => {
                         hour: '2-digit',
                         minute: '2-digit'
                     }),
-                    fullDate: messageDate, // Añadir fecha completa para agrupación por días
+                    fullDate: messageDate, // añadir fecha completa para agrupación por días
                     status: isFromCurrentUser ? (message.is_read ? 'read' as MessageStatus : 'delivered' as MessageStatus) : undefined,
                     is_read: message.is_read
                 };
 
-                // CRITICAL: We need to ensure we keep all existing messages
+                // actualiza mensajes conservando los existentes
                 setSelectedChatData(prev => {
                     if (!prev || prev.chatId !== message.conversation_id) {
                         console.log('Chat data changed during update, skipping message update');
                         return prev;
                     }
 
-                    // First check if this exact message already exists in our messages array
+                    // comprueba si el mensaje ya existe
                     const messageAlreadyExists = prev.messages.some(m => m.id === newMsg.id);
                     if (messageAlreadyExists) {
                         console.log('Message already exists, not adding duplicate');
                         return prev;
                     }
 
-                    // If the message is from the current user, check for temp message to replace
+                    // si es del usuario actual, busca mensaje temporal para reemplazar
                     if (isFromCurrentUser) {
                         const hasTempMessage = prev.messages.some(m =>
                             m.id.startsWith('temp-') && m.text === newMsg.text
@@ -118,7 +121,7 @@ const RequestPage: FC = () => {
 
                         if (hasTempMessage) {
                             console.log('Replacing temp message with confirmed one');
-                            // Replace temp message with the confirmed one
+                            // reemplaza mensaje temporal con el confirmado
                             return {
                                 ...prev,
                                 messages: prev.messages.map(m =>
@@ -130,7 +133,7 @@ const RequestPage: FC = () => {
                         }
                     }
 
-                    // Add the new message to the existing ones
+                    // agrega nuevo mensaje a los existentes
                     console.log('Adding new message to chat');
                     return {
                         ...prev,
@@ -140,11 +143,11 @@ const RequestPage: FC = () => {
             }
         });
 
-        // Listen for messages being read
+        // escucha cuando los mensajes son leidos
         socketInstance.on('messages_read', (data) => {
             console.log('Messages read event:', data);
 
-            // Update conversations to mark messages as read
+            // actualiza conversaciones para marcar mensajes como leidos
             setConversations(prevConversations => {
                 return prevConversations.map(conv => {
                     if (conv.id === data.conversationId) {
@@ -158,17 +161,17 @@ const RequestPage: FC = () => {
                 });
             });
 
-            // IMPORTANT: Also update the status of messages in the currently selected chat
+            // actualiza estado de mensajes en el chat seleccionado
             if (selectedChat === data.conversationId && selectedChatData) {
-                // Update all messages sent by current user to "read" status
+                // actualiza todos los mensajes enviados por usuario actual a "leido"
                 setSelectedChatData(prev => {
                     if (!prev) return prev;
 
-                    // Get current userId to identify which messages to update
+                    // obtiene userId para identificar mensajes a actualizar
                     const currentUserId = getUserId();
                     if (!currentUserId) return prev;
 
-                    // Update all messages from the current user to "read" status
+                    // actualiza todos los mensajes del usuario actual a estado "leido"
                     const updatedMessages = prev.messages.map(msg => {
                         if (msg.senderId === currentUserId) {
                             return {
@@ -189,12 +192,12 @@ const RequestPage: FC = () => {
         });
 
         return () => {
-            // Clean up socket connection
+            // limpia conexion socket
             socketInstance.disconnect();
         };
     }, [selectedChat]);
 
-    // Fetch conversations from API
+    // obtiene conversaciones desde la api
     useEffect(() => {
         const fetchConversations = async () => {
             setIsLoading(true);
@@ -217,16 +220,16 @@ const RequestPage: FC = () => {
 
                 const data = await response.json();
 
-                // Obtenemos los roles de los usuarios
+                // obtiene roles de usuarios
                 const conversationsWithRoles = await Promise.all(
                     data.map(async (conversation: ConversationData) => {
-                        // Determinar el ID del otro usuario (no el actual)
+                        // determina id del otro usuario
                         const currentUserId = userId;
                         const isUser = currentUserId === conversation.user_id.toString();
                         const otherUserId = isUser ? conversation.passenger_id : conversation.user_id;
 
                         try {
-                            // Llamar al endpoint para obtener el rol
+                            // consulta el rol del usuario
                             const roleResponse = await fetch(`https://drivup-backend.onrender.com/usuarios/${otherUserId}/role`);
                             if (roleResponse.ok) {
                                 const roleData = await roleResponse.json();
@@ -239,7 +242,7 @@ const RequestPage: FC = () => {
                             console.error(`Error obteniendo rol para usuario ${otherUserId}:`, error);
                         }
 
-                        // Si hay error, devolver la conversación sin rol
+                        // devuelve conversacion sin rol en caso de error
                         return conversation;
                     })
                 );
@@ -256,7 +259,7 @@ const RequestPage: FC = () => {
         fetchConversations();
     }, []);
 
-    // Fetch messages for a conversation
+    // obtiene mensajes para una conversacion
     const fetchMessages = async (conversationId: number) => {
         setIsLoadingMessages(true);
         setMessagesError(null);
@@ -271,13 +274,13 @@ const RequestPage: FC = () => {
             const data: MessageData[] = await response.json();
             console.log('Fetched messages from API:', data);
 
-            // Transform API message data to the format expected by ChatMessage component
+            // transforma datos de api al formato esperado por el componente
             const userId = getUserId();
             const formattedMessages: ChatMessage[] = data.map(message => {
-                // Parse the sent_at date
+                // analiza fecha de envio
                 const sentDate = new Date(message.sent_at);
 
-                // Determine message status for messages sent by current user
+                // determina estado del mensaje para los enviados por usuario actual
                 let messageStatus: MessageStatus | undefined = undefined;
                 if (message.sender_id.toString() === userId) {
                     messageStatus = message.is_read ? 'read' as MessageStatus : 'delivered' as MessageStatus;
@@ -294,9 +297,9 @@ const RequestPage: FC = () => {
                         month: '2-digit',
                         year: 'numeric'
                     }),
-                    fullDate: sentDate, // Añadir la fecha completa para agrupación por días
-                    status: messageStatus, // Añadir estado de lectura
-                    is_read: message.is_read // Pasar la propiedad is_read para referencia
+                    fullDate: sentDate, // fecha completa para agrupacion por dias
+                    status: messageStatus, // estado de lectura
+                    is_read: message.is_read // propiedad is_read para referencia
                 };
             });
 
@@ -310,19 +313,19 @@ const RequestPage: FC = () => {
         }
     };
 
-    // Handle chat selection
+    // maneja seleccion de chat
     const handleSelectChat = async (id: number) => {
         console.log('Selecting chat ID:', id);
 
-        // If selecting the same chat, just return
+        // si selecciona el mismo chat, termina
         if (selectedChat === id) return;
 
-        // Clear current chat data before loading new one to avoid message leakage between chats
+        // limpia datos del chat actual antes de cargar uno nuevo
         if (selectedChat !== id) {
             setSelectedChatData(null);
         }
 
-        // Update the selected chat ID
+        // actualiza id del chat seleccionado
         setSelectedChat(id);
 
         const selectedConversation = conversations.find(conv => conv.id === id);
@@ -331,30 +334,30 @@ const RequestPage: FC = () => {
             const currentUserId = getUserId() || '';
             const isUser = currentUserId === selectedConversation.user_id.toString();
 
-            // Determine the recipient name based on who the current user is
+            // determina nombre del destinatario segun quien sea el usuario actual
             const recipientName = isUser
                 ? `${selectedConversation.passenger_name} ${selectedConversation.passenger_last_name}`
                 : `${selectedConversation.user_name} ${selectedConversation.user_last_name}`;
 
-            // Determine the recipient ID based on who the current user is
+            // determina id del destinatario segun quien sea el usuario actual
             const recipientId = isUser
                 ? selectedConversation.passenger_id
                 : selectedConversation.user_id;
 
-            // Show loading state while fetching messages
+            // muestra estado de carga mientras obtiene mensajes
             setSelectedChatData({
                 chatId: id,
                 recipientName: recipientName,
-                recipientImage: '/Somil_profile.webp', // Default image until we have real profile images
+                recipientImage: '/Somil_profile.webp', // imagen por defecto hasta tener imagenes reales
                 recipientId: recipientId,
-                messages: [], // Start with empty messages to avoid showing old messages
+                messages: [], // comienza con mensajes vacios para evitar mostrar mensajes antiguos
                 currentUserId: currentUserId,
                 recipientRole: selectedConversation.recipientRole
             });
 
-            // If there are unread messages, mark them as read when opening the chat
+            // si hay mensajes no leidos, los marca como leidos al abrir el chat
             if (parseInt(selectedConversation.unread_count) > 0) {
-                // Update the local state immediately to show messages as read
+                // actualiza estado local para mostrar mensajes como leidos
                 setConversations(prevConversations => {
                     return prevConversations.map(conv =>
                         conv.id === id
@@ -363,7 +366,7 @@ const RequestPage: FC = () => {
                     );
                 });
 
-                // If socket connection is available, emit mark_as_read event
+                // si hay conexion socket, emite evento mark_as_read
                 if (socket && socket.connected) {
                     socket.emit('mark_as_read', {
                         conversationId: id,
@@ -373,17 +376,17 @@ const RequestPage: FC = () => {
                 }
             }
 
-            // Fetch messages for this conversation
+            // obtiene mensajes para esta conversacion
             const messages = await fetchMessages(id);
 
-            // Update the chat data with fetched messages
+            // actualiza datos del chat con mensajes obtenidos
             if (messages.length > 0) {
-                // Make sure we're still on the same chat (user might have switched during API call)
+                // asegura que seguimos en el mismo chat
                 setSelectedChatData(prev => {
                     if (prev && prev.chatId === id) {
                         return {
                             ...prev,
-                            messages: messages // Replace with freshly fetched messages
+                            messages: messages // reemplaza con mensajes recien obtenidos
                         };
                     }
                     return prev;
@@ -392,16 +395,16 @@ const RequestPage: FC = () => {
         }
     };
 
-    // Filter conversations when search term or filter changes
+    // filtra conversaciones cuando cambia termino de busqueda o filtro
     useEffect(() => {
         let filtered = conversations;
 
-        // Apply unread filter
+        // aplica filtro de no leidos
         if (activeFilter === 'unread') {
             filtered = filtered.filter(conversation => parseInt(conversation.unread_count) > 0);
         }
 
-        // Apply search filter
+        // aplica filtro de busqueda
         if (searchTerm) {
             filtered = filtered.filter(conversation =>
                 `${conversation.passenger_name} ${conversation.passenger_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -412,9 +415,9 @@ const RequestPage: FC = () => {
         setFilteredConversations(filtered);
     }, [searchTerm, activeFilter, conversations]);
 
-    // Handle message sent
+    // maneja envio de mensaje
     const handleMessageSent = (conversationId: number, messageText: string) => {
-        // Update the conversations list with new last message
+        // actualiza lista de conversaciones con nuevo ultimo mensaje
         setConversations(prevConversations => {
             const currentUserId = getUserId();
             const updatedConversations = prevConversations.map(conv =>
@@ -425,24 +428,24 @@ const RequestPage: FC = () => {
                         last_message_at: new Date().toISOString(),
                         last_sender_id: currentUserId ? parseInt(currentUserId) : undefined,
                         is_read: false,
-                        unread_count: "0" // Reset unread since we're the sender
+                        unread_count: "0" // reinicia no leidos ya que somos el remitente
                     }
                     : conv
             );
 
-            // Sort conversations by last_message_at (most recent first)
+            // ordena conversaciones por last_message_at (mas recientes primero)
             return [...updatedConversations].sort((a, b) =>
                 new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
             );
         });
     };
 
-    // Handle search term change
+    // maneja cambios en termino de busqueda
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
     };
 
-    // Handle filter change
+    // maneja cambios de filtro
     const handleFilterChange = (filter: 'all' | 'unread') => {
         setActiveFilter(filter);
     };
@@ -461,7 +464,7 @@ const RequestPage: FC = () => {
                 </motion.div>
 
                 <div className="flex h-full] bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
-                    {/* Lista de conversaciones (izquierda) */}
+                    {/* lista de conversaciones (izquierda) */}
                     <ConversationList
                         conversations={conversations}
                         isLoading={isLoading}
@@ -475,7 +478,7 @@ const RequestPage: FC = () => {
                         onSelectChat={handleSelectChat}
                     />
 
-                    {/* Área de chat (derecha) */}
+                    {/* area de chat (derecha) */}
                     <div className="w-2/3 flex flex-col bg-[#F8F9FA] relative">
                         <ChatContainer
                             selectedChat={selectedChat}

@@ -12,12 +12,14 @@ const ChatContainer: FC<ChatContainerProps> = ({
     handleMessageSent,
     socket
 }) => {
+    // si no hay chat seleccionado, muestra estado vacio
     if (!selectedChat) {
         return <EmptyChatState />;
     }
 
     return (
         <>
+            {/* indicador de carga de mensajes */}
             {isLoadingMessages && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
                     <div className="flex flex-col items-center">
@@ -28,6 +30,8 @@ const ChatContainer: FC<ChatContainerProps> = ({
                     </div>
                 </div>
             )}
+            
+            {/* mensaje de error */}
             {messagesError && (
                 <div className="absolute inset-0 bg-white/90 flex items-center justify-center z-10">
                     <div className="bg-red-50 p-4 rounded-lg border border-red-200 max-w-md">
@@ -49,6 +53,8 @@ const ChatContainer: FC<ChatContainerProps> = ({
                     </div>
                 </div>
             )}
+            
+            {/* componente principal del chat */}
             <ChatMessage
                 chatId={selectedChatData?.chatId.toString() || ''}
                 recipientName={selectedChatData?.recipientName || ''}

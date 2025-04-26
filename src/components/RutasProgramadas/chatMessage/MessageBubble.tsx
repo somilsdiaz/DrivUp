@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Message } from './chatTypes';
 import { renderMessageStatus } from './messageUtils';
 
+// propiedades para la burbuja de mensaje
 interface MessageBubbleProps {
     message: Message;
     isCurrentUser: boolean;
@@ -35,6 +36,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             layoutId={message._originalId || message.id}
             className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
         >
+            {/* muestra avatar del destinatario solo si no es usuario actual */}
             {!isCurrentUser && recipientImage && (
                 <img 
                     src={recipientImage} 
@@ -51,14 +53,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                         : 'bg-white text-[#4A4E69] rounded-bl-none'
                 }`}
             >
+                {/* texto del mensaje */}
                 <p className="leading-relaxed">{message.text}</p>
                 <motion.div 
                     layout
                     className="flex items-center justify-end mt-1 space-x-1"
                 >
+                    {/* hora del mensaje */}
                     <span className={`text-xs ${isCurrentUser ? 'text-white/70' : 'text-[#4A4E69]/60'}`}>
                         {message.timestamp}
                     </span>
+                    {/* indicador de estado del mensaje */}
                     <motion.div layout>
                         {renderMessageStatus(message, isCurrentUser ? message.senderId : '')}
                     </motion.div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { DateSeparator as DateSeparatorType } from './chatTypes';
 
+// propiedades para el separador de fechas
 interface DateSeparatorProps {
     separator: DateSeparatorType;
 }
@@ -15,6 +16,7 @@ const DateSeparator: React.FC<DateSeparatorProps> = ({ separator }) => {
             exit={{ opacity: 0 }}
             className="text-center my-4"
         >
+            {/* etiqueta con la fecha entre mensajes */}
             <span className="inline-block px-3 py-1 text-xs bg-white text-[#4A4E69]/70 rounded-full shadow-sm border border-[#4A4E69]/10">
                 {separator.label}
             </span>

@@ -1,6 +1,6 @@
 import { Message, MessageOrSeparator } from './chatTypes';
 
-// Render message status indicators
+// renderiza indicadores de estado del mensaje
 export const renderMessageStatus = (message: Message, currentUserId: string) => {
     if (message.senderId !== currentUserId) return null;
     
@@ -46,7 +46,7 @@ export const renderMessageStatus = (message: Message, currentUserId: string) => 
     }
 };
 
-// Function to get date label (Today, Yesterday, or formatted date)
+// obtiene etiqueta de fecha (hoy, ayer o fecha formateada)
 export const getDateLabel = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -70,29 +70,29 @@ export const getDateLabel = (date: Date) => {
     }
 };
 
-// Process messages and add date separators
+// procesa mensajes y agrega separadores de fecha
 export const processMessagesWithDateSeparators = (messages: Message[]): MessageOrSeparator[] => {
     if (!messages || messages.length === 0) return [];
     
-    // Convert timestamp strings to Date objects
+    // convierte strings de timestamp a objetos Date
     const messagesWithDates = messages.map(msg => {
-        // Try to extract the date from timestamp
+        // intenta extraer la fecha del timestamp
         let fullDate;
         if (msg.timestamp.includes('/')) {
-            // Format with full date: "dd/mm/yyyy, hh:mm"
+            // formato con fecha completa: "dd/mm/yyyy, hh:mm"
             const parts = msg.timestamp.split(', ');
             const dateParts = parts[0].split('/');
             if (dateParts.length === 3) {
                 fullDate = new Date(
-                    parseInt(dateParts[2]), // year
-                    parseInt(dateParts[1]) - 1, // month (0-11)
-                    parseInt(dateParts[0]) // day
+                    parseInt(dateParts[2]), // año
+                    parseInt(dateParts[1]) - 1, // mes (0-11)
+                    parseInt(dateParts[0]) // dia
                 );
             } else {
-                fullDate = new Date(); // In case of error, use current date
+                fullDate = new Date(); // en caso de error, usa fecha actual
             }
         } else {
-            // Simple format "hh:mm" - assume current date
+            // formato simple "hh:mm" - asume fecha actual
             fullDate = new Date();
         }
         
@@ -102,7 +102,7 @@ export const processMessagesWithDateSeparators = (messages: Message[]): MessageO
         };
     });
     
-    // Sort messages by date (oldest first)
+    // ordena mensajes por fecha (mas antiguos primero)
     messagesWithDates.sort((a, b) => {
         if (a.id.startsWith('temp-') && !b.id.startsWith('temp-')) return 1;
         if (!a.id.startsWith('temp-') && b.id.startsWith('temp-')) return -1;
@@ -112,7 +112,7 @@ export const processMessagesWithDateSeparators = (messages: Message[]): MessageO
         return dateA.getTime() - dateB.getTime();
     });
     
-    // Group messages by day
+    // agrupa mensajes por dia
     const groupedByDate: { [key: string]: Message[] } = {};
     
     messagesWithDates.forEach(msg => {
@@ -126,14 +126,14 @@ export const processMessagesWithDateSeparators = (messages: Message[]): MessageO
         groupedByDate[dateString].push(msg);
     });
     
-    // Create an array with date separators
+    // crea array con separadores de fecha
     const result: MessageOrSeparator[] = [];
     
-    // Sort dates (oldest first)
+    // ordena fechas (mas antiguas primero)
     const sortedDates = Object.keys(groupedByDate).sort();
     
     sortedDates.forEach(dateString => {
-        // Add the separator
+        // agrega el separador
         const firstMessage = groupedByDate[dateString][0];
         const date = firstMessage.fullDate || new Date();
         const label = getDateLabel(date);
@@ -144,7 +144,7 @@ export const processMessagesWithDateSeparators = (messages: Message[]): MessageO
             date: dateString 
         });
         
-        // Add the messages for that day
+        // agrega los mensajes de ese dia
         result.push(...groupedByDate[dateString]);
     });
     
