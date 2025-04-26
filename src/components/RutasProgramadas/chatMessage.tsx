@@ -25,10 +25,39 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const [sendError, setSendError] = useState<string | null>(null);
     // variable para controlar si debemos hacer scroll al último mensaje
     const [preventAutoScroll, setPreventAutoScroll] = useState(false);
+    // Add a state to track localStorage changes for highlighted messages
+    const [highlightedMessageChanged, setHighlightedMessageChanged] = useState(0);
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const firstRenderRef = useRef(true);
+
+    // Listen for localStorage changes that affect highlights
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'scrollToMessageId' || e.key === 'highlightedMessageIds' || e.key === 'totalMatches') {
+                console.log('ChatMessage: Detected localStorage change for highlights', e.key);
+                // Trigger a re-render by updating the state
+                setHighlightedMessageChanged(prev => prev + 1);
+            }
+        };
+        
+        // Custom event handler for highlight updates
+        const handleHighlightUpdated = (e: CustomEvent) => {
+            console.log('ChatMessage: Received highlightUpdated event', e.detail);
+            setHighlightedMessageChanged(prev => prev + 1);
+        };
+        
+        // Listen for storage events (for multi-tab support)
+        window.addEventListener('storage', handleStorageChange);
+        // Listen for our custom highlight event 
+        window.addEventListener('highlightUpdated', handleHighlightUpdated as EventListener);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('highlightUpdated', handleHighlightUpdated as EventListener);
+        };
+    }, []);
 
     // Listen for socket events
     useEffect(() => {
@@ -289,6 +318,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         const highlightedIds = localStorage.getItem('highlightedMessageIds');
         const totalMatches = localStorage.getItem('totalMatches');
         
+        // To help with debugging
+        if (scrollToMessageId) {
+            console.log(`ChatMessage: Processing highlighted messages for chat ${chatId}. Target message ID: ${scrollToMessageId}`);
+        }
+        
+        // Clear any previous highlighted elements when the effect runs again
+        // Instead of trying to select by the Tailwind classes directly, 
+        // we'll use a more reliable approach to find elements
+        document.querySelectorAll('[data-highlighted="true"]').forEach(el => {
+            el.classList.remove('bg-[#F2B134]/10', 'bg-[#F2B134]/20');
+            el.removeAttribute('data-highlighted');
+        });
+        
         if (scrollToMessageId) {
             console.log("Intentando hacer scroll a mensajes coincidentes:", scrollToMessageId);
             
@@ -326,6 +368,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                         
                         // resaltamos todos los mensajes coincidentes
                         messageElement.classList.add('bg-[#F2B134]/20');
+                        messageElement.setAttribute('data-highlighted', 'true');
                         setTimeout(() => {
                             if (messageElement) {
                                 messageElement.classList.remove('bg-[#F2B134]/20');
@@ -372,7 +415,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 localStorage.removeItem('totalMatches');
             }, 300);
         }
-    }, [messages, chatId]);
+    }, [messages, chatId, highlightedMessageChanged]);
 
     const handleSendMessage = async () => {
         if (newMessage.trim() === '' || isSending) return;
@@ -468,6 +511,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const renderMessagesWithSeparators = () => {
         const processedMessages = processMessagesWithDateSeparators(localMessages);
         
+        // Get current highlighted message ID - will change when highlightedMessageChanged updates
+        const currentHighlightedMessageId = localStorage.getItem('scrollToMessageId');
+        console.log(`Rendering messages, highlighted ID: ${currentHighlightedMessageId}, change count: ${highlightedMessageChanged}`);
+        
         return processedMessages.map((item) => {
             if ('isSeparator' in item) {
                 return <DateSeparator key={`separator-${item.date}`} separator={item} />;
@@ -476,13 +523,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             const isFromCurrentUser = item.senderId === currentUserId;
             
             // identificamos si este es el mensaje destacado
-            const isHighlightedMessage = item.id === localStorage.getItem('scrollToMessageId');
+            const isHighlightedMessage = item.id === currentHighlightedMessageId;
             
             return (
                 <div 
                     id={`message-${item.id}`} 
                     key={item._originalId || item.id}
                     className={isHighlightedMessage ? 'scroll-mt-8' : ''}
+                    data-highlighted={isHighlightedMessage ? 'true' : undefined}
                 >
                     <MessageBubble
                         message={item}

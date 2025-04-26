@@ -124,9 +124,26 @@ const Message: React.FC<MessageProps> = ({
                 localStorage.setItem('scrollToMessageId', highlightedMessageId || '');
                 localStorage.setItem('highlightedMessageIds', JSON.stringify(matchedMessageIds));
                 localStorage.setItem('totalMatches', totalMatches.toString());
+                
+                // Dispatch a custom event to notify that highlights have changed
+                window.dispatchEvent(new CustomEvent('highlightUpdated', {
+                    detail: {
+                        highlightedMessageId,
+                        matchedMessageIds,
+                        totalMatches
+                    }
+                }));
             } else if (highlightedMessageId) {
                 localStorage.setItem('scrollToMessageId', highlightedMessageId);
                 localStorage.setItem('totalMatches', '1');
+                
+                // Dispatch a custom event to notify that highlights have changed
+                window.dispatchEvent(new CustomEvent('highlightUpdated', {
+                    detail: {
+                        highlightedMessageId,
+                        totalMatches: 1
+                    }
+                }));
             }
         }
     };

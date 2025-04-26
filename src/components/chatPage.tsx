@@ -323,16 +323,17 @@ const RequestPage: FC = () => {
         localStorage.removeItem('highlightedMessageIds');
         localStorage.removeItem('totalMatches');
 
-        // si selecciona el mismo chat, termina
-        if (selectedChat === id) return;
+        // We no longer return early if it's the same chat
+        // This allows reloading the chat with new highlighted messages
+        // from a new search
+        const isSameChat = selectedChat === id;
 
-        // limpia datos del chat actual antes de cargar uno nuevo
-        if (selectedChat !== id) {
+        // Only clear chat data if we're switching to a different chat
+        if (!isSameChat) {
             setSelectedChatData(null);
+            // actualiza id del chat seleccionado
+            setSelectedChat(id);
         }
-
-        // actualiza id del chat seleccionado
-        setSelectedChat(id);
 
         const selectedConversation = conversations.find(conv => conv.id === id);
 
@@ -350,16 +351,19 @@ const RequestPage: FC = () => {
                 ? selectedConversation.passenger_id
                 : selectedConversation.user_id;
 
-            // muestra estado de carga mientras obtiene mensajes
-            setSelectedChatData({
-                chatId: id,
-                recipientName: recipientName,
-                recipientImage: '/Somil_profile.webp', // imagen por defecto hasta tener imagenes reales
-                recipientId: recipientId,
-                messages: [], // comienza con mensajes vacios para evitar mostrar mensajes antiguos
-                currentUserId: currentUserId,
-                recipientRole: selectedConversation.recipientRole
-            });
+            // If it's the same chat, we only want to reset the UI if there are new search results
+            if (!isSameChat || (selectedConversation.highlightedMessage && selectedConversation.highlightedMessage.id)) {
+                // muestra estado de carga mientras obtiene mensajes
+                setSelectedChatData({
+                    chatId: id,
+                    recipientName: recipientName,
+                    recipientImage: '/Somil_profile.webp', // imagen por defecto hasta tener imagenes reales
+                    recipientId: recipientId,
+                    messages: [], // comienza con mensajes vacios para evitar mostrar mensajes antiguos
+                    currentUserId: currentUserId,
+                    recipientRole: selectedConversation.recipientRole
+                });
+            }
 
             // si hay mensajes no leidos, los marca como leidos al abrir el chat
             if (parseInt(selectedConversation.unread_count) > 0) {
