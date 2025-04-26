@@ -397,23 +397,120 @@ const RequestPage: FC = () => {
 
     // filtra conversaciones cuando cambia termino de busqueda o filtro
     useEffect(() => {
-        let filtered = conversations;
-
-        // aplica filtro de no leidos
-        if (activeFilter === 'unread') {
-            filtered = filtered.filter(conversation => parseInt(conversation.unread_count) > 0);
-        }
-
-        // aplica filtro de busqueda
-        if (searchTerm) {
-            filtered = filtered.filter(conversation =>
-                `${conversation.passenger_name} ${conversation.passenger_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                conversation.last_message.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        setFilteredConversations(filtered);
+        // variable para controlar si el componente sigue montado
+        let isMounted = true;
+        
+        const filterConversations = async () => {
+            console.log("Ejecutando filtrado con término:", searchTerm);
+            
+            // aplica filtro de no leidos primero sobre todas las conversaciones
+            let filtered = [...conversations];
+            if (activeFilter === 'unread') {
+                filtered = filtered.filter(conversation => parseInt(conversation.unread_count) > 0);
+            }
+            
+            // si el campo de busqueda esta vacio, solo aplicamos el filtro de no leidos
+            if (!searchTerm || searchTerm.trim() === '') {
+                console.log("Campo de búsqueda vacío, mostrando todas las conversaciones con filtro:", activeFilter);
+                if (isMounted) {
+                    setFilteredConversations(filtered);
+                }
+                return;
+            }
+            
+            // obtiene id del usuario actual para busqueda
+            const currentUserId = getUserId() || '';
+            const searchTermLower = searchTerm.toLowerCase().trim();
+            
+            // busqueda en info basica (nombres y ultimo mensaje)
+            const matchingByBasicInfo = filtered.filter(conversation => {
+                // determina cual usuario es el destinatario (no el usuario actual)
+                const isCurrentUserDriver = currentUserId === conversation.user_id.toString();
+                
+                // solo busca en el nombre del otro usuario (no en el usuario actual)
+                const otherUserName = isCurrentUserDriver 
+                    ? `${conversation.passenger_name} ${conversation.passenger_last_name}`.toLowerCase()
+                    : `${conversation.user_name} ${conversation.user_last_name}`.toLowerCase();
+                
+                // busca en el ultimo mensaje
+                const lastMessage = conversation.last_message.toLowerCase();
+                
+                return otherUserName.includes(searchTermLower) || 
+                       lastMessage.includes(searchTermLower);
+            });
+            
+            // busqueda avanzada en historial de mensajes
+            try {
+                // solo busca en conversaciones que no coincidieron con la info basica
+                const conversationsToCheck = filtered.filter(conv => !matchingByBasicInfo.includes(conv));
+                
+                if (conversationsToCheck.length === 0) {
+                    // si no hay mas conversaciones que revisar, terminamos
+                    if (isMounted) {
+                        setFilteredConversations(matchingByBasicInfo);
+                    }
+                    return;
+                }
+                
+                // busca en cada conversacion
+                const matchingByMessageHistory = await Promise.all(
+                    conversationsToCheck.map(async (conversation) => {
+                        try {
+                            // obtiene mensajes
+                            const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversation.id}/messages`);
+                            
+                            if (!response.ok) {
+                                return null;
+                            }
+                            
+                            const messages = await response.json();
+                            
+                            // busca en el contenido de cada mensaje
+                            const hasMatchingMessage = messages.some((message: { message_text: string }) => 
+                                message.message_text.toLowerCase().includes(searchTermLower)
+                            );
+                            
+                            return hasMatchingMessage ? conversation : null;
+                        } catch (error) {
+                            console.error(`Error buscando en mensajes para conversacion ${conversation.id}:`, error);
+                            return null;
+                        }
+                    })
+                );
+                
+                // combina resultados de ambas busquedas
+                const matchingFromHistory = matchingByMessageHistory.filter((conv): conv is ConversationData => conv !== null);
+                const finalResults = [...matchingByBasicInfo, ...matchingFromHistory];
+                
+                console.log(`Búsqueda completada. Encontradas ${finalResults.length} conversaciones.`);
+                
+                // actualiza estado solo si el componente sigue montado
+                if (isMounted) {
+                    setFilteredConversations(finalResults);
+                }
+            } catch (error) {
+                console.error("Error en búsqueda:", error);
+                // en caso de error, mostramos al menos las coincidencias basicas
+                if (isMounted) {
+                    setFilteredConversations(matchingByBasicInfo);
+                }
+            }
+        };
+        
+        // ejecutamos la funcion de filtrado
+        filterConversations();
+        
+        // limpieza cuando el componente se desmonta o los dependencias cambian
+        return () => {
+            isMounted = false;
+        };
     }, [searchTerm, activeFilter, conversations]);
+    
+    // maneja cambios en el campo de busqueda
+    const handleSearchChange = (value: string) => {
+        console.log("Término de búsqueda cambiado a:", value);
+        setSearchTerm(value);
+    };
 
     // maneja envio de mensaje
     const handleMessageSent = (conversationId: number, messageText: string) => {
@@ -438,11 +535,6 @@ const RequestPage: FC = () => {
                 new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
             );
         });
-    };
-
-    // maneja cambios en termino de busqueda
-    const handleSearchChange = (value: string) => {
-        setSearchTerm(value);
     };
 
     // maneja cambios de filtro
