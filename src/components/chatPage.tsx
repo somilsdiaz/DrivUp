@@ -57,13 +57,20 @@ const RequestPage: FC = () => {
             setConversations(prevConversations => {
                 return prevConversations.map(conv => {
                     if (conv.id === message.conversation_id) {
+                        // Check if the message is from someone else and the conversation is currently selected
+                        // If so, we'll mark it as read immediately
+                        const isMessageFromOther = message.sender_id.toString() !== userId;
+                        const isConversationOpen = selectedChat === message.conversation_id;
+                        const shouldMarkAsRead = isMessageFromOther && isConversationOpen;
+                        
                         return {
                             ...conv,
                             last_message: message.message_text,
                             last_message_at: message.sent_at,
                             last_sender_id: message.sender_id,
-                            is_read: message.sender_id.toString() === userId,
-                            unread_count: message.sender_id.toString() === userId
+                            // If the conversation is currently open, mark as read immediately
+                            is_read: message.sender_id.toString() === userId || shouldMarkAsRead,
+                            unread_count: (message.sender_id.toString() === userId || shouldMarkAsRead)
                                 ? "0"
                                 : (parseInt(conv.unread_count) + 1).toString()
                         };
@@ -75,6 +82,7 @@ const RequestPage: FC = () => {
             // si el chat esta seleccionado, maneja el mensaje
             if (selectedChat === message.conversation_id && selectedChatData) {
                 const isFromCurrentUser = message.sender_id.toString() === userId;
+                const isFromOtherUser = !isFromCurrentUser;
 
                 // verifica que el mensaje pertenece al chat actual
                 if (selectedChatData.chatId !== message.conversation_id) {
@@ -83,6 +91,19 @@ const RequestPage: FC = () => {
                 }
 
                 console.log(`Message is for current chat (${selectedChatData.chatId}), from current user: ${isFromCurrentUser}`);
+
+                // If the message is from another user and the chat is currently open,
+                // we need to mark it as read immediately
+                if (isFromOtherUser && socket && socket.connected) {
+                    console.log('Automatically marking message as read because chat is open');
+                    socket.emit('mark_as_read', {
+                        conversationId: message.conversation_id,
+                        userId: parseInt(userId)
+                    });
+                    
+                    // Update the message's read status locally
+                    message.is_read = true;
+                }
 
                 // crea objeto de mensaje
                 const messageDate = new Date(message.sent_at);

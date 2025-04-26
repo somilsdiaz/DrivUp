@@ -147,6 +147,25 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             }
         };
 
+        // Handle new messages - Needed to properly update read status in real-time
+        const handleNewMessage = (message: any) => {
+            // Only handle messages for the current chat and from other users
+            if (parseInt(chatId) === message.conversation_id && 
+                message.sender_id.toString() !== currentUserId) {
+                
+                console.log('ChatMessage: New message received in current chat, marking as read');
+                
+                // Mark as read immediately since the user is viewing this chat
+                socket.emit('mark_as_read', {
+                    conversationId: parseInt(chatId),
+                    userId: parseInt(currentUserId)
+                });
+                
+                // No need to update the local messages as the parent component (chatPage) 
+                // will handle adding the new message to the chat
+            }
+        };
+
         // Handle errors
         const handleMessageError = (error: any) => {
             console.error('Error sending message:', error);
@@ -157,11 +176,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         socket.on('message_sent', handleMessageSent);
         socket.on('message_error', handleMessageError);
         socket.on('messages_read', handleMessagesRead);
+        socket.on('new_message', handleNewMessage);
 
         return () => {
             socket.off('message_sent', handleMessageSent);
             socket.off('message_error', handleMessageError);
             socket.off('messages_read', handleMessagesRead);
+            socket.off('new_message', handleNewMessage);
         };
     }, [socket, chatId, currentUserId]);
 
