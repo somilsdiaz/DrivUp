@@ -14,28 +14,31 @@ const ConversationList: FC<ConversationListProps> = ({
     onFilterChange,
     onSelectChat
 }) => {
-    // Efecto para actualizar las coincidencias en el chat actual cuando se busca
+    // efecto para actualizar coincidencias en tiempo real en el chat actual
     useEffect(() => {
         if (selectedChat && searchTerm.trim()) {
-            // Buscar si hay coincidencias en el chat actual
+            // busca coincidencias solo en el chat abierto actualmente
             const currentOpenedChat = filteredConversations.find(
                 conv => conv.id === selectedChat
             );
             
+            // solo procesa si hay resultados de busqueda en este chat
             if (currentOpenedChat?.highlightedMessage) {
-                // Hay coincidencias en el chat actual, activar highlighting
+                // limpia datos anteriores de localStorage para evitar conflictos
                 localStorage.removeItem('scrollToMessageId');
                 localStorage.removeItem('highlightedMessageIds');
                 localStorage.removeItem('totalMatches');
                 
+                // extrae informacion de las coincidencias encontradas
                 const matchedIds = currentOpenedChat.highlightedMessage.matchedMessageIds || [];
                 const totalMatches = currentOpenedChat.highlightedMessage.totalMatches || 1;
                 
+                // guarda informacion en localStorage para que el componente de chat la acceda
                 localStorage.setItem('scrollToMessageId', currentOpenedChat.highlightedMessage.id || '');
                 localStorage.setItem('highlightedMessageIds', JSON.stringify(matchedIds));
                 localStorage.setItem('totalMatches', totalMatches.toString());
                 
-                // Disparar evento para notificar al chat que debe resaltar los mensajes
+                // notifica al componente de chat que debe resaltar mensajes mediante un evento
                 window.dispatchEvent(new CustomEvent('highlightUpdated', {
                     detail: {
                         highlightedMessageId: currentOpenedChat.highlightedMessage.id,
@@ -45,10 +48,11 @@ const ConversationList: FC<ConversationListProps> = ({
                 }));
             }
         }
-    }, [searchTerm, filteredConversations, selectedChat]);
+    }, [searchTerm, filteredConversations, selectedChat]); // se ejecuta cuando cambia la busqueda o el chat seleccionado
 
     return (
         <div className="w-1/3 border-r overflow-hidden relative flex flex-col">
+            {/* cabecera con titulo y campo de busqueda */}
             <div className="p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] sticky top-0 z-10">
                 <div className="flex items-center justify-between">
                     <div>
@@ -63,6 +67,7 @@ const ConversationList: FC<ConversationListProps> = ({
                     <div className="flex space-x-2">
                     </div>
                 </div>
+                {/* campo de busqueda con efecto hover y contador de resultados */}
                 <div className="mt-3 relative">
                     <div className="relative group">
                         <input
@@ -76,6 +81,7 @@ const ConversationList: FC<ConversationListProps> = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
+                    {/* muestra contador de resultados cuando hay termino de busqueda */}
                     {searchTerm && (
                         <div className="absolute right-2 top-2.5 text-xs text-white/80 bg-[#5AAA95] px-2 py-0.5 rounded-full">
                             {filteredConversations.length} resultados
@@ -83,7 +89,9 @@ const ConversationList: FC<ConversationListProps> = ({
                     )}
                 </div>
             </div>
+            {/* contenedor principal con scroll para lista de conversaciones */}
             <div className="divide-y divide-[#4A4E69]/10 overflow-y-auto max-h-[calc(100vh-240px)] flex-1 scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
+                {/* barra de filtros para todos/no leidos */}
                 <div className="p-2 bg-[#F8F9FA] sticky top-0 z-10 border-b">
                     <div className="flex justify-between items-center px-2">
                         <h3 className="text-sm font-medium text-[#4A4E69]">Conversaciones recientes</h3>
@@ -104,6 +112,7 @@ const ConversationList: FC<ConversationListProps> = ({
                     </div>
                 </div>
 
+                {/* estados de carga, error o lista de conversaciones */}
                 {isLoading ? (
                     <div className="p-6 text-center text-[#4A4E69]/70">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-[#4A4E69]/30 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -122,23 +131,23 @@ const ConversationList: FC<ConversationListProps> = ({
                     const currentUserId = getUserId() || '';
                     const isUser = currentUserId === conversation.user_id.toString();
 
-                    // Determine the correct name to display based on who the current user is
+                    // determina el nombre a mostrar segun quien sea el usuario actual
                     const displayName = isUser
                         ? `${conversation.passenger_name} ${conversation.passenger_last_name}`
                         : `${conversation.user_name} ${conversation.user_last_name}`;
 
-                    // Determine if the last message is from the current user
+                    // verifica si el ultimo mensaje lo envio el usuario actual
                     const isFromCurrentUser = conversation.last_sender_id !== undefined ?
                         conversation.last_sender_id.toString() === currentUserId :
                         false;
 
-                    // Determine message status based on read status
+                    // configura estado del mensaje segun si fue leido o no
                     let messageStatus: MessageStatus = 'sent';
                     if (isFromCurrentUser) {
                         messageStatus = conversation.is_read === true ? 'read' : 'delivered';
                     }
                     
-                    // Si hay un mensaje destacado por búsqueda, lo usamos en lugar del último mensaje
+                    // prepara datos para mostrar mensaje destacado si hay busqueda activa
                     let lastMessageText = conversation.last_message;
                     let isHighlighted = false;
                     let highlightedMessageId = undefined;
@@ -153,6 +162,7 @@ const ConversationList: FC<ConversationListProps> = ({
                         matchedMessageIds = conversation.highlightedMessage.matchedMessageIds;
                     }
 
+                    // renderiza cada item de conversacion con el componente Message
                     return (
                         <Message
                             key={conversation.id}
@@ -173,6 +183,7 @@ const ConversationList: FC<ConversationListProps> = ({
                         />
                     );
                 }) : (
+                    // mensaje cuando no hay resultados
                     <div className="p-6 text-center text-[#4A4E69]/70">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-2 text-[#4A4E69]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
