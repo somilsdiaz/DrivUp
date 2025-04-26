@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
+// Define message status types
+export type MessageStatus = 'sent' | 'delivered' | 'read';
+
 interface MessageProps {
     id: string;
     senderName: string;
@@ -7,6 +10,8 @@ interface MessageProps {
     lastMessage: string;
     timestamp: string;
     isRead: boolean;
+    messageStatus?: MessageStatus;
+    isFromCurrentUser: boolean;
     onSelect: (id: string) => void;
 }
 
@@ -17,6 +22,8 @@ const Message: React.FC<MessageProps> = ({
     lastMessage,
     timestamp,
     isRead,
+    messageStatus = 'sent',
+    isFromCurrentUser,
     onSelect
 }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -26,6 +33,55 @@ const Message: React.FC<MessageProps> = ({
     useEffect(() => {
         setIsVisible(true);
     }, []);
+
+    // Render the appropriate message status indicator
+    const renderMessageStatus = () => {
+        if (!isFromCurrentUser) return null;
+        
+        switch (messageStatus) {
+            case 'read':
+                return (
+                    <span className="flex items-center text-[#5AAA95] bg-[#5AAA95]/10 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#5AAA95]/20">
+                        <div className="flex mr-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        Mensaje leído
+                    </span>
+                );
+            case 'delivered':
+                return (
+                    <span className="flex items-center text-[#F2B134] bg-[#F2B134]/10 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#F2B134]/20">
+                        <div className="flex mr-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        Entregado
+                    </span>
+                );
+            case 'sent':
+                return (
+                    <span className="flex items-center text-[#4A4E69]/60 bg-[#4A4E69]/5 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#4A4E69]/10">
+                        <div className="flex mr-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        Enviado
+                    </span>
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <div 
@@ -43,7 +99,7 @@ const Message: React.FC<MessageProps> = ({
                     />
                     <div className={`absolute inset-0 bg-gradient-to-tr from-[#0a0d35]/10 to-transparent rounded-full ${isHovered ? 'opacity-70' : 'opacity-0'} transition-opacity duration-300`}></div>
                 </div>
-                {!isRead && (
+                {!isRead && !isFromCurrentUser && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#F2B134] rounded-full border-2 border-white animate-pulse"></div>
                 )}
             </div>
@@ -51,7 +107,7 @@ const Message: React.FC<MessageProps> = ({
                 <div className="flex justify-between items-center">
                     <h3 className={`font-medium text-[#4A4E69] transition-all duration-300 ${!isRead ? 'font-bold text-[#0a0d35]' : ''} ${isHovered ? 'text-[#2D5DA1]' : ''}`}>{senderName}</h3>
                     <div className="flex items-center">
-                        {!isRead && (
+                        {!isRead && !isFromCurrentUser && (
                             <span className="mr-1 text-[#F2B134] text-xs font-medium bg-[#F2B134]/10 px-2 py-0.5 rounded-full animate-pulse">
                                 Nuevo
                             </span>
@@ -59,41 +115,12 @@ const Message: React.FC<MessageProps> = ({
                         <span className="text-xs text-[#4A4E69]/70 ml-1">{timestamp}</span>
                     </div>
                 </div>
-                <p className={`text-sm transition-all duration-300 ${!isRead ? 'text-[#4A4E69] font-semibold' : 'text-[#4A4E69]/80'} truncate`}>
-                    {lastMessage}
+                <p className={`text-sm transition-all duration-300 ${!isRead && !isFromCurrentUser ? 'text-[#4A4E69] font-semibold' : 'text-[#4A4E69]/80'} truncate`}>
+                    {isFromCurrentUser ? `Tú: ${lastMessage}` : lastMessage}
                 </p>
                 <div className="flex items-center mt-1 text-xs">
-                    {/* Solo mostrar estado de lectura si el último mensaje es del usuario actual */}
-                    {lastMessage.includes('Tú:') ? (
-                        isRead ? (
-                            <span className="flex items-center text-[#5AAA95] bg-[#5AAA95]/10 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#5AAA95]/20">
-                                <div className="flex mr-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                                Mensaje leído
-                            </span>
-                        ) : (
-                            <span className="flex items-center text-[#F2B134] bg-[#F2B134]/10 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#F2B134]/20">
-                                <div className="flex mr-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                                Mensaje no leído
-                            </span>
-                        )
-                    ) : null}
-                    
-                    {/* Indicador de tiempo de respuesta */}
-                    {!lastMessage.includes('Tú:') && (
+                    {/* Display message status for current user's messages */}
+                    {isFromCurrentUser ? renderMessageStatus() : (
                         <span className="text-[#4A4E69]/60 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
