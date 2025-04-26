@@ -284,41 +284,92 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
     // actualiza el elemento al que hacemos scroll cuando se monta el componente
     useEffect(() => {
-        // verificamos si hay un mensaje destacado al que debemos hacer scroll
+        // verificamos si hay mensajes destacados a los que debemos hacer scroll
         const scrollToMessageId = localStorage.getItem('scrollToMessageId');
+        const highlightedIds = localStorage.getItem('highlightedMessageIds');
+        const totalMatches = localStorage.getItem('totalMatches');
+        
         if (scrollToMessageId) {
-            console.log("Intentando hacer scroll al mensaje:", scrollToMessageId);
+            console.log("Intentando hacer scroll a mensajes coincidentes:", scrollToMessageId);
             
             // activamos la prevención de scroll automático
             setPreventAutoScroll(true);
             
+            // obtenemos la lista de todos los mensajes a resaltar
+            let idsToHighlight: string[] = [];
+            if (highlightedIds) {
+                try {
+                    idsToHighlight = JSON.parse(highlightedIds);
+                } catch (e) {
+                    console.error("Error al parsear IDs destacados:", e);
+                    idsToHighlight = [scrollToMessageId];
+                }
+            } else {
+                idsToHighlight = [scrollToMessageId];
+            }
+            
             // esperamos a que el DOM se actualice
             setTimeout(() => {
-                // buscamos el elemento
-                const messageElement = document.getElementById(`message-${scrollToMessageId}`);
-                if (messageElement) {
-                    // hacemos scroll con una pequeña animación
-                    messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // resaltamos el mensaje
-                    messageElement.classList.add('bg-[#F2B134]/20');
-                    setTimeout(() => {
-                        messageElement.classList.remove('bg-[#F2B134]/20');
-                        messageElement.classList.add('bg-[#F2B134]/10');
+                // resaltamos todos los mensajes encontrados
+                let foundAnyMessage = false;
+                let primaryMessageElement: HTMLElement | null = null;
+                
+                // procesar cada ID de mensaje coincidente
+                idsToHighlight.forEach((msgId, index) => {
+                    const messageElement = document.getElementById(`message-${msgId}`);
+                    if (messageElement) {
+                        foundAnyMessage = true;
+                        // guardamos el primer elemento para hacer scroll hacia él
+                        if (index === 0) {
+                            primaryMessageElement = messageElement;
+                        }
                         
-                        // después de 3 segundos, permitimos de nuevo el scroll automático
+                        // resaltamos todos los mensajes coincidentes
+                        messageElement.classList.add('bg-[#F2B134]/20');
                         setTimeout(() => {
-                            setPreventAutoScroll(false);
-                        }, 3000);
-                    }, 1000);
+                            if (messageElement) {
+                                messageElement.classList.remove('bg-[#F2B134]/20');
+                                messageElement.classList.add('bg-[#F2B134]/10');
+                            }
+                        }, 1000);
+                    }
+                });
+                
+                // hacemos scroll al primer mensaje
+                if (primaryMessageElement) {
+                    (primaryMessageElement as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
-                    // limpiamos después de usar
-                    localStorage.removeItem('scrollToMessageId');
-                } else {
-                    console.log("Mensaje destacado no encontrado en el DOM");
-                    // si no encontramos el mensaje, permitimos scroll normal
+                    // mostramos indicador del total de coincidencias si hay más de una
+                    if (totalMatches && parseInt(totalMatches) > 1) {
+                        const matchCounter = document.createElement('div');
+                        matchCounter.className = 'fixed bottom-20 right-8 bg-[#5AAA95] text-white px-3 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
+                        matchCounter.innerHTML = `<span class="font-bold">${totalMatches}</span> coincidencias encontradas`;
+                        document.body.appendChild(matchCounter);
+                        
+                        // eliminamos el contador después de 5 segundos
+                        setTimeout(() => {
+                            if (matchCounter.parentNode) {
+                                matchCounter.parentNode.removeChild(matchCounter);
+                            }
+                        }, 5000);
+                    }
+                    
+                    // después de 3 segundos, permitimos de nuevo el scroll automático
+                    setTimeout(() => {
+                        setPreventAutoScroll(false);
+                    }, 3000);
+                }
+                
+                if (!foundAnyMessage) {
+                    console.log("Ningún mensaje destacado encontrado en el DOM");
+                    // si no encontramos mensajes, permitimos scroll normal
                     setPreventAutoScroll(false);
                 }
+                
+                // limpiamos después de usar
+                localStorage.removeItem('scrollToMessageId');
+                localStorage.removeItem('highlightedMessageIds');
+                localStorage.removeItem('totalMatches');
             }, 300);
         }
     }, [messages]);

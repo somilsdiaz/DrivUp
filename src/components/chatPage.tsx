@@ -410,6 +410,8 @@ const RequestPage: FC = () => {
                     id: string;
                     text: string;
                     originalIndex?: number;
+                    totalMatches?: number;
+                    matchedMessageIds?: string[];
                 } | undefined
             }));
             
@@ -449,6 +451,8 @@ const RequestPage: FC = () => {
                     conversation.highlightedMessage = {
                         id: 'last', // usamos 'last' como id para el ultimo mensaje
                         text: conversation.last_message,
+                        totalMatches: 1,
+                        matchedMessageIds: ['last']
                     };
                 }
                 
@@ -482,25 +486,27 @@ const RequestPage: FC = () => {
                             const messages = await response.json();
                             
                             // busca en el contenido de cada mensaje
-                            let matchingMessage = null;
-                            let matchingIndex = -1;
+                            let matchingMessages = [];
+                            let matchingIndices = [];
                             
-                            // buscamos el primer mensaje que coincida (podria modificarse para el más reciente)
+                            // buscamos todos los mensajes que coinciden, no solo el primero
                             for (let i = 0; i < messages.length; i++) {
                                 const message = messages[i];
                                 if (message.message_text.toLowerCase().includes(searchTermLower)) {
-                                    matchingMessage = message;
-                                    matchingIndex = i;
-                                    break;
+                                    matchingMessages.push(message);
+                                    matchingIndices.push(i);
                                 }
                             }
                             
-                            if (matchingMessage) {
-                                // guardamos la informacion del mensaje destacado
+                            if (matchingMessages.length > 0) {
+                                // guardamos la información de todos los mensajes destacados
+                                // pero usamos el primero como representativo para mostrar en la lista
                                 conversation.highlightedMessage = {
-                                    id: matchingMessage.id.toString(),
-                                    text: matchingMessage.message_text,
-                                    originalIndex: matchingIndex
+                                    id: matchingMessages[0].id.toString(),
+                                    text: matchingMessages[0].message_text,
+                                    originalIndex: matchingIndices[0],
+                                    totalMatches: matchingMessages.length,
+                                    matchedMessageIds: matchingMessages.map(msg => msg.id.toString())
                                 };
                                 return conversation;
                             }
@@ -519,6 +525,8 @@ const RequestPage: FC = () => {
                         id: string;
                         text: string;
                         originalIndex?: number;
+                        totalMatches?: number;
+                        matchedMessageIds?: string[];
                     } | undefined;
                 } => conv !== null);
                 

@@ -23,6 +23,8 @@ export interface ConversationData {
         id: string;
         text: string;
         originalIndex?: number;
+        totalMatches?: number; // número total de coincidencias
+        matchedMessageIds?: string[]; // ids de todos los mensajes coincidentes
     };
 }
 

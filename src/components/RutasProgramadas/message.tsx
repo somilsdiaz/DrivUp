@@ -16,6 +16,8 @@ interface MessageProps {
     recipientRole?: string;
     isHighlighted?: boolean;
     highlightedMessageId?: string;
+    totalMatches?: number;
+    matchedMessageIds?: string[];
 }
 
 const Message: React.FC<MessageProps> = ({
@@ -30,7 +32,9 @@ const Message: React.FC<MessageProps> = ({
     onSelect,
     recipientRole = 'pasajero',
     isHighlighted = false,
-    highlightedMessageId
+    highlightedMessageId,
+    totalMatches = 0,
+    matchedMessageIds = []
 }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
@@ -109,9 +113,15 @@ const Message: React.FC<MessageProps> = ({
         // pasamos el id del mensaje destacado si existe, para hacer scroll
         onSelect(id);
         
-        // guardamos el id del mensaje destacado para recuperarlo después
-        if (isHighlighted && highlightedMessageId) {
+        // guardamos los ids de los mensajes destacados para recuperarlos después
+        if (isHighlighted && matchedMessageIds && matchedMessageIds.length > 0) {
+            localStorage.setItem('scrollToMessageId', highlightedMessageId || '');
+            localStorage.setItem('highlightedMessageIds', JSON.stringify(matchedMessageIds));
+            localStorage.setItem('totalMatches', totalMatches.toString());
+        } else if (isHighlighted && highlightedMessageId) {
             localStorage.setItem('scrollToMessageId', highlightedMessageId);
+            localStorage.removeItem('highlightedMessageIds');
+            localStorage.setItem('totalMatches', '1');
         }
     };
 
@@ -168,7 +178,7 @@ const Message: React.FC<MessageProps> = ({
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                Coincidencia
+                                {totalMatches > 1 ? `${totalMatches} coincidencias` : 'Coincidencia'}
                             </span>
                         )}
                         <span className="text-xs text-[#4A4E69]/70 ml-1">{timestamp}</span>

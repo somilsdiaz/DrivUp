@@ -107,10 +107,16 @@ const ConversationList: FC<ConversationListProps> = ({
                     // Si hay un mensaje destacado por búsqueda, lo usamos en lugar del último mensaje
                     let lastMessageText = conversation.last_message;
                     let isHighlighted = false;
+                    let highlightedMessageId = undefined;
+                    let totalMatches = 0;
+                    let matchedMessageIds = undefined;
                     
                     if (conversation.highlightedMessage) {
                         lastMessageText = conversation.highlightedMessage.text;
                         isHighlighted = true;
+                        highlightedMessageId = conversation.highlightedMessage.id;
+                        totalMatches = conversation.highlightedMessage.totalMatches || 1;
+                        matchedMessageIds = conversation.highlightedMessage.matchedMessageIds;
                     }
 
                     return (
@@ -126,7 +132,9 @@ const ConversationList: FC<ConversationListProps> = ({
                             isFromCurrentUser={isFromCurrentUser}
                             recipientRole={conversation.recipientRole}
                             isHighlighted={isHighlighted}
-                            highlightedMessageId={conversation.highlightedMessage?.id}
+                            highlightedMessageId={highlightedMessageId}
+                            totalMatches={totalMatches}
+                            matchedMessageIds={matchedMessageIds}
                             onSelect={(id) => onSelectChat(parseInt(id))}
                         />
                     );
