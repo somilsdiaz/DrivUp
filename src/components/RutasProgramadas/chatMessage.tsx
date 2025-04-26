@@ -372,7 +372,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 localStorage.removeItem('totalMatches');
             }, 300);
         }
-    }, [messages]);
+    }, [messages, chatId]);
 
     const handleSendMessage = async () => {
         if (newMessage.trim() === '' || isSending) return;

@@ -114,14 +114,20 @@ const Message: React.FC<MessageProps> = ({
         onSelect(id);
         
         // guardamos los ids de los mensajes destacados para recuperarlos después
-        if (isHighlighted && matchedMessageIds && matchedMessageIds.length > 0) {
-            localStorage.setItem('scrollToMessageId', highlightedMessageId || '');
-            localStorage.setItem('highlightedMessageIds', JSON.stringify(matchedMessageIds));
-            localStorage.setItem('totalMatches', totalMatches.toString());
-        } else if (isHighlighted && highlightedMessageId) {
-            localStorage.setItem('scrollToMessageId', highlightedMessageId);
+        if (isHighlighted) {
+            // Clear any existing localStorage data first
+            localStorage.removeItem('scrollToMessageId');
             localStorage.removeItem('highlightedMessageIds');
-            localStorage.setItem('totalMatches', '1');
+            localStorage.removeItem('totalMatches');
+            
+            if (matchedMessageIds && matchedMessageIds.length > 0) {
+                localStorage.setItem('scrollToMessageId', highlightedMessageId || '');
+                localStorage.setItem('highlightedMessageIds', JSON.stringify(matchedMessageIds));
+                localStorage.setItem('totalMatches', totalMatches.toString());
+            } else if (highlightedMessageId) {
+                localStorage.setItem('scrollToMessageId', highlightedMessageId);
+                localStorage.setItem('totalMatches', '1');
+            }
         }
     };
 

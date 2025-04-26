@@ -317,6 +317,12 @@ const RequestPage: FC = () => {
     const handleSelectChat = async (id: number) => {
         console.log('Selecting chat ID:', id);
 
+        // Clear any existing highlighted message data in localStorage
+        // to prevent stale data from previous searches from persisting
+        localStorage.removeItem('scrollToMessageId');
+        localStorage.removeItem('highlightedMessageIds');
+        localStorage.removeItem('totalMatches');
+
         // si selecciona el mismo chat, termina
         if (selectedChat === id) return;
 
