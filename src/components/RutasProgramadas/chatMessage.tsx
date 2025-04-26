@@ -23,6 +23,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
     const [isSending, setIsSending] = useState(false);
     const [sendError, setSendError] = useState<string | null>(null);
+    // variable para controlar si debemos hacer scroll al último mensaje
+    const [preventAutoScroll, setPreventAutoScroll] = useState(false);
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -170,6 +172,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         
         // Reset the first render flag so we mark messages as read again
         firstRenderRef.current = true;
+        
+        // verificamos si hay un mensaje destacado para este chat
+        const hasHighlightedMessage = localStorage.getItem('scrollToMessageId') !== null;
+        
+        // desactivamos scroll automático si hay un mensaje destacado
+        setPreventAutoScroll(hasHighlightedMessage);
     }, [chatId]);
 
     // Update local messages when prop messages change (this will run for the same chatId)
@@ -268,40 +276,50 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
     // Scroll to last message when messages change
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [localMessages]);
+        // solo hacemos scroll automático si no estamos destacando un mensaje
+        if (!preventAutoScroll && messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [localMessages, preventAutoScroll]);
 
     // actualiza el elemento al que hacemos scroll cuando se monta el componente
     useEffect(() => {
-        // efecto secundario para hacer scroll al final de los mensajes
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-        
         // verificamos si hay un mensaje destacado al que debemos hacer scroll
         const scrollToMessageId = localStorage.getItem('scrollToMessageId');
         if (scrollToMessageId) {
             console.log("Intentando hacer scroll al mensaje:", scrollToMessageId);
             
-            // buscamos el elemento
-            const messageElement = document.getElementById(`message-${scrollToMessageId}`);
-            if (messageElement) {
-                // hacemos scroll con una pequeña animación
-                setTimeout(() => {
+            // activamos la prevención de scroll automático
+            setPreventAutoScroll(true);
+            
+            // esperamos a que el DOM se actualice
+            setTimeout(() => {
+                // buscamos el elemento
+                const messageElement = document.getElementById(`message-${scrollToMessageId}`);
+                if (messageElement) {
+                    // hacemos scroll con una pequeña animación
                     messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
                     // resaltamos el mensaje
                     messageElement.classList.add('bg-[#F2B134]/20');
                     setTimeout(() => {
                         messageElement.classList.remove('bg-[#F2B134]/20');
                         messageElement.classList.add('bg-[#F2B134]/10');
+                        
+                        // después de 3 segundos, permitimos de nuevo el scroll automático
+                        setTimeout(() => {
+                            setPreventAutoScroll(false);
+                        }, 3000);
                     }, 1000);
-                }, 500);
-                
-                // limpiamos después de usar
-                localStorage.removeItem('scrollToMessageId');
-            } else {
-                console.log("Mensaje destacado no encontrado en el DOM");
-            }
+                    
+                    // limpiamos después de usar
+                    localStorage.removeItem('scrollToMessageId');
+                } else {
+                    console.log("Mensaje destacado no encontrado en el DOM");
+                    // si no encontramos el mensaje, permitimos scroll normal
+                    setPreventAutoScroll(false);
+                }
+            }, 300);
         }
     }, [messages]);
 
