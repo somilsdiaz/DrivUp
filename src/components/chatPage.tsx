@@ -458,16 +458,85 @@ const RequestPage: FC = () => {
                 
                 // si hay coincidencia en el ultimo mensaje, lo destacamos
                 if (lastMessageMatches) {
-                    conversation.highlightedMessage = {
-                        id: 'last', // usamos 'last' como id para el ultimo mensaje
-                        text: conversation.last_message,
-                        totalMatches: 1,
-                        matchedMessageIds: ['last']
-                    };
+                    // When the last message matches, we need to also check if other messages
+                    // in the conversation match the search term. We'll do this immediately
+                    // rather than in a separate pass to ensure we get all matches.
+                    return true; // Mark it as matching but wait to set highlightedMessage
                 }
                 
-                return otherUserName.includes(searchTermLower) || lastMessageMatches;
+                return otherUserName.includes(searchTermLower);
             });
+            
+            // Process conversations that match by basic info to find all message matches
+            // This ensures that even when the last message matches, we search for all matches
+            await Promise.all(matchingByBasicInfo.map(async (conversation) => {
+                try {
+                    // If last message matches, we need to find all matches in history
+                    const lastMessage = conversation.last_message.toLowerCase();
+                    const lastMessageMatches = lastMessage.includes(searchTermLower);
+                    
+                    if (lastMessageMatches) {
+                        // Fetch all messages for the conversation
+                        const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversation.id}/messages`);
+                        
+                        if (!response.ok) {
+                            // If we can't get messages, just highlight the last message
+                            conversation.highlightedMessage = {
+                                id: 'last',
+                                text: conversation.last_message,
+                                totalMatches: 1,
+                                matchedMessageIds: ['last']
+                            };
+                            return;
+                        }
+                        
+                        const messages = await response.json();
+                        
+                        // Find all matches in message history
+                        let matchingMessages = [];
+                        let matchingIndices = [];
+                        
+                        for (let i = 0; i < messages.length; i++) {
+                            const message = messages[i];
+                            if (message.message_text.toLowerCase().includes(searchTermLower)) {
+                                matchingMessages.push(message);
+                                matchingIndices.push(i);
+                            }
+                        }
+                        
+                        if (matchingMessages.length > 0) {
+                            // Use the last message as the representative, but include all message IDs
+                            conversation.highlightedMessage = {
+                                id: 'last',
+                                text: conversation.last_message,
+                                originalIndex: messages.length - 1,
+                                totalMatches: matchingMessages.length,
+                                matchedMessageIds: matchingMessages.map(msg => msg.id.toString())
+                            };
+                        } else {
+                            // Fallback if somehow the last message matches but we can't find any matches
+                            // (shouldn't happen, but for safety)
+                            conversation.highlightedMessage = {
+                                id: 'last',
+                                text: conversation.last_message,
+                                totalMatches: 1,
+                                matchedMessageIds: ['last']
+                            };
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error fetching message history for conversation ${conversation.id}:`, error);
+                    // Fall back to just highlighting the last message
+                    if (conversation.last_message.toLowerCase().includes(searchTermLower)) {
+                        conversation.highlightedMessage = {
+                            id: 'last',
+                            text: conversation.last_message,
+                            totalMatches: 1,
+                            matchedMessageIds: ['last']
+                        };
+                    }
+                }
+            }));
             
             // busqueda avanzada en historial de mensajes
             try {

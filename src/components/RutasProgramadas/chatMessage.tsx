@@ -351,6 +351,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             if (highlightedIds) {
                 try {
                     idsToHighlight = JSON.parse(highlightedIds);
+                    console.log("Parsed highlighted IDs:", idsToHighlight);
                 } catch (e) {
                     console.error("Error al parsear IDs destacados:", e);
                     idsToHighlight = [scrollToMessageId];
@@ -359,14 +360,42 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 idsToHighlight = [scrollToMessageId];
             }
             
+            // If the scrollToMessageId is 'last', we need to determine if this is the only ID or if there are others
+            // We'll map all actual message IDs and keep the special 'last' ID only until we have message data
+            let hasLastMessageId = idsToHighlight.includes('last');
+            
+            // Filter out the 'last' ID and map real message IDs
+            let actualIdsToHighlight = idsToHighlight
+                .filter(id => id !== 'last')
+                .map(id => id); // Clone the array
+            
+            // If we have 'last' in the original list and we have messages, map it to the actual last message ID
+            if (hasLastMessageId && localMessages.length > 0) {
+                const lastMessageId = localMessages[localMessages.length - 1].id;
+                actualIdsToHighlight.push(lastMessageId);
+                console.log("Mapped 'last' ID to actual last message ID:", lastMessageId);
+            }
+            
+            // If we're highlighting the last message but don't have message data yet
+            if (hasLastMessageId && actualIdsToHighlight.length === 0) {
+                console.log("Waiting for messages to load before highlighting last message");
+                setTimeout(() => {
+                    // Trigger a re-render to check again once messages are loaded
+                    setHighlightedMessageChanged(prev => prev + 1);
+                }, 500);
+                return;
+            }
+            
             // esperamos a que el DOM se actualice
             setTimeout(() => {
                 // resaltamos todos los mensajes encontrados
                 let foundAnyMessage = false;
                 let primaryMessageElement: HTMLElement | null = null;
                 
+                console.log("Trying to highlight messages with IDs:", actualIdsToHighlight);
+                
                 // procesar cada ID de mensaje coincidente
-                idsToHighlight.forEach((msgId, index) => {
+                actualIdsToHighlight.forEach((msgId, index) => {
                     const messageElement = document.getElementById(`message-${msgId}`);
                     if (messageElement) {
                         foundAnyMessage = true;
@@ -413,13 +442,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     setPreventAutoScroll(false);
                 }
                 
-                // limpiamos después de usar
-                localStorage.removeItem('scrollToMessageId');
-                localStorage.removeItem('highlightedMessageIds');
-                localStorage.removeItem('totalMatches');
+                // limpiamos después de usar, pero solo si no estamos resaltando el último mensaje
+                // para el último mensaje, necesitamos mantener la información para seguir resaltándolo
+                if (!(scrollToMessageId === 'last' && foundAnyMessage)) {
+                    localStorage.removeItem('scrollToMessageId');
+                    localStorage.removeItem('highlightedMessageIds');
+                    localStorage.removeItem('totalMatches');
+                }
             }, 300);
         }
-    }, [messages, chatId, highlightedMessageChanged]);
+    }, [messages, chatId, highlightedMessageChanged, localMessages]);
 
     const handleSendMessage = async () => {
         if (newMessage.trim() === '' || isSending) return;
@@ -521,7 +553,33 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         
         // Get current highlighted message ID - will change when highlightedMessageChanged updates
         const currentHighlightedMessageId = localStorage.getItem('scrollToMessageId');
-        console.log(`Rendering messages, highlighted ID: ${currentHighlightedMessageId}, change count: ${highlightedMessageChanged}`);
+        const highlightedIds = localStorage.getItem('highlightedMessageIds');
+        
+        // Parse all highlighted message IDs if available
+        let matchedMessageIds: string[] = [];
+        if (highlightedIds) {
+            try {
+                matchedMessageIds = JSON.parse(highlightedIds);
+            } catch (e) {
+                console.error("Error parsing highlighted IDs:", e);
+                if (currentHighlightedMessageId) {
+                    matchedMessageIds = [currentHighlightedMessageId];
+                }
+            }
+        } else if (currentHighlightedMessageId) {
+            matchedMessageIds = [currentHighlightedMessageId];
+        }
+        
+        console.log(`Rendering messages, highlighted IDs:`, matchedMessageIds, `change count: ${highlightedMessageChanged}`);
+        
+        // Determine the ID of the last real message for highlighting if needed
+        const lastMessageId = localMessages.length > 0 ? localMessages[localMessages.length - 1].id : null;
+        
+        // If 'last' is in the matched IDs and we have messages, replace it with the actual last message ID
+        if (matchedMessageIds.includes('last') && lastMessageId) {
+            // Replace 'last' with the actual ID
+            matchedMessageIds = matchedMessageIds.map(id => id === 'last' ? lastMessageId : id);
+        }
         
         return processedMessages.map((item) => {
             if ('isSeparator' in item) {
@@ -530,8 +588,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
             const isFromCurrentUser = item.senderId === currentUserId;
             
-            // identificamos si este es el mensaje destacado
-            const isHighlightedMessage = item.id === currentHighlightedMessageId;
+            // Check if this message ID is in the list of highlighted messages
+            const isHighlightedMessage = matchedMessageIds.includes(item.id);
             
             return (
                 <div 
