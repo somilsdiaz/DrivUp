@@ -10,7 +10,9 @@ const ChatContainer: FC<ChatContainerProps> = ({
     messagesError,
     handleSelectChat,
     handleMessageSent,
-    socket
+    socket,
+    onBackToList,
+    showBackButton
 }) => {
     // si no hay chat seleccionado, muestra estado vacio
     if (!selectedChat) {
@@ -19,6 +21,21 @@ const ChatContainer: FC<ChatContainerProps> = ({
 
     return (
         <>
+            {/* back button for mobile */}
+            {showBackButton && onBackToList && (
+                <div className="md:hidden bg-white p-3 border-b border-[#4A4E69]/10">
+                    <button 
+                        onClick={onBackToList}
+                        className="flex items-center text-[#2D5DA1] hover:text-[#0a0d35] transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Volver a la lista de chats
+                    </button>
+                </div>
+            )}
+            
             {/* indicador de carga de mensajes */}
             {isLoadingMessages && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">

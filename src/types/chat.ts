@@ -89,4 +89,6 @@ export interface ChatContainerProps {
     handleSelectChat: (id: number) => void;
     handleMessageSent: (conversationId: number, messageText: string) => void;
     socket: Socket | null;
+    onBackToList?: () => void;
+    showBackButton?: boolean;
 } 
