@@ -51,7 +51,7 @@ const Message: React.FC<MessageProps> = ({
         switch (messageStatus) {
             case 'read':
                 return (
-                    <span className="flex items-center text-[#5AAA95] bg-[#5AAA95]/10 px-2 py-0.5 rounded-full transition-all duration-300 hover:bg-[#5AAA95]/20">
+                    <span className="flex items-center text-[#5AAA95] bg-[#5AAA95]/10 px-2 py-0.5 rounded-full transition duration-300 hover:bg-[#5AAA95]/20">
                         <div className="flex relative transform scale-110 mr-1">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -153,7 +153,7 @@ const Message: React.FC<MessageProps> = ({
             onClick={handleClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`flex items-center p-4 cursor-pointer transition-all duration-300 ${
+            className={`flex items-center p-4 cursor-pointer transition-transform duration-300 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             } ${
                 isHighlighted ? 'bg-[#F2B134]/10 hover:bg-[#F2B134]/20' : 

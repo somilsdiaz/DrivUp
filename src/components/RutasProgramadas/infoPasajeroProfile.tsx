@@ -116,7 +116,7 @@ const InfoPasajeroProfile: React.FC<InfoPasajeroProfileProps> = ({
                             damping: 25, 
                             stiffness: 300 
                         }}
-                        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-lg w-[95%] sm:w-[500px] h-auto max-h-[85vh] flex flex-col"
+                        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-lg w-[95%] sm:w-[500px] h-auto  flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-[#4A4E69]/10 flex flex-col h-full">

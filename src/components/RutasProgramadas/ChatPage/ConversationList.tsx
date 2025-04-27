@@ -91,7 +91,7 @@ const ConversationList: FC<ConversationListProps> = ({
             </div>
             
             {/* barra de filtros para todos/no leidos */}
-            <div className="p-2 bg-[#F8F9FA] sticky top-0 z-10 border-b">
+            <div className="p-2 bg-[#F8F9FA] sticky top-0 z-10 border-b border-[#c0c0c0]">
                 <div className="flex justify-between items-center px-2">
                     <h3 className="text-sm font-medium text-[#4A4E69]">Conversaciones recientes</h3>
                     <div className="flex space-x-1">
