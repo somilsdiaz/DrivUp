@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { logout } from "../utils/auth";
 
 interface MenuItem {
     label: string;
@@ -13,6 +14,19 @@ interface MenuResponsiveProps {
 }
 
 const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMenu, menuItems }) => {
+    const navigate = useNavigate();
+
+    // maneja el clic en un item del menu, con logica especial para cerrar sesion
+    const handleItemClick = (item: MenuItem) => {
+        closeMenu();
+        
+        // si el item es "cerrar sesion", ejecuta la funcion de logout
+        if (item.label.toLowerCase() === "cerrar sesión") {
+            logout();
+            navigate("/");
+        }
+    };
+
     return (
         <div>
             {/* Menu */}
@@ -30,13 +44,21 @@ const MenuResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMen
                 <nav className="flex flex-col pt-20 pl-9 space-y-4">
                     <ul className="space-y-4">
                         {menuItems.map((item, index) => (
-                            <li key={index} onClick={closeMenu}>
-                                <Link 
-                                    to={item.path} 
-                                    className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2"
-                                >
-                                    {item.label}
-                                </Link>
+                            <li key={index} onClick={() => handleItemClick(item)}>
+                                {item.label.toLowerCase() === "cerrar sesión" ? (
+                                    <button 
+                                        className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2 w-full text-left"
+                                    >
+                                        {item.label}
+                                    </button>
+                                ) : (
+                                    <Link 
+                                        to={item.path} 
+                                        className="block text-xl font-medium text-gray-800 hover:bg-gray-100 hover:translate-x-1 transform transition-all rounded-lg px-4 py-2"
+                                    >
+                                        {item.label}
+                                    </Link>
+                                )}
                             </li>
                         ))}
                     </ul>

@@ -71,7 +71,8 @@ const Header: React.FC = () => {
         { label: "Buscar viaje", path: "/" },
         { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
         { label: "Viajes programados", path: "/rutas" },
-        { label: "Contacto", path: "/contacto" }
+        { label: "Contacto", path: "/contacto" },
+        { label: "Cerrar sesión", path: "/" }
     ];
 
     // Mover el scroll al top cada vez que cambia la ruta

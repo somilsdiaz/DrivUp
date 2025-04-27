@@ -73,7 +73,8 @@ const Header: React.FC = () => {
         { label: "Solicitar conductores", path: "/solicitar-conductor" },
         { label: "Bandeja de mensajes", path: "/mi-bandeja-de-mensajes" },
         { label: "Mi cuenta", path: "/" },
-        { label: "Contacto", path: "/" }
+        { label: "Contacto", path: "/" },
+        { label: "Cerrar sesión", path: "/" }
     ];
 
     // Mover el scroll al top cada vez que cambia la ruta
