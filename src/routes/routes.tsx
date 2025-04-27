@@ -7,13 +7,14 @@ import About from '../pages/about';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermCondition from '../pages/termConditionPage';
 import HomeConductor from '../pages/vistaConductores/homeConductor';
-import RequestPage from '../pages/vistaConductores/requestPage';
 import HomePasajeros from '../pages/vistaPasajeros/homePasajeros';
 import DriverRegister from '../pages/DriverRegister';
 import ProtectedRoute from '../components/ProtectedRoute';
 import PublicRoute from '../components/PublicRoute';
 import RoleBasedRoute from '../components/RoleBasedRoute';
 import Configuracion from '../pages/configuracion';
+import SolicitudesPage from '../pages/vistaConductores/solicitudesPage';
+import BandejaMensajes from '../pages/vistaPasajeros/bandejaMensajes';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -36,6 +37,19 @@ const router = createBrowserRouter([
                     redirectPath="/dashboard/pasajero"
                 >
                     <DriverRegister />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/mi-bandeja-de-mensajes",
+        element: (
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <BandejaMensajes />
                 </RoleBasedRoute>
             </ProtectedRoute>
         ),
@@ -103,7 +117,7 @@ const router = createBrowserRouter([
                     allowedRoles={["conductor y pasajero"]}
                     redirectPath="/dashboard/pasajero"
                 >
-                    <RequestPage />
+                    <SolicitudesPage />
                 </RoleBasedRoute>
             </ProtectedRoute>
         )

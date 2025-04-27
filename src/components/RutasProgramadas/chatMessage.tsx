@@ -1,55 +1,553 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import InfoPasajeroProfile from './infoPasajeroProfile';
+import { motion } from 'framer-motion';
+import { Message, ChatMessageProps } from './chatMessage/chatTypes';
+import ChatHeader from './chatMessage/ChatHeader';
+import MessageList from './chatMessage/MessageList';
+import MessageInput from './chatMessage/MessageInput';
+import ErrorMessage from './chatMessage/ErrorMessage';
 
-interface Message {
-    id: string;
-    senderId: string;
-    text: string;
-    timestamp: string;
-    isRead?: boolean;
-}
-
-interface ChatMessageProps {
-    chatId: string;
-    recipientName: string;
-    recipientImage: string;
-    messages: Message[];
-    currentUserId: string;
-}
-
+// componente principal para la interfaz de chat entre usuarios
 const ChatMessage: React.FC<ChatMessageProps> = ({
     chatId,
     recipientName,
     recipientImage,
+    recipientId,
     messages,
-    currentUserId
+    currentUserId,
+    onMessageSent,
+    socket,
+    onBackToList,
+    showBackButton
 }) => {
+    // estados para gestionar la interfaz de chat
     const [newMessage, setNewMessage] = useState('');
     const [showEmojis, setShowEmojis] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
+    const [localMessages, setLocalMessages] = useState<Message[]>(messages);
+    const [isSending, setIsSending] = useState(false);
+    const [sendError, setSendError] = useState<string | null>(null);
+    // variable para controlar si debemos hacer scroll al último mensaje
+    const [preventAutoScroll, setPreventAutoScroll] = useState(false);
+    // seguimiento de cambios en mensajes destacados
+    const [highlightedMessageChanged, setHighlightedMessageChanged] = useState(0);
+    
+    // referencias para manipulación del dom
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const firstRenderRef = useRef(true);
 
-    // Efecto para enfocar el input cuando se abre el chat
+    // detecta cambios en localStorage para resaltar mensajes
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'scrollToMessageId' || e.key === 'highlightedMessageIds' || e.key === 'totalMatches') {
+                console.log('ChatMessage: Detected localStorage change for highlights', e.key);
+                // Trigger a re-render by updating the state
+                setHighlightedMessageChanged(prev => prev + 1);
+            }
+        };
+        
+        // manejador de eventos personalizados para actualizaciones de resaltado
+        const handleHighlightUpdated = (e: CustomEvent) => {
+            console.log('ChatMessage: Received highlightUpdated event', e.detail);
+            setHighlightedMessageChanged(prev => prev + 1);
+        };
+        
+        // escucha eventos de almacenamiento (soporte multi-pestaña)
+        window.addEventListener('storage', handleStorageChange);
+        // escucha evento personalizado para resaltado
+        window.addEventListener('highlightUpdated', handleHighlightUpdated as EventListener);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('highlightUpdated', handleHighlightUpdated as EventListener);
+        };
+    }, []);
+
+    // gestiona eventos de socket para comunicación en tiempo real
+    useEffect(() => {
+        if (!socket) return;
+
+        // confirmación de mensaje enviado
+        const handleMessageSent = (message: any) => {
+            console.log('Message sent confirmation received:', message);
+            
+            // actualiza mensajes locales preservando el id para animación
+            setLocalMessages(prev => {
+                // busca mensaje temporal coincidente
+                const tempMessage = prev.find(msg => 
+                    msg.id.startsWith('temp-') && 
+                    msg.text === (message.message_text || message.text)
+                );
+                
+                if (tempMessage) {
+                    console.log('Found matching temp message to update:', tempMessage);
+                    // actualiza el contenido pero preserva la clave para estabilidad visual
+                    return prev.map(msg => 
+                        (msg.id === tempMessage.id)
+                            ? { 
+                                ...msg, 
+                                id: message.id.toString(),
+                                _originalId: msg.id, // mantiene id original para renderizado estable
+                                status: 'delivered' as const,
+                                timestamp: new Date(message.sent_at || Date.now()).toLocaleString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })
+                            }
+                            : msg
+                    );
+                } else {
+                    // busca cualquier mensaje temporal si no hay coincidencia específica
+                    const anyTempMessage = prev.find(msg => msg.id.startsWith('temp-'));
+                    
+                    if (anyTempMessage) {
+                        console.log('Found non-specific temp message to update:', anyTempMessage);
+                        return prev.map(msg => 
+                            msg.id.startsWith('temp-')
+                                ? { 
+                                    ...msg, 
+                                    id: message.id.toString(),
+                                    _originalId: msg.id, // mantiene estabilidad de clave
+                                    status: 'delivered' as const,
+                                    timestamp: new Date(message.sent_at || Date.now()).toLocaleString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })
+                                }
+                                : msg
+                        );
+                    } else {
+                        // agrega nuevo mensaje si no hay mensajes temporales
+                        console.log('No temp message found, adding new message');
+                        const newConfirmedMessage: Message = {
+                            id: message.id.toString(),
+                            senderId: currentUserId,
+                            text: message.message_text || message.text,
+                            timestamp: new Date(message.sent_at || Date.now()).toLocaleString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }),
+                            status: 'delivered' as const
+                        };
+                        return [...prev, newConfirmedMessage];
+                    }
+                }
+            });
+            
+            setIsSending(false);
+        };
+
+        // maneja cuando los mensajes son leídos por el destinatario
+        const handleMessagesRead = (data: { conversationId: number, readBy: number }) => {
+            if (parseInt(chatId) === data.conversationId) {
+                // actualiza todos los mensajes a estado 'leído'
+                setLocalMessages(prev => prev.map(msg => 
+                    msg.senderId === currentUserId 
+                        ? { ...msg, status: 'read' } 
+                        : msg
+                ));
+            }
+        };
+
+        // maneja nuevos mensajes entrantes
+        const handleNewMessage = (message: any) => {
+            // solo procesa mensajes para el chat actual y de otros usuarios
+            if (parseInt(chatId) === message.conversation_id && 
+                message.sender_id.toString() !== currentUserId) {
+                
+                console.log('ChatMessage: New message received in current chat, marking as read');
+                
+                // marca como leído inmediatamente
+                socket.emit('mark_as_read', {
+                    conversationId: parseInt(chatId),
+                    userId: parseInt(currentUserId)
+                });
+            }
+        };
+
+        // maneja errores de envío
+        const handleMessageError = (error: any) => {
+            console.error('Error sending message:', error);
+            setSendError('No se pudo enviar el mensaje. Intenta de nuevo.');
+            setIsSending(false);
+        };
+
+        // suscripción a eventos de socket
+        socket.on('message_sent', handleMessageSent);
+        socket.on('message_error', handleMessageError);
+        socket.on('messages_read', handleMessagesRead);
+        socket.on('new_message', handleNewMessage);
+
+        return () => {
+            socket.off('message_sent', handleMessageSent);
+            socket.off('message_error', handleMessageError);
+            socket.off('messages_read', handleMessagesRead);
+            socket.off('new_message', handleNewMessage);
+        };
+    }, [socket, chatId, currentUserId]);
+
+    // marca mensajes como leídos cuando el usuario ve el chat
+    useEffect(() => {
+        if (!socket || !chatId || messages.length === 0) return;
+        
+        // omite la primera renderización para evitar llamadas innecesarias
+        if (firstRenderRef.current) {
+            firstRenderRef.current = false;
+            return;
+        }
+
+        // verifica si hay mensajes del destinatario
+        const hasRecipientMessages = messages.some(msg => msg.senderId !== currentUserId);
+        
+        if (hasRecipientMessages) {
+            // envía evento para marcar mensajes como leídos
+            socket.emit('mark_as_read', {
+                conversationId: parseInt(chatId),
+                userId: parseInt(currentUserId)
+            });
+        }
+    }, [socket, chatId, messages, currentUserId]);
+
+    // reinicia mensajes locales cuando cambia chatId
+    useEffect(() => {
+        console.log('Chat ID changed, resetting local messages');
+        setLocalMessages(messages);
+        setSendError(null);
+        setIsSending(false);
+        
+        // reinicia estados de interfaz
+        setShowEmojis(false);
+        setShowInfoModal(false);
+        
+        // reinicia para marcar mensajes como leídos
+        firstRenderRef.current = true;
+        
+        // verifica mensajes destacados para este chat
+        const hasHighlightedMessage = localStorage.getItem('scrollToMessageId') !== null;
+        
+        // controla comportamiento de desplazamiento
+        setPreventAutoScroll(hasHighlightedMessage);
+        
+        // limpia elementos destacados al desmontar
+        return () => {
+            document.querySelectorAll('[data-highlighted="true"]').forEach(el => {
+                el.classList.remove('bg-[#F2B134]/10', 'bg-[#F2B134]/20');
+                el.removeAttribute('data-highlighted');
+            });
+        };
+    }, [chatId, messages]);
+
+    // actualiza mensajes locales cuando cambian los mensajes recibidos
+    useEffect(() => {
+        // omite si no hay mensajes para evitar borrar mensajes existentes
+        if (messages.length === 0) return;
+        
+        console.log('Messages prop updated:', messages);
+        console.log('Current local messages:', localMessages);
+        
+        // fusiona mensajes preservando estado local y nuevos datos
+        // crea mapas para búsquedas rápidas
+        const incomingMessagesMap = new Map();
+        messages.forEach(msg => {
+            incomingMessagesMap.set(msg.id, msg);
+        });
+        
+        const localMessagesMap = new Map();
+        localMessages.forEach(msg => {
+            // omite mensajes temporales para manejo especial
+            if (!msg.id.startsWith('temp-')) {
+                localMessagesMap.set(msg.id, msg);
+            }
+        });
+        
+        // preserva mensajes temporales del usuario actual
+        const tempMessages = localMessages.filter(msg => 
+            msg.id.startsWith('temp-') && 
+            msg.senderId === currentUserId
+        );
+        
+        // combina mensajes de ambas fuentes eliminando duplicados
+        const mergedMessagesMap = new Map([...localMessagesMap, ...incomingMessagesMap]);
+        
+        // convierte el mapa fusionado a array
+        const mergedMessages = [...mergedMessagesMap.values()];
+        
+        // aplica estado de lectura desde mensajes locales o determina según propiedad is_read
+        const finalMessages = mergedMessages.map(msg => {
+            const existingMsg = localMessages.find(localMsg => localMsg.id === msg.id);
+            
+            if (msg.senderId === currentUserId) {
+                // preserva estado si existe en mensajes locales
+                if (existingMsg?.status) {
+                    return {
+                        ...msg,
+                        status: existingMsg.status
+                    };
+                }
+                
+                // determina estado según propiedad is_read
+                return {
+                    ...msg,
+                    status: (msg as any).is_read === true ? 'read' : 'delivered'
+                };
+            }
+            
+            return {
+                ...msg,
+                status: existingMsg?.status
+            };
+        });
+        
+        // añade mensajes temporales al resultado final
+        const result = [...finalMessages, ...tempMessages];
+        
+        // ordena mensajes por id para mantener orden cronológico
+        result.sort((a, b) => {
+            // ordena mensajes temporales por timestamp
+            if (a.id.startsWith('temp-') && b.id.startsWith('temp-')) {
+                return a.id.localeCompare(b.id);
+            }
+            // mensajes temporales siempre después de mensajes normales
+            if (a.id.startsWith('temp-')) return 1;
+            if (b.id.startsWith('temp-')) return -1;
+            
+            // ordena por id numérico
+            return parseInt(a.id) - parseInt(b.id);
+        });
+        
+        console.log('Updated merged messages with read status:', result);
+        setLocalMessages(result);
+    }, [messages, currentUserId]);
+
+    // enfoca input cuando se abre el chat
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
     }, [chatId]);
 
-    // Desplazarse al último mensaje cuando cambian los mensajes
+    // desplaza a último mensaje cuando cambian los mensajes
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+        // solo realiza desplazamiento si no hay mensajes destacados
+        if (!preventAutoScroll && messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [localMessages, preventAutoScroll]);
 
-    const handleSendMessage = () => {
-        if (newMessage.trim() === '') return;
-        // Aquí iría la lógica para enviar el mensaje
+    // gestiona resaltado y desplazamiento a mensajes específicos
+    useEffect(() => {
+        // verifica mensajes destacados para hacer scroll
+        const scrollToMessageId = localStorage.getItem('scrollToMessageId');
+        const highlightedIds = localStorage.getItem('highlightedMessageIds');
+        const totalMatches = localStorage.getItem('totalMatches');
+        
+        if (scrollToMessageId) {
+            console.log(`ChatMessage: Processing highlighted messages for chat ${chatId}. Target message ID: ${scrollToMessageId}`);
+        }
+        
+        // limpia resaltados previos
+        document.querySelectorAll('[data-highlighted="true"]').forEach(el => {
+            el.classList.remove('bg-[#F2B134]/10', 'bg-[#F2B134]/20');
+            el.removeAttribute('data-highlighted');
+        });
+        
+        if (scrollToMessageId) {
+            console.log("Intentando hacer scroll a mensajes coincidentes:", scrollToMessageId);
+            
+            // activa prevención de scroll automático
+            setPreventAutoScroll(true);
+            
+            // obtiene lista de mensajes a resaltar
+            let idsToHighlight: string[] = [];
+            if (highlightedIds) {
+                try {
+                    idsToHighlight = JSON.parse(highlightedIds);
+                    console.log("Parsed highlighted IDs:", idsToHighlight);
+                } catch (e) {
+                    console.error("Error al parsear IDs destacados:", e);
+                    idsToHighlight = [scrollToMessageId];
+                }
+            } else {
+                idsToHighlight = [scrollToMessageId];
+            }
+            
+            // maneja caso especial para el id 'last'
+            let hasLastMessageId = idsToHighlight.includes('last');
+            
+            // filtra id 'last' y mapea ids reales
+            let actualIdsToHighlight = idsToHighlight
+                .filter(id => id !== 'last')
+                .map(id => id);
+            
+            // mapea 'last' al id del último mensaje real
+            if (hasLastMessageId && localMessages.length > 0) {
+                const lastMessageId = localMessages[localMessages.length - 1].id;
+                actualIdsToHighlight.push(lastMessageId);
+                console.log("Mapped 'last' ID to actual last message ID:", lastMessageId);
+            }
+            
+            // espera carga de mensajes si es necesario
+            if (hasLastMessageId && actualIdsToHighlight.length === 0) {
+                console.log("Waiting for messages to load before highlighting last message");
+                setTimeout(() => {
+                    setHighlightedMessageChanged(prev => prev + 1);
+                }, 500);
+                return;
+            }
+            
+            // espera actualización del dom
+            setTimeout(() => {
+                // resalta mensajes encontrados
+                let foundAnyMessage = false;
+                let primaryMessageElement: HTMLElement | null = null;
+                
+                console.log("Trying to highlight messages with IDs:", actualIdsToHighlight);
+                
+                // procesa cada id de mensaje
+                actualIdsToHighlight.forEach((msgId, index) => {
+                    const messageElement = document.getElementById(`message-${msgId}`);
+                    if (messageElement) {
+                        foundAnyMessage = true;
+                        // guarda primer elemento para scroll
+                        if (index === 0) {
+                            primaryMessageElement = messageElement;
+                        }
+                        
+                        // aplica resaltado con transición visual
+                        messageElement.classList.add('bg-[#F2B134]/20');
+                        messageElement.setAttribute('data-highlighted', 'true');
+                        setTimeout(() => {
+                            if (messageElement) {
+                                messageElement.classList.remove('bg-[#F2B134]/20');
+                                messageElement.classList.add('bg-[#F2B134]/10');
+                            }
+                        }, 1000);
+                    }
+                });
+                
+                // desplaza a mensaje principal
+                if (primaryMessageElement) {
+                    (primaryMessageElement as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // muestra contador de coincidencias
+                    if (totalMatches && parseInt(totalMatches) > 1) {
+                        const matchCounter = document.createElement('div');
+                        matchCounter.className = 'fixed bottom-20 right-8 bg-[#5AAA95] text-white px-3 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
+                        matchCounter.innerHTML = `<span class="font-bold">${totalMatches}</span> coincidencias encontradas`;
+                        document.body.appendChild(matchCounter);
+                        
+                        // elimina contador después de 5 segundos
+                        setTimeout(() => {
+                            if (matchCounter.parentNode) {
+                                matchCounter.parentNode.removeChild(matchCounter);
+                            }
+                        }, 5000);
+                    }
+                }
+                
+                if (!foundAnyMessage) {
+                    console.log("Ningún mensaje destacado encontrado en el DOM");
+                    // permite scroll normal si no hay mensajes destacados
+                    setPreventAutoScroll(false);
+                }
+                
+                // limpia localStorage excepto para caso 'last'
+                if (!(scrollToMessageId === 'last' && foundAnyMessage)) {
+                    localStorage.removeItem('scrollToMessageId');
+                    localStorage.removeItem('highlightedMessageIds');
+                    localStorage.removeItem('totalMatches');
+                }
+            }, 300);
+        }
+    }, [messages, chatId, highlightedMessageChanged, localMessages]);
+
+    // maneja envío de nuevos mensajes
+    const handleSendMessage = async () => {
+        if (newMessage.trim() === '' || isSending) return;
+        
+        // limpia errores previos
+        setSendError(null);
+        setIsSending(true);
+        
+        const messageText = newMessage.trim();
+        
+        // genera id temporal único basado en timestamp
+        const now = Date.now();
+        const tempMessageId = `temp-${now}`;
+        
+        // formatea hora para mostrar
+        const currentTime = new Date(now);
+        const formattedTime = currentTime.toLocaleString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // crea objeto de datos para el mensaje
+        const messageData = {
+            conversationId: parseInt(chatId),
+            senderId: parseInt(currentUserId),
+            receiverId: recipientId,
+            messageText,
+            clientTempId: tempMessageId
+        };
+        
+        // crea mensaje optimista para mostrar inmediatamente
+        const optimisticMessage: Message = {
+            id: tempMessageId,
+            _originalId: tempMessageId, 
+            senderId: currentUserId,
+            text: messageText,
+            timestamp: formattedTime,
+            fullDate: currentTime,
+            status: 'sent'
+        };
+        
+        // limpia input para mejorar respuesta percibida
         setNewMessage('');
         setShowEmojis(false);
+        
+        // añade mensaje a la interfaz inmediatamente
+        setLocalMessages(prev => [...prev, optimisticMessage]);
+        
+        // activa scroll automático para mostrar nuevo mensaje
+        setPreventAutoScroll(false);
+        
+        try {
+            // intenta enviar por socket si está disponible
+            if (socket && socket.connected) {
+                socket.emit('send_message', messageData);
+            } else {
+                // alternativa API REST si no hay socket
+                const response = await fetch('https://drivup-backend.onrender.com/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(messageData),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to send message: ${response.status}`);
+                }
+                
+                setIsSending(false);
+            }
+            
+            // actualiza conversación en componente padre
+            onMessageSent(parseInt(chatId), messageText);
+            
+        } catch (error) {
+            console.error('Error sending message:', error);
+            setSendError('No se pudo enviar el mensaje. Intenta de nuevo.');
+            
+            // elimina mensaje optimista
+            setLocalMessages(prev => prev.filter(msg => msg.id !== tempMessageId));
+            setIsSending(false);
+        }
     };
     
+    // funciones auxiliares para la interfaz
     const toggleEmojiPicker = () => {
         setShowEmojis(!showEmojis);
     };
@@ -65,156 +563,51 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             transition={{ duration: 0.3 }}
             className="flex flex-col h-full bg-white rounded-lg shadow-lg overflow-hidden"
         >
-            {/* Header del chat */}
-            <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] text-white sticky top-0 z-10">
-                <div className="flex items-center">
-                    <div className="relative">
-                        <img 
-                            src={recipientImage} 
-                            alt={`${recipientName}'s profile`} 
-                            className="w-10 h-10 rounded-full object-cover border-2 border-white/30 transition-transform hover:scale-105"
-                        />
-                    </div>
-                    <div className="ml-3">
-                        <h3 className="font-medium text-white">{recipientName}</h3>
-                    </div>
-                </div>
-                <div className="flex space-x-2">
-                    <button 
-                        className="p-2 rounded-full hover:bg-white/10 transition-colors" 
-                        title="Información del contacto"
-                        onClick={toggleInfoModal}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            {/* cabecera del chat */}
+            <ChatHeader 
+                recipientName={recipientName}
+                recipientImage={recipientImage}
+                toggleInfoModal={toggleInfoModal}
+                onBackToList={onBackToList}
+                showBackButton={showBackButton}
+            />
 
-            {/* Área de mensajes */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light max-h-[calc(100vh-220px)] scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
-                <div className="text-center my-4">
-                    <span className="inline-block px-3 py-1 text-xs bg-white text-[#4A4E69]/70 rounded-full shadow-sm border border-[#4A4E69]/10">
-                        Hoy
-                    </span>
-                </div>
-                
-                <AnimatePresence>
-                    {messages.map((message) => (
-                        <motion.div 
-                            key={message.id}
-                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            className={`flex ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
-                        >
-                        {message.senderId !== currentUserId && (
-                            <img 
-                                src={recipientImage} 
-                                alt={recipientName} 
-                                className="h-8 w-8 rounded-full object-cover mr-2 self-end mb-1"
-                            />
-                        )}
-                        <div 
-                            className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm transition-all hover:shadow-md ${message.senderId === currentUserId 
-                                ? 'bg-gradient-to-r from-[#2D5DA1] to-[#2D5DA1]/90 text-white rounded-br-none' 
-                                : 'bg-white text-[#4A4E69] rounded-bl-none'}`}
-                        >
-                            <p className="leading-relaxed">{message.text}</p>
-                            <div className="flex items-center justify-end mt-1 space-x-1">
-                                <span className={`text-xs ${message.senderId === currentUserId ? 'text-white/70' : 'text-[#4A4E69]/60'}`}>
-                                    {message.timestamp}
-                                </span>
-                                {message.senderId === currentUserId && (
-                                    <div className="flex">
-                                        {message.isRead ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-[#5AAA95]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-[#F2B134]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        )}
-                                        {message.isRead ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1 text-[#5AAA95]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 -ml-1 text-[#F2B134]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </motion.div>
-                    ))}
-                </AnimatePresence>
-                
-                <div ref={messagesEndRef} />
-            </div>
+            {/* área de mensajes */}
+            <MessageList 
+                messages={localMessages}
+                currentUserId={currentUserId}
+                recipientName={recipientName}
+                recipientImage={recipientImage}
+                messagesEndRef={messagesEndRef}
+                highlightedMessageChanged={highlightedMessageChanged}
+            />
+            
+            {/* mensajes de error */}
+            {sendError && (
+                <ErrorMessage 
+                    error={sendError} 
+                    onClose={() => setSendError(null)} 
+                />
+            )}
 
-            {/* Área de entrada de mensaje */}
-            <div className="border-t p-4 bg-white sticky bottom-0 z-10 shadow-md">
-                <div className="flex items-center">    
-                    <div className="relative flex-1 mx-2">
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Escribe un mensaje..."
-                            className="w-full border border-[#4A4E69]/20 rounded-full py-3 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#2D5DA1] focus:border-transparent shadow-sm"
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                        />
-                        <button 
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4A4E69]/50 hover:text-[#5AAA95] transition-colors"
-                            onClick={toggleEmojiPicker}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </button>
-                        
-                        {showEmojis && (
-                            <div className="absolute bottom-12 right-0 bg-white rounded-lg shadow-xl p-2 border border-gray-200 grid grid-cols-6 gap-1 w-64">
-                                {['😊', '😂', '❤️', '👍', '🙏', '😍', '😎', '🔥', '🎉', '👋', '😢', '🤔'].map(emoji => (
-                                    <button 
-                                        key={emoji} 
-                                        className="text-xl p-1 hover:bg-gray-100 rounded transition-colors"
-                                        onClick={() => setNewMessage(prev => prev + emoji)}
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    
-                    <button
-                        onClick={handleSendMessage}
-                        className={`ml-2 rounded-full p-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#F2B134] ${newMessage.trim() === '' 
-                            ? 'bg-[#F2B134]/50 text-[#4A4E69]/50 cursor-not-allowed' 
-                            : 'bg-[#F2B134] text-[#4A4E69] hover:bg-[#F2B134]/80 shadow-md hover:shadow-lg transform hover:scale-105'}`}
-                        disabled={newMessage.trim() === ''}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                        <span className="sr-only">Enviar mensaje</span>
-                    </button>
-                </div>
-            </div>
+            {/* área de entrada de mensajes */}
+            <MessageInput 
+                newMessage={newMessage}
+                setNewMessage={setNewMessage}
+                handleSendMessage={handleSendMessage}
+                isSending={isSending}
+                showEmojis={showEmojis}
+                toggleEmojiPicker={toggleEmojiPicker}
+                inputRef={inputRef}
+            />
 
-            {/* Usar el componente InfoPasajeroProfile */}
+            {/* perfil del usuario */}
             <InfoPasajeroProfile
                 isOpen={showInfoModal}
                 onClose={toggleInfoModal}
                 name={recipientName}
                 image={recipientImage}
+                userId={recipientId}
             />
         </motion.div>
     );
