@@ -84,7 +84,7 @@ const MessageList: React.FC<MessageListProps> = ({
     };
 
     return (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light max-h-[calc(100vh-220px)] scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
             {renderMessagesWithSeparators()}
             <div ref={messagesEndRef} />
         </div>

@@ -704,48 +704,51 @@ const RequestPage: FC = () => {
     };
 
     return (
-        <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white">
-            <div className="container mx-auto py-3 md:py-6 px-2 md:px-4 h-full">
+        <main className="h-screen bg-gradient-to-b from-[#F8F9FA] to-white overflow-hidden">
+            <div className="container mx-auto py-3 md:py-6 px-2 md:px-4 h-full flex flex-col">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="mb-2 md:mb-4 hidden md:block"
+                    className="mb-2 md:mb-4 hidden md:block flex-shrink-0"
                 >
                     <h1 className="text-2xl md:text-3xl font-bold text-[#0a0d35] mb-1 md:mb-2">Ponerse de acuerdo es fácil</h1>
                     <p className="text-[#4A4E69]/80 max-w-3xl text-sm md:text-base">Utiliza el chat para comunicarte con otros usuarios del sistema -ya seas conductor o pasajero- Define horarios, puntos de encuentro y los terminos del viaje de manera colaborativa y efectiva.</p>
                 </motion.div>
 
-                <div className="flex flex-col md:flex-row h-full bg-white rounded-xl shadow-xl overflow-hidden border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
-                    {/* lista de conversaciones (izquierda) */}
-                    <div className={`w-full md:w-1/3 ${showChat ? 'hidden md:block' : 'block'}`}>
-                        <ConversationList
-                            conversations={conversations}
-                            isLoading={isLoading}
-                            error={error}
-                            searchTerm={searchTerm}
-                            activeFilter={activeFilter}
-                            filteredConversations={filteredConversations}
-                            selectedChat={selectedChat}
-                            onSearchChange={handleSearchChange}
-                            onFilterChange={handleFilterChange}
-                            onSelectChat={handleSelectChat}
-                        />
-                    </div>
+                {/* Fixed height wrapper to ensure proper sizing on various browsers/devices */}
+                <div className="flex-grow h-[calc(100vh-70px)] md:h-[calc(100vh-120px)]">
+                    <div className="flex flex-col md:flex-row h-full overflow-hidden bg-white rounded-xl shadow-xl border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
+                        {/* lista de conversaciones (izquierda) */}
+                        <div className={`w-full md:w-1/3 h-full border-r border-[#4A4E69]/10 ${showChat ? 'hidden md:block' : 'block'}`}>
+                            <ConversationList
+                                conversations={conversations}
+                                isLoading={isLoading}
+                                error={error}
+                                searchTerm={searchTerm}
+                                activeFilter={activeFilter}
+                                filteredConversations={filteredConversations}
+                                selectedChat={selectedChat}
+                                onSearchChange={handleSearchChange}
+                                onFilterChange={handleFilterChange}
+                                onSelectChat={handleSelectChat}
+                            />
+                        </div>
 
-                    {/* area de chat (derecha) */}
-                    <div className={`w-full md:w-2/3 flex flex-col bg-[#F8F9FA] relative ${showChat ? 'block' : 'hidden md:block'}`}>
-                        <ChatContainer
-                            selectedChat={selectedChat}
-                            selectedChatData={selectedChatData}
-                            isLoadingMessages={isLoadingMessages}
-                            messagesError={messagesError}
-                            handleSelectChat={handleSelectChat}
-                            handleMessageSent={handleMessageSent}
-                            socket={socket}
-                            onBackToList={handleBackToList}
-                            showBackButton={true}
-                        />
+                        {/* area de chat (derecha) */}
+                        <div className={`w-full md:w-2/3 h-full flex flex-col bg-[#F8F9FA] ${showChat ? 'block' : 'hidden md:block'}`}>
+                            <ChatContainer
+                                selectedChat={selectedChat}
+                                selectedChatData={selectedChatData}
+                                isLoadingMessages={isLoadingMessages}
+                                messagesError={messagesError}
+                                handleSelectChat={handleSelectChat}
+                                handleMessageSent={handleMessageSent}
+                                socket={socket}
+                                onBackToList={handleBackToList}
+                                showBackButton={true}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
