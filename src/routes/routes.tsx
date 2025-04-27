@@ -12,6 +12,7 @@ import DriverRegister from '../pages/DriverRegister';
 import ProtectedRoute from '../components/ProtectedRoute';
 import PublicRoute from '../components/PublicRoute';
 import RoleBasedRoute from '../components/RoleBasedRoute';
+import Configuracion from '../pages/configuracion';
 import SolicitudesPage from '../pages/vistaConductores/solicitudesPage';
 import BandejaMensajes from '../pages/vistaPasajeros/bandejaMensajes';
 
@@ -20,6 +21,12 @@ const router = createBrowserRouter([
     //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
 
+    {
+        path: "/Configuracion",
+        element: (
+                <Configuracion />
+        ),
+    },
     {
         path: "/driver-register",
         element: (
