@@ -7,6 +7,7 @@ import MessageList from './chatMessage/MessageList';
 import MessageInput from './chatMessage/MessageInput';
 import ErrorMessage from './chatMessage/ErrorMessage';
 
+// componente principal para la interfaz de chat entre usuarios
 const ChatMessage: React.FC<ChatMessageProps> = ({
     chatId,
     recipientName,
@@ -19,6 +20,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     onBackToList,
     showBackButton
 }) => {
+    // estados para gestionar la interfaz de chat
     const [newMessage, setNewMessage] = useState('');
     const [showEmojis, setShowEmojis] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
@@ -27,14 +29,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const [sendError, setSendError] = useState<string | null>(null);
     // variable para controlar si debemos hacer scroll al último mensaje
     const [preventAutoScroll, setPreventAutoScroll] = useState(false);
-    // Add a state to track localStorage changes for highlighted messages
+    // seguimiento de cambios en mensajes destacados
     const [highlightedMessageChanged, setHighlightedMessageChanged] = useState(0);
     
+    // referencias para manipulación del dom
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const firstRenderRef = useRef(true);
 
-    // Listen for localStorage changes that affect highlights
+    // detecta cambios en localStorage para resaltar mensajes
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === 'scrollToMessageId' || e.key === 'highlightedMessageIds' || e.key === 'totalMatches') {
@@ -44,15 +47,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             }
         };
         
-        // Custom event handler for highlight updates
+        // manejador de eventos personalizados para actualizaciones de resaltado
         const handleHighlightUpdated = (e: CustomEvent) => {
             console.log('ChatMessage: Received highlightUpdated event', e.detail);
             setHighlightedMessageChanged(prev => prev + 1);
         };
         
-        // Listen for storage events (for multi-tab support)
+        // escucha eventos de almacenamiento (soporte multi-pestaña)
         window.addEventListener('storage', handleStorageChange);
-        // Listen for our custom highlight event 
+        // escucha evento personalizado para resaltado
         window.addEventListener('highlightUpdated', handleHighlightUpdated as EventListener);
         
         return () => {
@@ -61,18 +64,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         };
     }, []);
 
-    // Listen for socket events
+    // gestiona eventos de socket para comunicación en tiempo real
     useEffect(() => {
         if (!socket) return;
 
-        // Confirmation that message was sent
+        // confirmación de mensaje enviado
         const handleMessageSent = (message: any) => {
             console.log('Message sent confirmation received:', message);
             
-            // Instead of updating immediately, use a smoother transition
-            // by preserving the message ID for animation purposes
+            // actualiza mensajes locales preservando el id para animación
             setLocalMessages(prev => {
-                // Find the temp message matching both the text and temp ID
+                // busca mensaje temporal coincidente
                 const tempMessage = prev.find(msg => 
                     msg.id.startsWith('temp-') && 
                     msg.text === (message.message_text || message.text)
@@ -80,14 +82,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 
                 if (tempMessage) {
                     console.log('Found matching temp message to update:', tempMessage);
-                    // Update the temp message content but preserve its key in _originalId field
-                    // This prevents the message from "disappearing" visually
+                    // actualiza el contenido pero preserva la clave para estabilidad visual
                     return prev.map(msg => 
                         (msg.id === tempMessage.id)
                             ? { 
                                 ...msg, 
                                 id: message.id.toString(),
-                                _originalId: msg.id, // Keep original ID for stable rendering
+                                _originalId: msg.id, // mantiene id original para renderizado estable
                                 status: 'delivered' as const,
                                 timestamp: new Date(message.sent_at || Date.now()).toLocaleString([], {
                                     hour: '2-digit',
@@ -97,7 +98,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                             : msg
                     );
                 } else {
-                    // If no specific temp message found, look for any temp message
+                    // busca cualquier mensaje temporal si no hay coincidencia específica
                     const anyTempMessage = prev.find(msg => msg.id.startsWith('temp-'));
                     
                     if (anyTempMessage) {
@@ -107,7 +108,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                 ? { 
                                     ...msg, 
                                     id: message.id.toString(),
-                                    _originalId: msg.id, // Keep original ID for key stability
+                                    _originalId: msg.id, // mantiene estabilidad de clave
                                     status: 'delivered' as const,
                                     timestamp: new Date(message.sent_at || Date.now()).toLocaleString([], {
                                         hour: '2-digit',
@@ -117,7 +118,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                 : msg
                         );
                     } else {
-                        // If no temp message found at all, just add the new message
+                        // agrega nuevo mensaje si no hay mensajes temporales
                         console.log('No temp message found, adding new message');
                         const newConfirmedMessage: Message = {
                             id: message.id.toString(),
@@ -137,10 +138,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             setIsSending(false);
         };
 
-        // Handle when messages are read by the recipient
+        // maneja cuando los mensajes son leídos por el destinatario
         const handleMessagesRead = (data: { conversationId: number, readBy: number }) => {
             if (parseInt(chatId) === data.conversationId) {
-                // Update all messages to 'read' status when recipient has read them
+                // actualiza todos los mensajes a estado 'leído'
                 setLocalMessages(prev => prev.map(msg => 
                     msg.senderId === currentUserId 
                         ? { ...msg, status: 'read' } 
@@ -149,32 +150,30 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             }
         };
 
-        // Handle new messages - Needed to properly update read status in real-time
+        // maneja nuevos mensajes entrantes
         const handleNewMessage = (message: any) => {
-            // Only handle messages for the current chat and from other users
+            // solo procesa mensajes para el chat actual y de otros usuarios
             if (parseInt(chatId) === message.conversation_id && 
                 message.sender_id.toString() !== currentUserId) {
                 
                 console.log('ChatMessage: New message received in current chat, marking as read');
                 
-                // Mark as read immediately since the user is viewing this chat
+                // marca como leído inmediatamente
                 socket.emit('mark_as_read', {
                     conversationId: parseInt(chatId),
                     userId: parseInt(currentUserId)
                 });
-                
-                // No need to update the local messages as the parent component (chatPage) 
-                // will handle adding the new message to the chat
             }
         };
 
-        // Handle errors
+        // maneja errores de envío
         const handleMessageError = (error: any) => {
             console.error('Error sending message:', error);
             setSendError('No se pudo enviar el mensaje. Intenta de nuevo.');
             setIsSending(false);
         };
 
+        // suscripción a eventos de socket
         socket.on('message_sent', handleMessageSent);
         socket.on('message_error', handleMessageError);
         socket.on('messages_read', handleMessagesRead);
@@ -188,21 +187,21 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         };
     }, [socket, chatId, currentUserId]);
 
-    // Mark messages as read when user views the chat
+    // marca mensajes como leídos cuando el usuario ve el chat
     useEffect(() => {
         if (!socket || !chatId || messages.length === 0) return;
         
-        // Skip on first render to avoid unnecessary calls
+        // omite la primera renderización para evitar llamadas innecesarias
         if (firstRenderRef.current) {
             firstRenderRef.current = false;
             return;
         }
 
-        // Check if there are messages from the recipient
+        // verifica si hay mensajes del destinatario
         const hasRecipientMessages = messages.some(msg => msg.senderId !== currentUserId);
         
         if (hasRecipientMessages) {
-            // Send event to mark messages as read
+            // envía evento para marcar mensajes como leídos
             socket.emit('mark_as_read', {
                 conversationId: parseInt(chatId),
                 userId: parseInt(currentUserId)
@@ -210,29 +209,27 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         }
     }, [socket, chatId, messages, currentUserId]);
 
-    // Add a key-based reset mechanism for localMessages when chatId changes
+    // reinicia mensajes locales cuando cambia chatId
     useEffect(() => {
-        // Reset local messages completely when switching to a different chat
         console.log('Chat ID changed, resetting local messages');
         setLocalMessages(messages);
         setSendError(null);
         setIsSending(false);
         
-        // Also reset UI states
+        // reinicia estados de interfaz
         setShowEmojis(false);
         setShowInfoModal(false);
         
-        // Reset the first render flag so we mark messages as read again
+        // reinicia para marcar mensajes como leídos
         firstRenderRef.current = true;
         
-        // verificamos si hay un mensaje destacado para este chat
+        // verifica mensajes destacados para este chat
         const hasHighlightedMessage = localStorage.getItem('scrollToMessageId') !== null;
         
-        // desactivamos scroll automático si hay un mensaje destacado
-        // or enable it if we're switching to a chat without highlighted messages
+        // controla comportamiento de desplazamiento
         setPreventAutoScroll(hasHighlightedMessage);
         
-        // Clean up highlighted elements when component unmounts or chatId changes
+        // limpia elementos destacados al desmontar
         return () => {
             document.querySelectorAll('[data-highlighted="true"]').forEach(el => {
                 el.classList.remove('bg-[#F2B134]/10', 'bg-[#F2B134]/20');
@@ -241,18 +238,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         };
     }, [chatId, messages]);
 
-    // Update local messages when prop messages change (this will run for the same chatId)
+    // actualiza mensajes locales cuando cambian los mensajes recibidos
     useEffect(() => {
-        // Skip if messages array is empty to avoid clearing existing messages
+        // omite si no hay mensajes para evitar borrar mensajes existentes
         if (messages.length === 0) return;
         
         console.log('Messages prop updated:', messages);
         console.log('Current local messages:', localMessages);
         
-        // IMPORTANT: Instead of replacing all messages, we need to merge them
-        // ensuring we keep all messages that exist either in props or local state
-        
-        // 1. Create maps for faster lookups
+        // fusiona mensajes preservando estado local y nuevos datos
+        // crea mapas para búsquedas rápidas
         const incomingMessagesMap = new Map();
         messages.forEach(msg => {
             incomingMessagesMap.set(msg.id, msg);
@@ -260,31 +255,30 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         
         const localMessagesMap = new Map();
         localMessages.forEach(msg => {
-            // Skip temporary messages as they will be handled separately
+            // omite mensajes temporales para manejo especial
             if (!msg.id.startsWith('temp-')) {
                 localMessagesMap.set(msg.id, msg);
             }
         });
         
-        // 2. Get temporary messages that should be preserved ONLY for the current chat
+        // preserva mensajes temporales del usuario actual
         const tempMessages = localMessages.filter(msg => 
             msg.id.startsWith('temp-') && 
-            msg.senderId === currentUserId // Make sure they're from the current user
+            msg.senderId === currentUserId
         );
         
-        // 3. Combine messages from both sources and remove duplicates
+        // combina mensajes de ambas fuentes eliminando duplicados
         const mergedMessagesMap = new Map([...localMessagesMap, ...incomingMessagesMap]);
         
-        // 4. Convert the merged map back to an array
+        // convierte el mapa fusionado a array
         const mergedMessages = [...mergedMessagesMap.values()];
         
-        // 5. Apply status from local messages where available, or determine based on is_read property
+        // aplica estado de lectura desde mensajes locales o determina según propiedad is_read
         const finalMessages = mergedMessages.map(msg => {
             const existingMsg = localMessages.find(localMsg => localMsg.id === msg.id);
             
-            // If this message is from the current user, determine its read status
             if (msg.senderId === currentUserId) {
-                // If we already have a status in local messages, preserve it
+                // preserva estado si existe en mensajes locales
                 if (existingMsg?.status) {
                     return {
                         ...msg,
@@ -292,11 +286,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     };
                 }
                 
-                // Otherwise, determine based on the is_read property if available
-                // In API responses, is_read might be available on the message object
+                // determina estado según propiedad is_read
                 return {
                     ...msg,
-                    // Default to 'delivered' if is_read is undefined, otherwise use 'read' if is_read is true
                     status: (msg as any).is_read === true ? 'read' : 'delivered'
                 };
             }
@@ -307,20 +299,20 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             };
         });
         
-        // 6. Add temp messages to the final result
+        // añade mensajes temporales al resultado final
         const result = [...finalMessages, ...tempMessages];
         
-        // 7. Sort messages by their ID to maintain chronological order
+        // ordena mensajes por id para mantener orden cronológico
         result.sort((a, b) => {
-            // If both are temp messages, sort by their timestamp value
+            // ordena mensajes temporales por timestamp
             if (a.id.startsWith('temp-') && b.id.startsWith('temp-')) {
                 return a.id.localeCompare(b.id);
             }
-            // Temp messages always come after non-temp messages
+            // mensajes temporales siempre después de mensajes normales
             if (a.id.startsWith('temp-')) return 1;
             if (b.id.startsWith('temp-')) return -1;
             
-            // Otherwise sort by ID (assuming they're numeric or timestamp-based)
+            // ordena por id numérico
             return parseInt(a.id) - parseInt(b.id);
         });
         
@@ -328,36 +320,33 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         setLocalMessages(result);
     }, [messages, currentUserId]);
 
-    // Focus input when chat opens
+    // enfoca input cuando se abre el chat
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
     }, [chatId]);
 
-    // Scroll to last message when messages change
+    // desplaza a último mensaje cuando cambian los mensajes
     useEffect(() => {
-        // solo hacemos scroll automático si no estamos destacando un mensaje
+        // solo realiza desplazamiento si no hay mensajes destacados
         if (!preventAutoScroll && messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [localMessages, preventAutoScroll]);
 
-    // actualiza el elemento al que hacemos scroll cuando se monta el componente
+    // gestiona resaltado y desplazamiento a mensajes específicos
     useEffect(() => {
-        // verificamos si hay mensajes destacados a los que debemos hacer scroll
+        // verifica mensajes destacados para hacer scroll
         const scrollToMessageId = localStorage.getItem('scrollToMessageId');
         const highlightedIds = localStorage.getItem('highlightedMessageIds');
         const totalMatches = localStorage.getItem('totalMatches');
         
-        // To help with debugging
         if (scrollToMessageId) {
             console.log(`ChatMessage: Processing highlighted messages for chat ${chatId}. Target message ID: ${scrollToMessageId}`);
         }
         
-        // Clear any previous highlighted elements when the effect runs again
-        // Instead of trying to select by the Tailwind classes directly, 
-        // we'll use a more reliable approach to find elements
+        // limpia resaltados previos
         document.querySelectorAll('[data-highlighted="true"]').forEach(el => {
             el.classList.remove('bg-[#F2B134]/10', 'bg-[#F2B134]/20');
             el.removeAttribute('data-highlighted');
@@ -366,10 +355,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         if (scrollToMessageId) {
             console.log("Intentando hacer scroll a mensajes coincidentes:", scrollToMessageId);
             
-            // activamos la prevención de scroll automático
+            // activa prevención de scroll automático
             setPreventAutoScroll(true);
             
-            // obtenemos la lista de todos los mensajes a resaltar
+            // obtiene lista de mensajes a resaltar
             let idsToHighlight: string[] = [];
             if (highlightedIds) {
                 try {
@@ -383,51 +372,49 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 idsToHighlight = [scrollToMessageId];
             }
             
-            // If the scrollToMessageId is 'last', we need to determine if this is the only ID or if there are others
-            // We'll map all actual message IDs and keep the special 'last' ID only until we have message data
+            // maneja caso especial para el id 'last'
             let hasLastMessageId = idsToHighlight.includes('last');
             
-            // Filter out the 'last' ID and map real message IDs
+            // filtra id 'last' y mapea ids reales
             let actualIdsToHighlight = idsToHighlight
                 .filter(id => id !== 'last')
-                .map(id => id); // Clone the array
+                .map(id => id);
             
-            // If we have 'last' in the original list and we have messages, map it to the actual last message ID
+            // mapea 'last' al id del último mensaje real
             if (hasLastMessageId && localMessages.length > 0) {
                 const lastMessageId = localMessages[localMessages.length - 1].id;
                 actualIdsToHighlight.push(lastMessageId);
                 console.log("Mapped 'last' ID to actual last message ID:", lastMessageId);
             }
             
-            // If we're highlighting the last message but don't have message data yet
+            // espera carga de mensajes si es necesario
             if (hasLastMessageId && actualIdsToHighlight.length === 0) {
                 console.log("Waiting for messages to load before highlighting last message");
                 setTimeout(() => {
-                    // Trigger a re-render to check again once messages are loaded
                     setHighlightedMessageChanged(prev => prev + 1);
                 }, 500);
                 return;
             }
             
-            // esperamos a que el DOM se actualice
+            // espera actualización del dom
             setTimeout(() => {
-                // resaltamos todos los mensajes encontrados
+                // resalta mensajes encontrados
                 let foundAnyMessage = false;
                 let primaryMessageElement: HTMLElement | null = null;
                 
                 console.log("Trying to highlight messages with IDs:", actualIdsToHighlight);
                 
-                // procesar cada ID de mensaje coincidente
+                // procesa cada id de mensaje
                 actualIdsToHighlight.forEach((msgId, index) => {
                     const messageElement = document.getElementById(`message-${msgId}`);
                     if (messageElement) {
                         foundAnyMessage = true;
-                        // guardamos el primer elemento para hacer scroll hacia él
+                        // guarda primer elemento para scroll
                         if (index === 0) {
                             primaryMessageElement = messageElement;
                         }
                         
-                        // resaltamos todos los mensajes coincidentes
+                        // aplica resaltado con transición visual
                         messageElement.classList.add('bg-[#F2B134]/20');
                         messageElement.setAttribute('data-highlighted', 'true');
                         setTimeout(() => {
@@ -439,18 +426,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     }
                 });
                 
-                // hacemos scroll al primer mensaje
+                // desplaza a mensaje principal
                 if (primaryMessageElement) {
                     (primaryMessageElement as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
-                    // mostramos indicador del total de coincidencias si hay más de una
+                    // muestra contador de coincidencias
                     if (totalMatches && parseInt(totalMatches) > 1) {
                         const matchCounter = document.createElement('div');
                         matchCounter.className = 'fixed bottom-20 right-8 bg-[#5AAA95] text-white px-3 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
                         matchCounter.innerHTML = `<span class="font-bold">${totalMatches}</span> coincidencias encontradas`;
                         document.body.appendChild(matchCounter);
                         
-                        // eliminamos el contador después de 5 segundos
+                        // elimina contador después de 5 segundos
                         setTimeout(() => {
                             if (matchCounter.parentNode) {
                                 matchCounter.parentNode.removeChild(matchCounter);
@@ -461,12 +448,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 
                 if (!foundAnyMessage) {
                     console.log("Ningún mensaje destacado encontrado en el DOM");
-                    // si no encontramos mensajes, permitimos scroll normal
+                    // permite scroll normal si no hay mensajes destacados
                     setPreventAutoScroll(false);
                 }
                 
-                // limpiamos después de usar, pero solo si no estamos resaltando el último mensaje
-                // para el último mensaje, necesitamos mantener la información para seguir resaltándolo
+                // limpia localStorage excepto para caso 'last'
                 if (!(scrollToMessageId === 'last' && foundAnyMessage)) {
                     localStorage.removeItem('scrollToMessageId');
                     localStorage.removeItem('highlightedMessageIds');
@@ -476,64 +462,63 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         }
     }, [messages, chatId, highlightedMessageChanged, localMessages]);
 
+    // maneja envío de nuevos mensajes
     const handleSendMessage = async () => {
         if (newMessage.trim() === '' || isSending) return;
         
-        // Clear previous errors
+        // limpia errores previos
         setSendError(null);
         setIsSending(true);
         
         const messageText = newMessage.trim();
         
-        // Generate a unique timestamp-based ID that will be stable
-        // This helps with animation transitions later
+        // genera id temporal único basado en timestamp
         const now = Date.now();
         const tempMessageId = `temp-${now}`;
         
-        // Format time for display
+        // formatea hora para mostrar
         const currentTime = new Date(now);
         const formattedTime = currentTime.toLocaleString([], {
             hour: '2-digit',
             minute: '2-digit'
         });
         
-        // Create message object
+        // crea objeto de datos para el mensaje
         const messageData = {
             conversationId: parseInt(chatId),
             senderId: parseInt(currentUserId),
             receiverId: recipientId,
             messageText,
-            clientTempId: tempMessageId // Include temp ID for the server to reference
+            clientTempId: tempMessageId
         };
         
-        // Create optimistic message to show immediately
+        // crea mensaje optimista para mostrar inmediatamente
         const optimisticMessage: Message = {
             id: tempMessageId,
-            _originalId: tempMessageId, // Store the temp ID for stable animations
+            _originalId: tempMessageId, 
             senderId: currentUserId,
             text: messageText,
             timestamp: formattedTime,
-            fullDate: currentTime, // Include the full date for grouping by day
+            fullDate: currentTime,
             status: 'sent'
         };
         
-        // Clear input immediately to improve perceived responsiveness
+        // limpia input para mejorar respuesta percibida
         setNewMessage('');
         setShowEmojis(false);
         
-        // Add message to the UI immediately
+        // añade mensaje a la interfaz inmediatamente
         setLocalMessages(prev => [...prev, optimisticMessage]);
         
-        // After sending a message, enable auto-scroll to show the new message
-        // This helps if the user was previously viewing highlighted messages
+        // activa scroll automático para mostrar nuevo mensaje
         setPreventAutoScroll(false);
         
         try {
-            // Try to send via socket first if available
+            // intenta enviar por socket si está disponible
             if (socket && socket.connected) {
                 socket.emit('send_message', messageData);
             } else {
-                // Fallback to REST API if socket not available
+                // alternativa API REST si no hay socket
                 const response = await fetch('https://drivup-backend.onrender.com/messages', {
                     method: 'POST',
                     headers: {
@@ -549,19 +534,20 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 setIsSending(false);
             }
             
-            // Update conversation in the parent component
+            // actualiza conversación en componente padre
             onMessageSent(parseInt(chatId), messageText);
             
         } catch (error) {
             console.error('Error sending message:', error);
             setSendError('No se pudo enviar el mensaje. Intenta de nuevo.');
             
-            // Remove optimistic message
+            // elimina mensaje optimista
             setLocalMessages(prev => prev.filter(msg => msg.id !== tempMessageId));
             setIsSending(false);
         }
     };
     
+    // funciones auxiliares para la interfaz
     const toggleEmojiPicker = () => {
         setShowEmojis(!showEmojis);
     };
@@ -577,7 +563,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             transition={{ duration: 0.3 }}
             className="flex flex-col h-full bg-white rounded-lg shadow-lg overflow-hidden"
         >
-            {/* Chat header */}
+            {/* cabecera del chat */}
             <ChatHeader 
                 recipientName={recipientName}
                 recipientImage={recipientImage}
@@ -586,7 +572,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 showBackButton={showBackButton}
             />
 
-            {/* Message area */}
+            {/* área de mensajes */}
             <MessageList 
                 messages={localMessages}
                 currentUserId={currentUserId}
@@ -596,7 +582,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 highlightedMessageChanged={highlightedMessageChanged}
             />
             
-            {/* Error message */}
+            {/* mensajes de error */}
             {sendError && (
                 <ErrorMessage 
                     error={sendError} 
@@ -604,7 +590,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 />
             )}
 
-            {/* Message input area */}
+            {/* área de entrada de mensajes */}
             <MessageInput 
                 newMessage={newMessage}
                 setNewMessage={setNewMessage}
@@ -615,7 +601,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 inputRef={inputRef}
             />
 
-            {/* User InfoPasajeroProfile component */}
+            {/* perfil del usuario */}
             <InfoPasajeroProfile
                 isOpen={showInfoModal}
                 onClose={toggleInfoModal}

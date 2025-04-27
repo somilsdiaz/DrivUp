@@ -4,6 +4,7 @@ import MessageBubble from './MessageBubble';
 import DateSeparator from './DateSeparator';
 import { processMessagesWithDateSeparators } from './messageUtils';
 
+// interfaz que define las propiedades del componente de lista de mensajes
 interface MessageListProps {
     messages: Message[];
     currentUserId: string;
@@ -21,15 +22,16 @@ const MessageList: React.FC<MessageListProps> = ({
     messagesEndRef,
     highlightedMessageChanged
 }) => {
-    // Renderizar los mensajes junto con los separadores de fecha
+    // función para renderizar mensajes con separadores de fecha
     const renderMessagesWithSeparators = () => {
+        // procesa los mensajes para añadir separadores de fecha
         const processedMessages = processMessagesWithDateSeparators(messages);
         
-        // Get current highlighted message ID - will change when highlightedMessageChanged updates
+        // obtiene el id del mensaje destacado actual
         const currentHighlightedMessageId = localStorage.getItem('scrollToMessageId');
         const highlightedIds = localStorage.getItem('highlightedMessageIds');
         
-        // Parse all highlighted message IDs if available
+        // analiza todos los ids de mensajes destacados si están disponibles
         let matchedMessageIds: string[] = [];
         if (highlightedIds) {
             try {
@@ -46,15 +48,15 @@ const MessageList: React.FC<MessageListProps> = ({
         
         console.log(`Rendering messages, highlighted IDs:`, matchedMessageIds, `change count: ${highlightedMessageChanged}`);
         
-        // Determine the ID of the last real message for highlighting if needed
+        // determina el id del último mensaje real para destacarlo si es necesario
         const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : null;
         
-        // If 'last' is in the matched IDs and we have messages, replace it with the actual last message ID
+        // si 'last' está en los ids coincidentes y tenemos mensajes, lo reemplaza con el id del último mensaje real
         if (matchedMessageIds.includes('last') && lastMessageId) {
-            // Replace 'last' with the actual ID
             matchedMessageIds = matchedMessageIds.map(id => id === 'last' ? lastMessageId : id);
         }
         
+        // mapea y renderiza cada elemento (mensajes o separadores)
         return processedMessages.map((item) => {
             if ('isSeparator' in item) {
                 return <DateSeparator key={`separator-${item.date}`} separator={item} />;
@@ -62,7 +64,7 @@ const MessageList: React.FC<MessageListProps> = ({
 
             const isFromCurrentUser = item.senderId === currentUserId;
             
-            // Check if this message ID is in the list of highlighted messages
+            // verifica si este mensaje debe ser destacado
             const isHighlightedMessage = matchedMessageIds.includes(item.id);
             
             return (
@@ -83,6 +85,7 @@ const MessageList: React.FC<MessageListProps> = ({
         });
     };
 
+    // contenedor principal con estilos y referencia para desplazamiento automático
     return (
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] bg-opacity-80 backdrop-blur-sm bg-pattern-light scrollbar-thin scrollbar-thumb-[#4A4E69]/20 scrollbar-track-transparent">
             {renderMessagesWithSeparators()}

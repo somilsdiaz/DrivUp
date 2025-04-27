@@ -35,10 +35,10 @@ const RequestPage: FC = () => {
     const [filteredConversations, setFilteredConversations] = useState<ConversationData[]>([]);
     const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
 
-    // Estado para controlar la visibilidad del chat en móvil
+    // estado para controlar la visibilidad del chat en movil
     const [showChat, setShowChat] = useState(false);
 
-    // inicializa conexion con socket.io
+    // inicializa conexion con socket.io para comunicacion en tiempo real
     useEffect(() => {
         const userId = getUserId();
         if (!userId) return;
@@ -60,8 +60,7 @@ const RequestPage: FC = () => {
             setConversations(prevConversations => {
                 return prevConversations.map(conv => {
                     if (conv.id === message.conversation_id) {
-                        // Check if the message is from someone else and the conversation is currently selected
-                        // If so, we'll mark it as read immediately
+                        // verifica si el mensaje es de otra persona y si la conversacion esta seleccionada
                         const isMessageFromOther = message.sender_id.toString() !== userId;
                         const isConversationOpen = selectedChat === message.conversation_id;
                         const shouldMarkAsRead = isMessageFromOther && isConversationOpen;
@@ -71,7 +70,7 @@ const RequestPage: FC = () => {
                             last_message: message.message_text,
                             last_message_at: message.sent_at,
                             last_sender_id: message.sender_id,
-                            // If the conversation is currently open, mark as read immediately
+                            // marca como leido si la conversacion esta abierta
                             is_read: message.sender_id.toString() === userId || shouldMarkAsRead,
                             unread_count: (message.sender_id.toString() === userId || shouldMarkAsRead)
                                 ? "0"
@@ -95,8 +94,7 @@ const RequestPage: FC = () => {
 
                 console.log(`Message is for current chat (${selectedChatData.chatId}), from current user: ${isFromCurrentUser}`);
 
-                // If the message is from another user and the chat is currently open,
-                // we need to mark it as read immediately
+                // marca como leido automaticamente si el mensaje es de otro usuario y el chat esta abierto
                 if (isFromOtherUser && socket && socket.connected) {
                     console.log('Automatically marking message as read because chat is open');
                     socket.emit('mark_as_read', {
@@ -104,11 +102,11 @@ const RequestPage: FC = () => {
                         userId: parseInt(userId)
                     });
                     
-                    // Update the message's read status locally
+                    // actualiza estado de lectura localmente
                     message.is_read = true;
                 }
 
-                // crea objeto de mensaje
+                // crea objeto de mensaje para la interfaz
                 const messageDate = new Date(message.sent_at);
                 const newMsg: ChatMessage = {
                     id: message.id.toString(),
@@ -118,7 +116,7 @@ const RequestPage: FC = () => {
                         hour: '2-digit',
                         minute: '2-digit'
                     }),
-                    fullDate: messageDate, // añadir fecha completa para agrupación por días
+                    fullDate: messageDate,
                     status: isFromCurrentUser ? (message.is_read ? 'read' as MessageStatus : 'delivered' as MessageStatus) : undefined,
                     is_read: message.is_read
                 };
@@ -244,7 +242,7 @@ const RequestPage: FC = () => {
 
                 const data = await response.json();
 
-                // obtiene roles de usuarios
+                // obtiene roles de usuarios para mostrar badges especiales
                 const conversationsWithRoles = await Promise.all(
                     data.map(async (conversation: ConversationData) => {
                         // determina id del otro usuario
@@ -283,7 +281,7 @@ const RequestPage: FC = () => {
         fetchConversations();
     }, []);
 
-    // obtiene mensajes para una conversacion
+    // obtiene mensajes para una conversacion especifica
     const fetchMessages = async (conversationId: number) => {
         setIsLoadingMessages(true);
         setMessagesError(null);
@@ -321,9 +319,9 @@ const RequestPage: FC = () => {
                         month: '2-digit',
                         year: 'numeric'
                     }),
-                    fullDate: sentDate, // fecha completa para agrupacion por dias
-                    status: messageStatus, // estado de lectura
-                    is_read: message.is_read // propiedad is_read para referencia
+                    fullDate: sentDate,
+                    status: messageStatus,
+                    is_read: message.is_read
                 };
             });
 
@@ -337,29 +335,25 @@ const RequestPage: FC = () => {
         }
     };
 
-    // maneja seleccion de chat
+    // maneja seleccion de chat y carga sus mensajes
     const handleSelectChat = async (id: number) => {
         console.log('Selecting chat ID:', id);
 
-        // Clear any existing highlighted message data in localStorage
-        // to prevent stale data from previous searches from persisting
+        // limpia datos de resaltado de mensajes previos
         localStorage.removeItem('scrollToMessageId');
         localStorage.removeItem('highlightedMessageIds');
         localStorage.removeItem('totalMatches');
 
-        // We no longer return early if it's the same chat
-        // This allows reloading the chat with new highlighted messages
-        // from a new search
+        // verifica si es el mismo chat o uno diferente
         const isSameChat = selectedChat === id;
 
-        // Only clear chat data if we're switching to a different chat
+        // solo limpia datos si cambiamos a un chat diferente
         if (!isSameChat) {
             setSelectedChatData(null);
-            // actualiza id del chat seleccionado
             setSelectedChat(id);
         }
 
-        // En móvil, muestra la vista de chat cuando se selecciona uno
+        // muestra vista de chat en movil
         setShowChat(true);
 
         const selectedConversation = conversations.find(conv => conv.id === id);
@@ -378,23 +372,23 @@ const RequestPage: FC = () => {
                 ? selectedConversation.passenger_id
                 : selectedConversation.user_id;
 
-            // If it's the same chat, we only want to reset the UI if there are new search results
+            // reset ui solo si es un chat diferente o hay resultados de busqueda nuevos
             if (!isSameChat || (selectedConversation.highlightedMessage && selectedConversation.highlightedMessage.id)) {
-                // muestra estado de carga mientras obtiene mensajes
+                // establece datos iniciales mientras carga mensajes
                 setSelectedChatData({
                     chatId: id,
                     recipientName: recipientName,
-                    recipientImage: '/Somil_profile.webp', // imagen por defecto hasta tener imagenes reales
+                    recipientImage: '/Somil_profile.webp',
                     recipientId: recipientId,
-                    messages: [], // comienza con mensajes vacios para evitar mostrar mensajes antiguos
+                    messages: [],
                     currentUserId: currentUserId,
                     recipientRole: selectedConversation.recipientRole
                 });
             }
 
-            // si hay mensajes no leidos, los marca como leidos al abrir el chat
+            // marca mensajes como leidos cuando se abre el chat
             if (parseInt(selectedConversation.unread_count) > 0) {
-                // actualiza estado local para mostrar mensajes como leidos
+                // actualiza ui para mostrar como leidos
                 setConversations(prevConversations => {
                     return prevConversations.map(conv =>
                         conv.id === id
@@ -403,7 +397,7 @@ const RequestPage: FC = () => {
                     );
                 });
 
-                // si hay conexion socket, emite evento mark_as_read
+                // notifica al servidor via socket
                 if (socket && socket.connected) {
                     socket.emit('mark_as_read', {
                         conversationId: id,
@@ -413,17 +407,17 @@ const RequestPage: FC = () => {
                 }
             }
 
-            // obtiene mensajes para esta conversacion
+            // carga mensajes para esta conversacion
             const messages = await fetchMessages(id);
 
             // actualiza datos del chat con mensajes obtenidos
             if (messages.length > 0) {
-                // asegura que seguimos en el mismo chat
+                // verifica que seguimos en el mismo chat
                 setSelectedChatData(prev => {
                     if (prev && prev.chatId === id) {
                         return {
                             ...prev,
-                            messages: messages // reemplaza con mensajes recien obtenidos
+                            messages: messages
                         };
                     }
                     return prev;
@@ -432,15 +426,15 @@ const RequestPage: FC = () => {
         }
     };
 
-    // filtra conversaciones cuando cambia termino de busqueda o filtro
+    // sistema de busqueda y filtrado de conversaciones
     useEffect(() => {
-        // variable para controlar si el componente sigue montado
+        // variable para control de componente montado
         let isMounted = true;
         
         const filterConversations = async () => {
             console.log("Ejecutando filtrado con término:", searchTerm);
             
-            // aplica filtro de no leidos primero sobre todas las conversaciones
+            // aplica filtro de no leidos primero
             let filtered = [...conversations].map(conv => ({
                 ...conv, 
                 highlightedMessage: undefined as {
@@ -456,7 +450,7 @@ const RequestPage: FC = () => {
                 filtered = filtered.filter(conversation => parseInt(conversation.unread_count) > 0);
             }
             
-            // si el campo de busqueda esta vacio, solo aplicamos el filtro de no leidos
+            // si no hay termino de busqueda, solo aplica filtro de no leidos
             if (!searchTerm || searchTerm.trim() === '') {
                 console.log("Campo de búsqueda vacío, mostrando todas las conversaciones con filtro:", activeFilter);
                 if (isMounted) {
@@ -465,16 +459,16 @@ const RequestPage: FC = () => {
                 return;
             }
             
-            // obtiene id del usuario actual para busqueda
+            // busqueda basica en nombres y ultimo mensaje
             const currentUserId = getUserId() || '';
             const searchTermLower = searchTerm.toLowerCase().trim();
             
-            // busqueda en info basica (nombres y ultimo mensaje)
+            // primera fase: busqueda en datos basicos
             const matchingByBasicInfo = filtered.filter(conversation => {
-                // determina cual usuario es el destinatario (no el usuario actual)
+                // determina cual usuario es el destinatario
                 const isCurrentUserDriver = currentUserId === conversation.user_id.toString();
                 
-                // solo busca en el nombre del otro usuario (no en el usuario actual)
+                // busca en el nombre del otro usuario
                 const otherUserName = isCurrentUserDriver 
                     ? `${conversation.passenger_name} ${conversation.passenger_last_name}`.toLowerCase()
                     : `${conversation.user_name} ${conversation.user_last_name}`.toLowerCase();
@@ -483,31 +477,26 @@ const RequestPage: FC = () => {
                 const lastMessage = conversation.last_message.toLowerCase();
                 const lastMessageMatches = lastMessage.includes(searchTermLower);
                 
-                // si hay coincidencia en el ultimo mensaje, lo destacamos
                 if (lastMessageMatches) {
-                    // When the last message matches, we need to also check if other messages
-                    // in the conversation match the search term. We'll do this immediately
-                    // rather than in a separate pass to ensure we get all matches.
-                    return true; // Mark it as matching but wait to set highlightedMessage
+                    return true;
                 }
                 
                 return otherUserName.includes(searchTermLower);
             });
             
-            // Process conversations that match by basic info to find all message matches
-            // This ensures that even when the last message matches, we search for all matches
+            // procesa conversaciones con coincidencias basicas para buscar todos los mensajes
             await Promise.all(matchingByBasicInfo.map(async (conversation) => {
                 try {
-                    // If last message matches, we need to find all matches in history
+                    // si hay coincidencia en ultimo mensaje, busca todas las coincidencias
                     const lastMessage = conversation.last_message.toLowerCase();
                     const lastMessageMatches = lastMessage.includes(searchTermLower);
                     
                     if (lastMessageMatches) {
-                        // Fetch all messages for the conversation
+                        // obtiene todos los mensajes de la conversacion
                         const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversation.id}/messages`);
                         
                         if (!response.ok) {
-                            // If we can't get messages, just highlight the last message
+                            // si no puede obtener mensajes, destaca solo el ultimo
                             conversation.highlightedMessage = {
                                 id: 'last',
                                 text: conversation.last_message,
@@ -519,7 +508,7 @@ const RequestPage: FC = () => {
                         
                         const messages = await response.json();
                         
-                        // Find all matches in message history
+                        // busca todas las coincidencias en el historial
                         let matchingMessages = [];
                         let matchingIndices = [];
                         
@@ -532,7 +521,7 @@ const RequestPage: FC = () => {
                         }
                         
                         if (matchingMessages.length > 0) {
-                            // Use the last message as the representative, but include all message IDs
+                            // usa el ultimo mensaje como representativo, pero incluye todos los ids
                             conversation.highlightedMessage = {
                                 id: 'last',
                                 text: conversation.last_message,
@@ -541,8 +530,7 @@ const RequestPage: FC = () => {
                                 matchedMessageIds: matchingMessages.map(msg => msg.id.toString())
                             };
                         } else {
-                            // Fallback if somehow the last message matches but we can't find any matches
-                            // (shouldn't happen, but for safety)
+                            // fallback por seguridad
                             conversation.highlightedMessage = {
                                 id: 'last',
                                 text: conversation.last_message,
@@ -553,7 +541,7 @@ const RequestPage: FC = () => {
                     }
                 } catch (error) {
                     console.error(`Error fetching message history for conversation ${conversation.id}:`, error);
-                    // Fall back to just highlighting the last message
+                    // fallback a destacar solo el ultimo mensaje
                     if (conversation.last_message.toLowerCase().includes(searchTermLower)) {
                         conversation.highlightedMessage = {
                             id: 'last',
@@ -565,24 +553,24 @@ const RequestPage: FC = () => {
                 }
             }));
             
-            // busqueda avanzada en historial de mensajes
+            // segunda fase: busqueda avanzada en historial completo
             try {
-                // solo busca en conversaciones que no coincidieron con la info basica
+                // solo busca en conversaciones sin coincidencias basicas
                 const conversationsToCheck = filtered.filter(conv => !matchingByBasicInfo.includes(conv));
                 
                 if (conversationsToCheck.length === 0) {
-                    // si no hay mas conversaciones que revisar, terminamos
+                    // no hay mas conversaciones para revisar
                     if (isMounted) {
                         setFilteredConversations(matchingByBasicInfo);
                     }
                     return;
                 }
                 
-                // busca en cada conversacion
+                // busca en historial completo de cada conversacion
                 const matchingByMessageHistory = await Promise.all(
                     conversationsToCheck.map(async (conversation) => {
                         try {
-                            // obtiene mensajes
+                            // obtiene todos los mensajes
                             const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversation.id}/messages`);
                             
                             if (!response.ok) {
@@ -591,11 +579,10 @@ const RequestPage: FC = () => {
                             
                             const messages = await response.json();
                             
-                            // busca en el contenido de cada mensaje
+                            // busca en cada mensaje
                             let matchingMessages = [];
                             let matchingIndices = [];
                             
-                            // buscamos todos los mensajes que coinciden, no solo el primero
                             for (let i = 0; i < messages.length; i++) {
                                 const message = messages[i];
                                 if (message.message_text.toLowerCase().includes(searchTermLower)) {
@@ -605,8 +592,7 @@ const RequestPage: FC = () => {
                             }
                             
                             if (matchingMessages.length > 0) {
-                                // guardamos la información de todos los mensajes destacados
-                                // pero usamos el primero como representativo para mostrar en la lista
+                                // guarda info de todos los mensajes coincidentes
                                 conversation.highlightedMessage = {
                                     id: matchingMessages[0].id.toString(),
                                     text: matchingMessages[0].message_text,
@@ -640,23 +626,20 @@ const RequestPage: FC = () => {
                 
                 console.log(`Búsqueda completada. Encontradas ${finalResults.length} conversaciones.`);
                 
-                // actualiza estado solo si el componente sigue montado
                 if (isMounted) {
                     setFilteredConversations(finalResults);
                 }
             } catch (error) {
                 console.error("Error en búsqueda:", error);
-                // en caso de error, mostramos al menos las coincidencias basicas
+                // en caso de error, muestra al menos coincidencias basicas
                 if (isMounted) {
                     setFilteredConversations(matchingByBasicInfo);
                 }
             }
         };
         
-        // ejecutamos la funcion de filtrado
         filterConversations();
         
-        // limpieza cuando el componente se desmonta o los dependencias cambian
         return () => {
             isMounted = false;
         };
@@ -668,9 +651,9 @@ const RequestPage: FC = () => {
         setSearchTerm(value);
     };
 
-    // maneja envio de mensaje
+    // actualiza conversaciones cuando se envia un mensaje
     const handleMessageSent = (conversationId: number, messageText: string) => {
-        // actualiza lista de conversaciones con nuevo ultimo mensaje
+        // actualiza lista con el nuevo mensaje
         setConversations(prevConversations => {
             const currentUserId = getUserId();
             const updatedConversations = prevConversations.map(conv =>
@@ -681,24 +664,24 @@ const RequestPage: FC = () => {
                         last_message_at: new Date().toISOString(),
                         last_sender_id: currentUserId ? parseInt(currentUserId) : undefined,
                         is_read: false,
-                        unread_count: "0" // reinicia no leidos ya que somos el remitente
+                        unread_count: "0"
                     }
                     : conv
             );
 
-            // ordena conversaciones por last_message_at (mas recientes primero)
+            // reordena conversaciones por fecha (recientes primero)
             return [...updatedConversations].sort((a, b) =>
                 new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
             );
         });
     };
 
-    // maneja cambios de filtro
+    // cambia filtro entre todos y no leidos
     const handleFilterChange = (filter: 'all' | 'unread') => {
         setActiveFilter(filter);
     };
     
-    // maneja regreso a la lista de conversaciones en móvil
+    // regresa a lista de conversaciones en movil
     const handleBackToList = () => {
         setShowChat(false);
     };
@@ -716,38 +699,38 @@ const RequestPage: FC = () => {
                     <p className="text-[#4A4E69]/80 max-w-3xl text-sm md:text-base">Utiliza el chat para comunicarte con otros usuarios del sistema -ya seas conductor o pasajero- Define horarios, puntos de encuentro y los terminos del viaje de manera colaborativa y efectiva.</p>
                 </motion.div>
 
-                {/* Fixed height wrapper to ensure proper sizing on various browsers/devices */}
+                {/* contenedor principal con altura fija para correcto funcionamiento en diferentes dispositivos */}
                 <div className="flex-grow h-[calc(100vh-90px)] md:h-[calc(100vh-120px)]">
                     <div className="flex flex-col md:flex-row h-full overflow-hidden bg-white rounded-xl shadow-xl border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
-                    {/* lista de conversaciones (izquierda) */}
+                        {/* lista de conversaciones (izquierda) */}
                         <div className={`w-full md:w-1/3 h-full border-r border-[#4A4E69]/10 ${showChat ? 'hidden md:block' : 'block'}`}>
-                    <ConversationList
-                        conversations={conversations}
-                        isLoading={isLoading}
-                        error={error}
-                        searchTerm={searchTerm}
-                        activeFilter={activeFilter}
-                        filteredConversations={filteredConversations}
-                        selectedChat={selectedChat}
-                        onSearchChange={handleSearchChange}
-                        onFilterChange={handleFilterChange}
-                        onSelectChat={handleSelectChat}
-                    />
+                            <ConversationList
+                                conversations={conversations}
+                                isLoading={isLoading}
+                                error={error}
+                                searchTerm={searchTerm}
+                                activeFilter={activeFilter}
+                                filteredConversations={filteredConversations}
+                                selectedChat={selectedChat}
+                                onSearchChange={handleSearchChange}
+                                onFilterChange={handleFilterChange}
+                                onSelectChat={handleSelectChat}
+                            />
                         </div>
 
-                    {/* area de chat (derecha) */}
+                        {/* area de chat (derecha) */}
                         <div className={`w-full md:w-2/3 h-full flex flex-col bg-[#F8F9FA] ${showChat ? 'block' : 'hidden md:block'}`}>
-                        <ChatContainer
-                            selectedChat={selectedChat}
-                            selectedChatData={selectedChatData}
-                            isLoadingMessages={isLoadingMessages}
-                            messagesError={messagesError}
-                            handleSelectChat={handleSelectChat}
-                            handleMessageSent={handleMessageSent}
-                            socket={socket}
+                            <ChatContainer
+                                selectedChat={selectedChat}
+                                selectedChatData={selectedChatData}
+                                isLoadingMessages={isLoadingMessages}
+                                messagesError={messagesError}
+                                handleSelectChat={handleSelectChat}
+                                handleMessageSent={handleMessageSent}
+                                socket={socket}
                                 onBackToList={handleBackToList}
                                 showBackButton={true}
-                        />
+                            />
                         </div>
                     </div>
                 </div>

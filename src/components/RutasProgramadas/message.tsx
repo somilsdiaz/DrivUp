@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// Define message status types
+// tipos de estado para los mensajes
 export type MessageStatus = 'sent' | 'delivered' | 'read';
 
 interface MessageProps {
@@ -20,6 +20,7 @@ interface MessageProps {
     matchedMessageIds?: string[];
 }
 
+// componente que muestra un item de conversacion en la lista de chats
 const Message: React.FC<MessageProps> = ({
     id,
     senderName,
@@ -36,15 +37,16 @@ const Message: React.FC<MessageProps> = ({
     totalMatches = 0,
     matchedMessageIds = []
 }) => {
+    // estados para manejar interacciones visuales
     const [isHovered, setIsHovered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     
-    // Efecto de entrada para animación
+    // activa la animacion de entrada al montar el componente
     useEffect(() => {
         setIsVisible(true);
     }, []);
 
-    // Render the appropriate message status indicator
+    // renderiza el indicador de estado del mensaje segun su estado
     const renderMessageStatus = () => {
         if (!isFromCurrentUser) return null;
         
@@ -93,7 +95,7 @@ const Message: React.FC<MessageProps> = ({
         }
     };
 
-    // Indicador de rol para el usuario
+    // muestra un badge especial si el usuario es conductor y pasajero
     const renderRoleIndicator = () => {
         if (recipientRole === 'conductor y pasajero') {
             return (
@@ -108,14 +110,14 @@ const Message: React.FC<MessageProps> = ({
         return null;
     };
 
-    // funcion para manejar clic en el mensaje
+    // maneja el clic en la conversacion y guarda datos para resaltado de mensajes
     const handleClick = () => {
-        // pasamos el id del mensaje destacado si existe, para hacer scroll
+        // selecciona la conversacion
         onSelect(id);
         
-        // guardamos los ids de los mensajes destacados para recuperarlos después
+        // si hay mensajes para resaltar, guarda sus ids en localStorage
         if (isHighlighted) {
-            // Clear any existing localStorage data first
+            // limpia datos previos
             localStorage.removeItem('scrollToMessageId');
             localStorage.removeItem('highlightedMessageIds');
             localStorage.removeItem('totalMatches');
@@ -125,7 +127,7 @@ const Message: React.FC<MessageProps> = ({
                 localStorage.setItem('highlightedMessageIds', JSON.stringify(matchedMessageIds));
                 localStorage.setItem('totalMatches', totalMatches.toString());
                 
-                // Dispatch a custom event to notify that highlights have changed
+                // emite evento personalizado para notificar cambios en resaltado
                 window.dispatchEvent(new CustomEvent('highlightUpdated', {
                     detail: {
                         highlightedMessageId,
@@ -137,7 +139,7 @@ const Message: React.FC<MessageProps> = ({
                 localStorage.setItem('scrollToMessageId', highlightedMessageId);
                 localStorage.setItem('totalMatches', '1');
                 
-                // Dispatch a custom event to notify that highlights have changed
+                // emite evento para un solo mensaje resaltado
                 window.dispatchEvent(new CustomEvent('highlightUpdated', {
                     detail: {
                         highlightedMessageId,
@@ -161,6 +163,7 @@ const Message: React.FC<MessageProps> = ({
                 isRead ? 'bg-white' : 'bg-[#F8F9FA]/80'
             }`}
         >
+            {/* avatar del usuario con indicadores de estado */}
             <div className="relative">
                 <div className={`relative rounded-full overflow-hidden transition-transform duration-300 ${isHovered ? 'transform scale-105' : ''}`}>
                     <img 
@@ -180,10 +183,13 @@ const Message: React.FC<MessageProps> = ({
                     )}
                     <div className={`absolute inset-0 bg-gradient-to-tr from-[#0a0d35]/10 to-transparent rounded-full ${isHovered ? 'opacity-70' : 'opacity-0'} transition-opacity duration-300`}></div>
                 </div>
+                {/* indicador de mensaje no leido */}
                 {!isRead && !isFromCurrentUser && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#F2B134] rounded-full border-2 border-white animate-pulse"></div>
                 )}
             </div>
+            
+            {/* contenido del mensaje y metadatos */}
             <div className="ml-4 flex-1 overflow-hidden">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center">
@@ -191,11 +197,13 @@ const Message: React.FC<MessageProps> = ({
                         {renderRoleIndicator()}
                     </div>
                     <div className="flex items-center">
+                        {/* badge de mensaje nuevo */}
                         {!isRead && !isFromCurrentUser && (
                             <span className="mr-1 text-[#F2B134] text-xs font-medium bg-[#F2B134]/10 px-2 py-0.5 rounded-full animate-pulse">
                                 Nuevo
                             </span>
                         )}
+                        {/* badge de coincidencia en busqueda */}
                         {isHighlighted && (
                             <span className="mr-1 text-[#5AAA95] text-xs font-medium bg-[#5AAA95]/10 px-2 py-0.5 rounded-full flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -207,6 +215,7 @@ const Message: React.FC<MessageProps> = ({
                         <span className="text-xs text-[#4A4E69]/70 ml-1">{timestamp}</span>
                     </div>
                 </div>
+                {/* vista previa del ultimo mensaje */}
                 <p className={`text-sm transition-all duration-300 ${
                     isHighlighted ? 'text-[#2D5DA1] font-semibold' :
                     !isRead && !isFromCurrentUser ? 'text-[#4A4E69] font-semibold' : 
@@ -215,7 +224,7 @@ const Message: React.FC<MessageProps> = ({
                     {isFromCurrentUser ? `Tú: ${lastMessage}` : lastMessage}
                 </p>
                 <div className="flex items-center mt-1 text-xs">
-                    {/* Display message status for current user's messages */}
+                    {/* muestra el estado para mensajes del usuario actual */}
                     {isFromCurrentUser ? renderMessageStatus() : (
                         <span className="text-[#4A4E69]/60 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
