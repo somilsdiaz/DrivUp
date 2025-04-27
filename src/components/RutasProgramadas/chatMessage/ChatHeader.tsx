@@ -4,16 +4,33 @@ interface ChatHeaderProps {
     recipientName: string;
     recipientImage: string;
     toggleInfoModal: () => void;
+    onBackToList?: () => void;
+    showBackButton?: boolean;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ 
     recipientName, 
     recipientImage, 
-    toggleInfoModal 
+    toggleInfoModal,
+    onBackToList,
+    showBackButton
 }) => {
     return (
         <div className="flex items-center justify-between p-3 md:p-4 border-b bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] text-white sticky top-0 z-10">
             <div className="flex items-center flex-grow">
+                {/* Back button - only shown on mobile when requested */}
+                {showBackButton && onBackToList && (
+                    <button 
+                        onClick={onBackToList}
+                        className="md:hidden flex items-center text-white hover:text-white/80 transition-colors mr-2 bg-white/10 px-2 py-1 rounded-md"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span className="text-xs font-medium">Volver</span>
+                    </button>
+                )}
+                
                 <div className="relative">
                     <img 
                         src={recipientImage} 

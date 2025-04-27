@@ -15,7 +15,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     messages,
     currentUserId,
     onMessageSent,
-    socket
+    socket,
+    onBackToList,
+    showBackButton
 }) => {
     const [newMessage, setNewMessage] = useState('');
     const [showEmojis, setShowEmojis] = useState(false);
@@ -580,6 +582,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 recipientName={recipientName}
                 recipientImage={recipientImage}
                 toggleInfoModal={toggleInfoModal}
+                onBackToList={onBackToList}
+                showBackButton={showBackButton}
             />
 
             {/* Message area */}

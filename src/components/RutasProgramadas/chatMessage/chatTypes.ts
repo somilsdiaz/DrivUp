@@ -22,6 +22,8 @@ export interface ChatMessageProps {
     currentUserId: string;
     onMessageSent: (conversationId: number, messageText: string) => void;
     socket: Socket | null;
+    onBackToList?: () => void;
+    showBackButton?: boolean;
 }
 
 // interfaz para separadores de fecha en la lista de mensajes

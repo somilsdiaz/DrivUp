@@ -34,7 +34,7 @@ const RequestPage: FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredConversations, setFilteredConversations] = useState<ConversationData[]>([]);
     const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
-    
+
     // Estado para controlar la visibilidad del chat en móvil
     const [showChat, setShowChat] = useState(false);
 
@@ -719,35 +719,35 @@ const RequestPage: FC = () => {
                 {/* Fixed height wrapper to ensure proper sizing on various browsers/devices */}
                 <div className="flex-grow h-[calc(100vh-70px)] md:h-[calc(100vh-120px)]">
                     <div className="flex flex-col md:flex-row h-full overflow-hidden bg-white rounded-xl shadow-xl border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
-                        {/* lista de conversaciones (izquierda) */}
+                    {/* lista de conversaciones (izquierda) */}
                         <div className={`w-full md:w-1/3 h-full border-r border-[#4A4E69]/10 ${showChat ? 'hidden md:block' : 'block'}`}>
-                            <ConversationList
-                                conversations={conversations}
-                                isLoading={isLoading}
-                                error={error}
-                                searchTerm={searchTerm}
-                                activeFilter={activeFilter}
-                                filteredConversations={filteredConversations}
-                                selectedChat={selectedChat}
-                                onSearchChange={handleSearchChange}
-                                onFilterChange={handleFilterChange}
-                                onSelectChat={handleSelectChat}
-                            />
+                    <ConversationList
+                        conversations={conversations}
+                        isLoading={isLoading}
+                        error={error}
+                        searchTerm={searchTerm}
+                        activeFilter={activeFilter}
+                        filteredConversations={filteredConversations}
+                        selectedChat={selectedChat}
+                        onSearchChange={handleSearchChange}
+                        onFilterChange={handleFilterChange}
+                        onSelectChat={handleSelectChat}
+                    />
                         </div>
 
-                        {/* area de chat (derecha) */}
+                    {/* area de chat (derecha) */}
                         <div className={`w-full md:w-2/3 h-full flex flex-col bg-[#F8F9FA] ${showChat ? 'block' : 'hidden md:block'}`}>
-                            <ChatContainer
-                                selectedChat={selectedChat}
-                                selectedChatData={selectedChatData}
-                                isLoadingMessages={isLoadingMessages}
-                                messagesError={messagesError}
-                                handleSelectChat={handleSelectChat}
-                                handleMessageSent={handleMessageSent}
-                                socket={socket}
+                        <ChatContainer
+                            selectedChat={selectedChat}
+                            selectedChatData={selectedChatData}
+                            isLoadingMessages={isLoadingMessages}
+                            messagesError={messagesError}
+                            handleSelectChat={handleSelectChat}
+                            handleMessageSent={handleMessageSent}
+                            socket={socket}
                                 onBackToList={handleBackToList}
                                 showBackButton={true}
-                            />
+                        />
                         </div>
                     </div>
                 </div>
