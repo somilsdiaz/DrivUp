@@ -15,6 +15,7 @@ import RoleBasedRoute from '../components/RoleBasedRoute';
 import Configuracion from '../pages/configuracion';
 import SolicitudesPage from '../pages/vistaConductores/solicitudesPage';
 import BandejaMensajes from '../pages/vistaPasajeros/bandejaMensajes';
+import ListaConductores from '../pages/vistaPasajeros/listaConductores';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -22,8 +23,15 @@ const router = createBrowserRouter([
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
 
     {
+        path: "/lista-conductores",
+        element:(                    //esta ruta puede necesitar arreglos
+            <ListaConductores />
+        ),
+    },
+
+    {
         path: "/Configuracion",
-        element: (
+        element: (                //esta ruta puede necesitar arreglos
                 <Configuracion />
         ),
     },
