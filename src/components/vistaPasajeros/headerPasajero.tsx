@@ -70,10 +70,11 @@ const Header: React.FC = () => {
     const menuItems: MenuItem[] = [
         { label: "Solicitar viaje", path: "/" },
         { label: "Mis viajes", path: "/" },
-        { label: "Solicitar conductores", path: "/solicitar-conductor" },
-        { label: "Bandeja de mensajes", path: "/mi-bandeja-de-mensajes" },
-        { label: "Mi cuenta", path: "/" },
-        { label: "Contacto", path: "/" },
+        { label: "Solicitar conductores", path: "/dashboard/pasajero/lista-conductores" },
+        { label: "Bandeja de mensajes", path: "/dashboard/pasajero/mi-bandeja-de-mensajes" },
+        { label: "Mi perfil", path: "/" },
+        { label: "Configuracion", path: "/dashboard/pasajero/configuracion" },
+        { label: "Ayuda/Soporte", path: "/" },
         { label: "Cerrar sesión", path: "/" }
     ];
 
