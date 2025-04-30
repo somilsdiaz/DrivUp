@@ -109,10 +109,10 @@ const Header: React.FC = () => {
                         <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Mis Viajes
                         </Link>
-                        <Link to="/solicitar-conductor" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/pasajero/lista-conductores" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Solicitar conductor
                         </Link>
-                        <Link to="/mi-bandeja-de-mensajes" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/pasajero/mi-bandeja-de-mensajes" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Bandeja de mensajes
                         </Link>
                     </div>
@@ -151,7 +151,7 @@ const Header: React.FC = () => {
                                     <User className="h-4 w-4" />
                                     Mi Perfil
                                 </Link>
-                                <Link to="/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
+                                <Link to="/dashboard/pasajero/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
                                     <Settings className="h-4 w-4" />
                                     Configuración
                                 </Link>

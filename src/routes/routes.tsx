@@ -23,16 +23,29 @@ const router = createBrowserRouter([
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
 
     {
-        path: "/lista-conductores",
-        element:(                    //esta ruta puede necesitar arreglos
-            <ListaConductores />
+        path: "/dashboard/pasajero/lista-conductores",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <ListaConductores />
+                </RoleBasedRoute>
+            </ProtectedRoute>
         ),
     },
-
     {
-        path: "/Configuracion",
-        element: (                //esta ruta puede necesitar arreglos
-                <Configuracion />
+        path: "/dashboard/pasajero/configuracion",
+        element: (                
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <Configuracion />
+                </RoleBasedRoute>
+            </ProtectedRoute>
         ),
     },
     {
@@ -50,7 +63,7 @@ const router = createBrowserRouter([
         ),
     },
     {
-        path: "/mi-bandeja-de-mensajes",
+        path: "/dashboard/pasajero/mi-bandeja-de-mensajes",
         element: (
             <ProtectedRoute>
                 <RoleBasedRoute
