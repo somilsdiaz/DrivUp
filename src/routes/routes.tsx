@@ -16,12 +16,25 @@ import Configuracion from '../pages/configuracion';
 import SolicitudesPage from '../pages/vistaConductores/solicitudesPage';
 import BandejaMensajes from '../pages/vistaPasajeros/bandejaMensajes';
 import ListaConductores from '../pages/vistaPasajeros/listaConductores';
+import ListaPasajeros from '../pages/vistaConductores/listaPasajeros';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
     //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
-
+    {
+        path: "/dashboard/conductor/lista-pasajeros",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["conductor"]}
+                    redirectPath="/dashboard/conductor"
+                >
+                    <ListaPasajeros />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
     {
         path: "/dashboard/pasajero/lista-conductores",
         element:(                 
