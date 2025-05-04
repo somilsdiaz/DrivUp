@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react"
 import Message, { MessageStatus } from "../message";
 import { ConversationListProps } from "../../../types/chat";
 import { getUserId } from "../../../utils/auth";
+import { getProfileImageUrl } from "../../../services/profileService";
 
 // Interfaz para la cache de imágenes de perfil
 interface ProfileImageCache {
@@ -67,32 +68,29 @@ const ConversationList: FC<ConversationListProps> = ({
         }
 
         try {
-            const profileResponse = await fetch(`http://localhost:5000/usuario/${userId}/foto-perfil`);
-            if (profileResponse.ok) {
-                const profileData = await profileResponse.json();
-                if (profileData.fotoPerfil) {
-                    const imageUrl = `http://localhost:5000/uploads/${profileData.fotoPerfil}`;
-                    // Actualizamos la caché con la nueva imagen
-                    setProfileImageCache(prev => ({
-                        ...prev,
-                        [userId]: imageUrl
-                    }));
-                    return imageUrl;
-                }
-            }
-        } catch (error) {
-            console.error('Error al obtener imagen de perfil:', error);
-        }
-        
-        // Si no pudimos obtener la imagen o hubo un error, la agregamos como no disponible en la caché
-        if (!profileImageCache[userId]) {
+            // usa el servicio centralizado para obtener la imagen de perfil
+            const result = await getProfileImageUrl(userId);
+            
+            // actualiza la caché con la nueva imagen, sea la imagen real o la por defecto
             setProfileImageCache(prev => ({
                 ...prev,
-                [userId]: defaultImage
+                [userId]: result.imageUrl
             }));
+            
+            return result.imageUrl;
+        } catch (error) {
+            console.error('Error al obtener imagen de perfil:', error);
+            
+            // Si no pudimos obtener la imagen o hubo un error, la agregamos como no disponible en la caché
+            if (!profileImageCache[userId]) {
+                setProfileImageCache(prev => ({
+                    ...prev,
+                    [userId]: defaultImage
+                }));
+            }
+            
+            return defaultImage;
         }
-        
-        return defaultImage;
     };
 
     return (

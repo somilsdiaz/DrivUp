@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getUserId } from './auth';
+import { getProfileImageUrl } from '../services/profileService';
 
 // hook personalizado para gestionar imágenes de perfil de usuario
 export const useProfileImage = (userId?: string | number | null) => {
@@ -19,15 +20,9 @@ export const useProfileImage = (userId?: string | number | null) => {
         const fetchProfileImage = async () => {
             setIsLoading(true);
             try {
-                // intenta obtener la imagen de perfil del servidor
-                const response = await fetch(`http://localhost:5000/usuario/${targetUserId}/foto-perfil`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.fotoPerfil) {
-                        // construye la url completa de la imagen
-                        setProfileImage(`http://localhost:5000/uploads/${data.fotoPerfil}`);
-                    }
-                }
+                // usa el servicio centralizado para obtener la imagen
+                const result = await getProfileImageUrl(targetUserId);
+                setProfileImage(result.imageUrl);
             } catch (error) {
                 console.error('Error al obtener imagen de perfil:', error);
                 // mantiene la imagen por defecto en caso de error

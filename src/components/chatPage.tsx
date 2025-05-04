@@ -6,6 +6,7 @@ import { ConversationData, ChatMessage, MessageData } from "../types/chat";
 import ConversationList from "./RutasProgramadas/ChatPage/ConversationList";
 import ChatContainer from "./RutasProgramadas/ChatPage/ChatContainer";
 import { MessageStatus } from "./RutasProgramadas/message";
+import { getProfileImageUrl } from "../services/profileService";
 
 const RequestPage: FC = () => {
     // estados principales para las conversaciones
@@ -391,21 +392,19 @@ const RequestPage: FC = () => {
             
             // Ahora intenta obtener la imagen real en segundo plano
             try {
-                const profileResponse = await fetch(`http://localhost:5000/usuario/${recipientId}/foto-perfil`);
-                if (profileResponse.ok) {
-                    const profileData = await profileResponse.json();
-                    if (profileData.fotoPerfil) {
-                        // Solo actualiza la imagen cuando está disponible
-                        setSelectedChatData(prev => {
-                            if (prev && prev.chatId === id) {
-                                return {
-                                    ...prev,
-                                    recipientImage: `http://localhost:5000/uploads/${profileData.fotoPerfil}`
-                                };
-                            }
-                            return prev;
-                        });
-                    }
+                const result = await getProfileImageUrl(recipientId);
+                
+                // Solo actualiza la imagen cuando está disponible
+                if (result.success) {
+                    setSelectedChatData(prev => {
+                        if (prev && prev.chatId === id) {
+                            return {
+                                ...prev,
+                                recipientImage: result.imageUrl
+                            };
+                        }
+                        return prev;
+                    });
                 }
             } catch (error) {
                 console.error('Error al obtener imagen de perfil:', error);
