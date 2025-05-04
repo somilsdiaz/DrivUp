@@ -248,39 +248,65 @@ const RequestPage: FC = () => {
                     data.map(async (conversation: ConversationData) => {
                         // determina id del otro usuario
                         const currentUserId = userId;
-                        const isUser = currentUserId === conversation.user_id.toString();
-                        const otherUserId = isUser ? conversation.passenger_id : conversation.user_id;
-
+                        const otherUserId = conversation.user_id.toString() === currentUserId 
+                            ? conversation.passenger_id
+                            : conversation.user_id;
+                        
                         try {
-                            // consulta el rol del usuario
-                            const roleResponse = await fetch(`https://drivup-backend.onrender.com/usuarios/${otherUserId}/role`);
-                            if (roleResponse.ok) {
-                                const roleData = await roleResponse.json();
+                            const rolesResponse = await fetch(`https://drivup-backend.onrender.com/user-roles/${otherUserId}`);
+                            if (rolesResponse.ok) {
+                                const rolesData = await rolesResponse.json();
+                                // asigna el rol si existe
                                 return {
                                     ...conversation,
-                                    recipientRole: roleData.role
+                                    recipientRole: rolesData.role
                                 };
                             }
                         } catch (error) {
-                            console.error(`Error obteniendo rol para usuario ${otherUserId}:`, error);
+                            console.error('Error fetching user role:', error);
                         }
-
-                        // devuelve conversacion sin rol en caso de error
+                        
                         return conversation;
                     })
                 );
 
                 setConversations(conversationsWithRoles);
+                setFilteredConversations(conversationsWithRoles);
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching conversations:', err);
-                setError(err instanceof Error ? err.message : 'Failed to fetch conversations');
+            } catch (error) {
+                console.error('Error fetching conversations:', error);
+                setError("Failed to load conversations. Please try again later.");
                 setIsLoading(false);
             }
         };
 
         fetchConversations();
     }, []);
+
+    // Check for auto-opening a conversation from localStorage
+    useEffect(() => {
+        if (conversations.length > 0 && !isLoading) {
+            // Check if we should automatically open a specific conversation
+            const openConversationId = localStorage.getItem('openConversationId');
+            if (openConversationId) {
+                // Find the conversation in the loaded data
+                const conversationExists = conversations.some(
+                    conv => conv.id.toString() === openConversationId
+                );
+                
+                if (conversationExists) {
+                    // Select the conversation
+                    handleSelectChat(parseInt(openConversationId));
+                    
+                    // Set showChat to true for mobile view
+                    setShowChat(true);
+                    
+                    // Clear the stored ID to avoid reopening on subsequent visits
+                    localStorage.removeItem('openConversationId');
+                }
+            }
+        }
+    }, [conversations, isLoading]);
 
     // obtiene mensajes para una conversacion especifica
     const fetchMessages = async (conversationId: number) => {
