@@ -371,6 +371,21 @@ const RequestPage: FC = () => {
             const recipientId = isUser
                 ? selectedConversation.passenger_id
                 : selectedConversation.user_id;
+                
+            // obtiene foto de perfil del destinatario
+            let recipientImage = '/default-profile.png'; // imagen por defecto
+            try {
+                const profileResponse = await fetch(`http://localhost:5000/usuario/${recipientId}/foto-perfil`);
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    if (profileData.fotoPerfil) {
+                        recipientImage = `http://localhost:5000/uploads/${profileData.fotoPerfil}`; // usa la imagen del usuario
+                    }
+                }
+            } catch (error) {
+                console.error('Error al obtener imagen de perfil:', error);
+                // mantiene la imagen por defecto en caso de error
+            }
 
             // reset ui solo si es un chat diferente o hay resultados de busqueda nuevos
             if (!isSameChat || (selectedConversation.highlightedMessage && selectedConversation.highlightedMessage.id)) {
@@ -378,7 +393,7 @@ const RequestPage: FC = () => {
                 setSelectedChatData({
                     chatId: id,
                     recipientName: recipientName,
-                    recipientImage: '/Somil_profile.webp',
+                    recipientImage: recipientImage,
                     recipientId: recipientId,
                     messages: [],
                     currentUserId: currentUserId,
