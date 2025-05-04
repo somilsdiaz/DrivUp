@@ -372,33 +372,44 @@ const RequestPage: FC = () => {
                 ? selectedConversation.passenger_id
                 : selectedConversation.user_id;
                 
-            // obtiene foto de perfil del destinatario
-            let recipientImage = '/default-profile.png'; // imagen por defecto
-            try {
-                const profileResponse = await fetch(`http://localhost:5000/usuario/${recipientId}/foto-perfil`);
-                if (profileResponse.ok) {
-                    const profileData = await profileResponse.json();
-                    if (profileData.fotoPerfil) {
-                        recipientImage = `http://localhost:5000/uploads/${profileData.fotoPerfil}`; // usa la imagen del usuario
-                    }
-                }
-            } catch (error) {
-                console.error('Error al obtener imagen de perfil:', error);
-                // mantiene la imagen por defecto en caso de error
-            }
-
+            // Establece la imagen por defecto inmediatamente
+            const defaultImage = '/default-profile.png';
+            
             // reset ui solo si es un chat diferente o hay resultados de busqueda nuevos
             if (!isSameChat || (selectedConversation.highlightedMessage && selectedConversation.highlightedMessage.id)) {
-                // establece datos iniciales mientras carga mensajes
+                // establece datos iniciales con imagen por defecto mientras carga la real
                 setSelectedChatData({
                     chatId: id,
                     recipientName: recipientName,
-                    recipientImage: recipientImage,
+                    recipientImage: defaultImage,
                     recipientId: recipientId,
                     messages: [],
                     currentUserId: currentUserId,
                     recipientRole: selectedConversation.recipientRole
                 });
+            }
+            
+            // Ahora intenta obtener la imagen real en segundo plano
+            try {
+                const profileResponse = await fetch(`http://localhost:5000/usuario/${recipientId}/foto-perfil`);
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    if (profileData.fotoPerfil) {
+                        // Solo actualiza la imagen cuando está disponible
+                        setSelectedChatData(prev => {
+                            if (prev && prev.chatId === id) {
+                                return {
+                                    ...prev,
+                                    recipientImage: `http://localhost:5000/uploads/${profileData.fotoPerfil}`
+                                };
+                            }
+                            return prev;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error al obtener imagen de perfil:', error);
+                // La imagen por defecto ya está establecida, no necesita hacer nada más
             }
 
             // marca mensajes como leidos cuando se abre el chat
