@@ -1,7 +1,12 @@
-import { FC, useEffect } from "react"
+import { FC, useEffect, useState } from "react"
 import Message, { MessageStatus } from "../message";
 import { ConversationListProps } from "../../../types/chat";
 import { getUserId } from "../../../utils/auth";
+
+// Interfaz para la cache de imágenes de perfil
+interface ProfileImageCache {
+    [userId: number]: string;
+}
 
 const ConversationList: FC<ConversationListProps> = ({
     isLoading,
@@ -14,6 +19,10 @@ const ConversationList: FC<ConversationListProps> = ({
     onFilterChange,
     onSelectChat
 }) => {
+    // Estado para almacenar en caché las imágenes de perfil ya cargadas
+    const [profileImageCache, setProfileImageCache] = useState<ProfileImageCache>({});
+    const defaultImage = '/default-profile.png';
+    
     // efecto para actualizar coincidencias en tiempo real en el chat actual
     useEffect(() => {
         if (selectedChat && searchTerm.trim()) {
@@ -49,6 +58,42 @@ const ConversationList: FC<ConversationListProps> = ({
             }
         }
     }, [searchTerm, filteredConversations, selectedChat]); // se ejecuta cuando cambia la busqueda o el chat seleccionado
+
+    // Función para obtener la imagen de perfil de un usuario
+    const getProfileImage = async (userId: number) => {
+        // Si ya tenemos la imagen en caché, la usamos
+        if (profileImageCache[userId]) {
+            return profileImageCache[userId];
+        }
+
+        try {
+            const profileResponse = await fetch(`http://localhost:5000/usuario/${userId}/foto-perfil`);
+            if (profileResponse.ok) {
+                const profileData = await profileResponse.json();
+                if (profileData.fotoPerfil) {
+                    const imageUrl = `http://localhost:5000/uploads/${profileData.fotoPerfil}`;
+                    // Actualizamos la caché con la nueva imagen
+                    setProfileImageCache(prev => ({
+                        ...prev,
+                        [userId]: imageUrl
+                    }));
+                    return imageUrl;
+                }
+            }
+        } catch (error) {
+            console.error('Error al obtener imagen de perfil:', error);
+        }
+        
+        // Si no pudimos obtener la imagen o hubo un error, la agregamos como no disponible en la caché
+        if (!profileImageCache[userId]) {
+            setProfileImageCache(prev => ({
+                ...prev,
+                [userId]: defaultImage
+            }));
+        }
+        
+        return defaultImage;
+    };
 
     return (
         <div className="h-full flex flex-col overflow-hidden">
@@ -137,6 +182,11 @@ const ConversationList: FC<ConversationListProps> = ({
                         ? `${conversation.passenger_name} ${conversation.passenger_last_name}`
                         : `${conversation.user_name} ${conversation.user_last_name}`;
 
+                    // determina id del destinatario segun quien sea el usuario actual
+                    const recipientId = isUser
+                        ? conversation.passenger_id
+                        : conversation.user_id;
+
                     // verifica si el ultimo mensaje lo envio el usuario actual
                     const isFromCurrentUser = conversation.last_sender_id !== undefined ?
                         conversation.last_sender_id.toString() === currentUserId :
@@ -163,13 +213,22 @@ const ConversationList: FC<ConversationListProps> = ({
                         matchedMessageIds = conversation.highlightedMessage.matchedMessageIds;
                     }
 
+                    // Intentar cargar la imagen de perfil para este chat
+                    if (!profileImageCache[recipientId]) {
+                        // Llamar al servicio en segundo plano para obtener la imagen
+                        getProfileImage(recipientId);
+                    }
+
+                    // Usar la imagen en caché o la imagen por defecto
+                    const profileImage = profileImageCache[recipientId] || defaultImage;
+
                     // renderiza cada item de conversacion con el componente Message
                     return (
                         <Message
                             key={conversation.id}
                             id={conversation.id.toString()}
                             senderName={displayName}
-                            profileImage="/Somil_profile.webp"
+                            profileImage={profileImage}
                             lastMessage={lastMessageText}
                             timestamp={new Date(conversation.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             isRead={parseInt(conversation.unread_count) === 0}
