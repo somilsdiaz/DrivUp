@@ -3,6 +3,7 @@ import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } fro
 import { Link, useNavigate } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
 import { logout, getUserId } from "../../utils/auth";
+import { useCurrentUserProfileImage } from "../../utils/useProfileImage";
 
 //MenuItem interface to match the one in menuResponsive.tsx
 interface MenuItem {
@@ -10,13 +11,14 @@ interface MenuItem {
     path: string;
 }
 
-const Header: React.FC = () => {
+const HeaderPasajero: React.FC = () => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [userName, setUserName] = useState("Usuario");
     const [userEmail, setUserEmail] = useState("usuario@example.com");
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const { profileImage } = useCurrentUserProfileImage();
 
     // Fetch user data
     useEffect(() => {
@@ -127,7 +129,7 @@ const Header: React.FC = () => {
                     >
                         <div className="h-8 w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
                             <img
-                                src="/avatar-placeholder.jpg"
+                                src={profileImage}
                                 alt="Profile"
                                 className="h-full w-full object-cover"
                                 onError={(e) => {
@@ -189,4 +191,4 @@ const Header: React.FC = () => {
     );
 };
 
-export default Header;
+export default HeaderPasajero;

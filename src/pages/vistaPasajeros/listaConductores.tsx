@@ -1,6 +1,7 @@
 import HeaderFooterPasajeros from "../../layouts/headerFooterPasajeros";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { getUserId } from "../../utils/auth";
 
 // Tipo basado en estructura esperada del backend
 type Conductor = {
@@ -26,6 +27,7 @@ type Usuario = {
 };
 
 const ListaConductores = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [conductores, setConductores] = useState<Conductor[]>([]);
   const [filtroCapacidad, setFiltroCapacidad] = useState<number>(0);
@@ -74,6 +76,46 @@ const ListaConductores = () => {
 
     fetchConductoresConUsuarios();
   }, []);
+
+  // Función para manejar el clic en "Contactar"
+  const handleContactClick = async (driverId: number) => {
+    try {
+      const currentUserId = getUserId();
+      
+      if (!currentUserId) {
+        // Redirigir al login si no hay usuario autenticado
+        navigate('/login');
+        return;
+      }
+
+      // Crear o recuperar la conversación existente
+      const response = await fetch('https://drivup-backend.onrender.com/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: driverId,      // El ID del conductor
+          passengerId: currentUserId // El ID del pasajero actual
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear la conversación');
+      }
+
+      const conversationData = await response.json();
+      
+      // Almacenar ID de la conversación en localStorage para que se abra automáticamente
+      localStorage.setItem('openConversationId', conversationData.id.toString());
+      
+      // Redirigir a la bandeja de mensajes
+      navigate('/dashboard/pasajero/mi-bandeja-de-mensajes');
+    } catch (error) {
+      console.error('Error al contactar al conductor:', error);
+      setError('No se pudo contactar al conductor. Intenta nuevamente.');
+    }
+  };
 
   //Filtros
   const conductoresFiltrados = conductores
@@ -182,7 +224,10 @@ const ListaConductores = () => {
                   >
                     Ver Detalles
                   </Link>
-                  <button className="bg-[#5AAA95] text-white px-4 py-2 rounded hover:bg-green-600">
+                  <button 
+                    className="bg-[#5AAA95] text-white px-4 py-2 rounded hover:bg-green-600"
+                    onClick={() => handleContactClick(conductor.user_id)}
+                  >
                     Contactar
                   </button>
                 </div>
