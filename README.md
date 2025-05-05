@@ -1,8 +1,10 @@
 # DrivUp
 
-![DrivUp Logo](https://[URL_PLACEHOLDER_LOGO_PROYECTO])
-
-> Conectando pasajeros y conductores de manera inteligente
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/1aae18a1-12c5-4b98-934d-94517974cbb5" alt="DrivUp Logo" width="400px" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+  
+  ### *Conectando pasajeros y conductores de manera inteligente*
+</div>
 
 ## 🚀 Enlaces Rápidos
 
@@ -35,7 +37,7 @@ DrivUp es una aplicación web moderna que facilita la conexión entre pasajeros 
 - **Gestión de rutas**: Programación y seguimiento de viajes
 - **Diseño responsive**: Experiencia optimizada en cualquier dispositivo
 
-![Captura de pantalla de DrivUp](https://[PLACEHOLDER_PARA_SCREENSHOT_O_GIF])
+![Captura de pantalla de DrivUp](https://github.com/user-attachments/assets/5b122011-8246-4f36-b621-5243a759b0e4)
 
 ## 🛠️ Tecnologías
 
