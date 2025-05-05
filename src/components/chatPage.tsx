@@ -253,7 +253,7 @@ const RequestPage: FC = () => {
                             : conversation.user_id;
                         
                         try {
-                            const rolesResponse = await fetch(`https://drivup-backend.onrender.com/user-roles/${otherUserId}`);
+                            const rolesResponse = await fetch(`https://drivup-backend.onrender.com/usuarios/${otherUserId}/role`);
                             if (rolesResponse.ok) {
                                 const rolesData = await rolesResponse.json();
                                 // asigna el rol si existe
