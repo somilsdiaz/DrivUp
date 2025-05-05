@@ -20,7 +20,7 @@ const ChatContainer: FC<ChatContainerProps> = ({
     }
 
     return (
-        <>
+        <div className="relative h-full w-full">
             {/* indicador de carga de mensajes */}
             {isLoadingMessages && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
@@ -69,7 +69,7 @@ const ChatContainer: FC<ChatContainerProps> = ({
                 onBackToList={onBackToList}
                 showBackButton={showBackButton}
             />
-        </>
+        </div>
     );
 };
 
