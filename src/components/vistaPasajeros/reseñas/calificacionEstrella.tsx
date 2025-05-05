@@ -6,42 +6,28 @@ type CalificacionEstrellaProps={
 }
 
 export function CalificacionEstrellas({set}:CalificacionEstrellaProps){
-    const [arrayEstrellas, setArrayEstrellas] = useState<number[]>([0,0,0,0,0]);
-    const [option, setOption]=useState<boolean>(false);
+    const [calificar, setCalificar] = useState<number>(0);
     
 
-    function onClick(index:number){
-        if(option){
-        set(0);
-        setOption(false);
-        }else{
-            set(index);
-            setOption(true);
-        }
-    }
+
     function handleClick(index: number) {
-       if(!option){
-        const newArray = arrayEstrellas.map((value, i) => (i <= index ? 1 : 0));
-        setArrayEstrellas(newArray);
-       }
+        setCalificar(index)
+       if(set) set(index);
+       
     }
     return (
-        <div
-        >
-            {arrayEstrellas.map((value: number, index: number) => (
-            <button
-                key={index}
-                onClick={() => onClick(index)} // Set hover effect on click
-                onMouseEnter={() => handleClick(index)} // Set hover effect
-                className="cursor-pointer"
-            >
-                <Star
-                className={`${
-                    value ? 'fill-current text-yellow-500' : 'fill-none'
-                }`}
-                />
-            </button>
-            ))}
-        </div>
+        <div className="flex space-x-1">
+        {[1, 2, 3, 4, 5].map((index) => (
+          <Star
+            key={index}
+            size={32}
+            className={`cursor-pointer transition-colors ${
+              index <= calificar ? "text-yellow-400 fill-yellow-400" : "text-gray-400"
+            }`}
+            fill={index <= calificar ? "currentColor" : "none"}
+            onClick={() => handleClick(index)}
+          />
+        ))}
+      </div>
     );
 }

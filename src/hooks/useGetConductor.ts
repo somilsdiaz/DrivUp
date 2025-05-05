@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiConductorProps } from "../core/interfaces/conductorProps";
-import { getConductor } from "../sevices/conductoresServices";
+import { getConductores } from "../sevices/conductoresServices";
 
-export const useGetConductor = (conductor_Id:string) => {
+export const useGetConductores = () => {
     return useQuery<[apiConductorProps]>({
-        queryKey: ["conductor", conductor_Id],
-        queryFn: () => getConductor(conductor_Id),
+        queryKey: ["conductor"],
+        queryFn: () => getConductores(),
     });
 };

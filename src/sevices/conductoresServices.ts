@@ -1,8 +1,8 @@
 import { axiosApi } from "../api/axiosApi";
 
-export async function getConductor(conductor_Id:string){
+export async function getConductores(){
   try{
-   const response= await axiosApi.get(`/traerConductor?conductor_id=${conductor_Id}`, {
+   const response= await axiosApi.get(`/conductores`, {
     headers: { "Content-Type": "application/json" },
    })
    return response.data;

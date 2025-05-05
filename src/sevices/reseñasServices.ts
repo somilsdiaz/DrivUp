@@ -3,9 +3,8 @@ import { ReseñaSubirProps } from "../core/interfaces/ReseñaProps";
 
 export const crearReseña = async (reseña: ReseñaSubirProps) => {
   try {
-    const response = await axiosApi.post(`/subirResena`, {
+    const response = await axiosApi.post(`/subirResena`, reseña, {
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(reseña),
     });
 
     return response.data;
