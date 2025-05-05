@@ -7,12 +7,15 @@ import About from '../pages/about';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermCondition from '../pages/termConditionPage';
 import HomeConductor from '../pages/vistaConductores/homeConductor';
-import RequestPage from '../pages/vistaConductores/requestPage';
 import HomePasajeros from '../pages/vistaPasajeros/homePasajeros';
 import DriverRegister from '../pages/DriverRegister';
 import ProtectedRoute from '../components/ProtectedRoute';
 import PublicRoute from '../components/PublicRoute';
 import RoleBasedRoute from '../components/RoleBasedRoute';
+import Configuracion from '../pages/configuracion';
+import SolicitudesPage from '../pages/vistaConductores/solicitudesPage';
+import BandejaMensajes from '../pages/vistaPasajeros/bandejaMensajes';
+import ListaConductores from '../pages/vistaPasajeros/listaConductores';
 import { DetallesConductor } from '../pages/vistaPasajeros/detallesConductor';
 
 const router = createBrowserRouter([
@@ -20,6 +23,32 @@ const router = createBrowserRouter([
     //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
 
+    {
+        path: "/dashboard/pasajero/lista-conductores",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <ListaConductores />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/dashboard/pasajero/configuracion",
+        element: (                
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <Configuracion />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
     {
         path: "/driver-register",
         element: (
@@ -30,6 +59,19 @@ const router = createBrowserRouter([
                     redirectPath="/dashboard/pasajero"
                 >
                     <DriverRegister />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/dashboard/pasajero/mi-bandeja-de-mensajes",
+        element: (
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <BandejaMensajes />
                 </RoleBasedRoute>
             </ProtectedRoute>
         ),
@@ -97,7 +139,7 @@ const router = createBrowserRouter([
                     allowedRoles={["conductor y pasajero"]}
                     redirectPath="/dashboard/pasajero"
                 >
-                    <RequestPage />
+                    <SolicitudesPage />
                 </RoleBasedRoute>
             </ProtectedRoute>
         )
