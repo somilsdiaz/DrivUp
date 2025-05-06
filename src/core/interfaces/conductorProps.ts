@@ -7,6 +7,7 @@
 
 export type apiConductorProps = {
     id: number;
+    user_id:number;
     nombre_completo: string;
     marca_de_vehiculo: string;
     modelo_de_vehiculo: string;

@@ -3,15 +3,26 @@ import { SeccionReseña } from "../reseñas/seccionReseña";
 import { DatosVehiculo } from "./datosVehiculo";
 import { NombreConductor } from "./nombreConductor";
 import { DatosRuta } from "./datosRuta";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { usehandleContactClick } from "../../../hooks/handleContactClick";
 
 
 export function DetallesConductor(conductor:apiConductorProps|undefined){
     const [windowWidth, setWindow] = useState(window.innerWidth);
     const nav=useNavigate();
-    
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [error,setError]=useState<string>("");
+    const handleContactClick=usehandleContactClick();
+
     useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, [conductor]);
+
+    useEffect(() => {
+      window.scrollTo(0, 0);
       const handleResize = () => setWindow(window.innerWidth);
       window.addEventListener("resize", handleResize);
       handleResize(); // Set initial width
@@ -37,7 +48,7 @@ export function DetallesConductor(conductor:apiConductorProps|undefined){
             descripcion:conductor.descripcion
         }
         return(
-            <>
+            <section ref={containerRef} className="flex flex-col rounded-md border shadow-md  w-5/9 mx-auto max-[1080px]:w-11/12 max-[1080px]:mt-4 overflow-y-scroll max-h-[80vh]">
               <NombreConductor {...conductorHeaderProps}/>
               <div className="bg-amber-300 border-b-2 border-[#2D5DA1] h-2 w-full p-0.5"></div>
               <DatosVehiculo {...conductorVehiculoProps}/>
@@ -52,13 +63,16 @@ export function DetallesConductor(conductor:apiConductorProps|undefined){
                       Retornar
                   </button>
               )}
-              <button className="mx-auto my-4 max-[1080px]:w-5/12 w-6/12 cursor-pointer bg-[#F2B134] text-[#2D5DA1] font-bold px-4 py-2 rounded
+              <button 
+              onClick={()=>{handleContactClick({driverId:Number(conductor.user_id),setError:setError,navigate:nav})}}
+              className="mx-auto my-4 max-[1080px]:w-5/12 w-6/12 cursor-pointer bg-[#F2B134] text-[#2D5DA1] font-bold px-4 py-2 rounded
               hover:bg-[#F2B134]/90 transition-all transform hover:scale-110 group">
                     Contactar
                 </button>
+                {error!==""&&(<span className="self-end mt-4 mx-auto text-xs p-1 text-red-600 border border-red-600 bg-red-300 ">{error}</span> )}
               </div>
               <SeccionReseña conductor_id={conductor.id} />
-            </>
+            </section>
               
           
         );
