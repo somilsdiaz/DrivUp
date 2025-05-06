@@ -4,7 +4,7 @@ import { DatosVehiculo } from "./datosVehiculo";
 import { NombreConductor } from "./nombreConductor";
 import { DatosRuta } from "./datosRuta";
 import { useEffect, useRef, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { usehandleContactClick } from "../../../hooks/handleContactClick";
 
 
