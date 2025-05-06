@@ -4,7 +4,7 @@ export interface ReseñaProps {
     last_name:string;
     id_reseña:number;
     calificacion:number;
-    comentarios:string;
+    comentario:string;
     creado_en:string;
 }
 
