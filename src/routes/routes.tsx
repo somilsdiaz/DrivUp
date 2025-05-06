@@ -16,6 +16,7 @@ import Configuracion from '../pages/configuracion';
 import SolicitudesPage from '../pages/vistaConductores/solicitudesPage';
 import BandejaMensajes from '../pages/vistaPasajeros/bandejaMensajes';
 import ListaConductores from '../pages/vistaPasajeros/listaConductores';
+import PageDetallesConductor from '../pages/pageDetallesConductor';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -149,6 +150,18 @@ const router = createBrowserRouter([
         element: (
             <ProtectedRoute>
                 <HomePasajeros />
+            </ProtectedRoute>
+        )
+    },{
+        path:"/dashboard/conductor/solicitudes/detallesConductor",
+        element:(
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                     <PageDetallesConductor/>
+                </RoleBasedRoute>
             </ProtectedRoute>
         )
     }
