@@ -16,8 +16,8 @@ export type apiConductorProps = {
     año_del_vehiculo: number;
     capacidad_de_pasajeros: number;
     created_at: string;
-    origen:string;
-    destino:string;
+    origen_aproximado:string;
+    destino_aproximado:string;
     descripcion: string;
     promedio_calificacion: number;
 };

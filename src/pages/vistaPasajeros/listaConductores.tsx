@@ -32,7 +32,9 @@ const ListaConductores = () => {
         
         <section className="p-6 ">
                 <h1 className="text-2xl font-bold mb-4">Conductores Disponibles</h1>
-        
+                 
+                 <section className="flex justify-between items-center">
+                <div >
                 {/* Filtro por capacidad */}
                 <div className="mb-4">
                   <label htmlFor="capacidad-select" className="mr-2 font-semibold">
@@ -48,24 +50,29 @@ const ListaConductores = () => {
                     <option value={4}>4 o más pasajeros</option>
                     <option value={6}>6 o más pasajeros</option>
                   </select>
+                  
                 </div>
-        
+               
                 {/* Ordenar por */}
                 <div className="mb-4">
                   <label htmlFor="orden-select" className="mr-2 font-semibold">
                     Ordenar por:
                   </label>
-                  <select
+                  <select 
                     id="orden-select"
                     className="border rounded p-2"
                     value={orden}
                     onChange={(e) => setOrden(e.target.value)}
                   >
                     <option value="">Sin orden</option>
-                    <option value="calificacion">Calificación (No disponible aun)</option>
+                    <option value="calificacion">Calificación</option>
                     <option value="nombre">Nombre</option>
                   </select>
                 </div>
+                </div>
+                
+                </section>
+        
         
                 {/* Estado de carga o error */}
                 {isLoading ? (
