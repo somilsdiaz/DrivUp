@@ -8,7 +8,6 @@ import { usehandleContactClick } from "../../../hooks/handleContactClick";
 
 
 const Conductores = ({ conductoresFiltrados }: { conductoresFiltrados: apiConductorProps[] }) => {
- 
 
 const [conductorSeleccionado, setConductorSeleccionado] = useState<apiConductorProps | undefined>(conductoresFiltrados?.[0]);
 const [windowWidth, setWindow] = useState(window.innerWidth);
@@ -28,9 +27,10 @@ useEffect(() => {
     <div className="flex gap-4">
     <section className="max-[1080px]:w-full grid gap-4 overflow-y-auto max-h-[80vh] w-4/9 border rounded-md">
     {conductoresFiltrados.map((conductor) => (
-      <div className="flex flex-col">
+      <div  key={conductor.id}
+      className="flex flex-col">
         <div
-        key={conductor.id}
+       
         className="border p-4 rounded shadow-md flex flex-col md:flex-row items-center"
       >
         <img
@@ -54,8 +54,8 @@ useEffect(() => {
               month: "long",
             })}
           </p>
-          <p className="text-gray-600">Origen: {conductor.origen ? conductor.origen : "Información no disponible"}</p>
-          <p className="text-gray-600">Destino: {conductor.destino ? conductor.destino : "Información no disponible"}</p>
+          <p className="text-gray-600">Origen: {conductor.origen_aproximado ? conductor.origen_aproximado : "Información no disponible"}</p>
+          <p className="text-gray-600">Destino: {conductor.destino_aproximado ? conductor.destino_aproximado : "Información no disponible"}</p>
         </div>
 
         <div className="flex flex-col gap-2 mt-4 md:mt-0 md:ml-6">

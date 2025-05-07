@@ -43,8 +43,8 @@ export function DetallesConductor(conductor:apiConductorProps|undefined){
             capacidad_de_pasajeros:conductor.capacidad_de_pasajeros,
         } 
         const datosRutasProps={
-            origen:conductor.origen,
-            destino:conductor.destino,
+            origen:conductor.origen_aproximado,
+            destino:conductor.destino_aproximado,
             descripcion:conductor.descripcion
         }
         return(
