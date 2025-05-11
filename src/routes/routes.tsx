@@ -37,12 +37,12 @@ const router = createBrowserRouter([
         ),
     },
     {
-        path: "/dashboard/pasajero/configuracion",
+        path: "/dashboard/conductor/configuracion",
         element: (                
             <ProtectedRoute>
                 <RoleBasedRoute
-                    allowedRoles={["pasajero"]}
-                    redirectPath="/dashboard/pasajero"
+                    allowedRoles={["conductor y pasajero"]}  
+                    redirectPath="/dashboard/conductor"
                 >
                     <Configuracion />
                 </RoleBasedRoute>
