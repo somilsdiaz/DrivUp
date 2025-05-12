@@ -73,6 +73,7 @@ const Header: React.FC = () => {
         { label: "Buscar viaje", path: "/" },
         { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
         { label: "Viajes programados", path: "/rutas" },
+        { label: "Configuracion", path: "/dashboard/conductor/configuracion" },
         { label: "Contacto", path: "/contacto" },
         { label: "Cerrar sesión", path: "/" }
     ];
@@ -148,7 +149,7 @@ const Header: React.FC = () => {
                                     <User className="h-4 w-4" />
                                     Mi Perfil
                                 </Link>
-                                <Link to="/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                <Link to="/dashboard/conductor/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
                                     <Settings className="h-4 w-4" />
                                     Configuración
                                 </Link>
