@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface LocationSelectorProps {
     type: 'origin' | 'destination';
     onLocationChange: (type: string, value: string) => void;
+}
+
+interface Coordinates {
+    latitude: number;
+    longitude: number;
 }
 
 const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => {
@@ -11,7 +16,16 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'distance' | 'popularity'>('distance');
     const [currentPage, setCurrentPage] = useState(1);
+    const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
+    const [locationError, setLocationError] = useState<string | null>(null);
     const itemsPerPage = 3;
+
+    // Request location when component mounts if type is origin
+    useEffect(() => {
+        if (type === 'origin') {
+            handleLocationTypeChange('current');
+        }
+    }, []); // Empty dependency array means this runs once when component mounts
 
     // Mock data - This should come from props or a service
     const highConcentrationPoints = [
@@ -41,9 +55,33 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
         return filteredPoints.slice(startIndex, startIndex + itemsPerPage);
     };
 
-    const handleLocationTypeChange = (newType: string) => {
+    const handleLocationTypeChange = async (newType: string) => {
         setLocationType(newType);
-        onLocationChange(type, newType);
+        if (newType === 'current') {
+            try {
+                setLocationError(null);
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    });
+                });
+
+                const coords: Coordinates = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                
+                setCurrentLocation(coords);
+                onLocationChange(type, `${coords.latitude},${coords.longitude}`);
+            } catch (error) {
+                setLocationError('No se pudo obtener tu ubicación. Por favor, verifica que hayas dado permiso de ubicación.');
+                console.error('Error getting location:', error);
+            }
+        } else {
+            onLocationChange(type, newType);
+        }
     };
 
     return (
@@ -60,16 +98,28 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
 
             <div className="flex flex-wrap gap-3 mb-6">
                 {type === 'origin' && (
-                    <button
-                        className={`px-6 py-3 rounded-full transition-all duration-200 ${
-                            locationType === 'current' 
-                            ? 'bg-[#2D5DA1] text-white shadow-md' 
-                            : 'bg-[#F8F9FA] text-[#4A4E69] hover:bg-[#2D5DA1]/10'
-                        }`}
-                        onClick={() => handleLocationTypeChange('current')}
-                    >
-                        Mi ubicación actual
-                    </button>
+                    <>
+                        <button
+                            className={`px-6 py-3 rounded-full transition-all duration-200 ${
+                                locationType === 'current' 
+                                ? 'bg-[#2D5DA1] text-white shadow-md' 
+                                : 'bg-[#F8F9FA] text-[#4A4E69] hover:bg-[#2D5DA1]/10'
+                            }`}
+                            onClick={() => handleLocationTypeChange('current')}
+                        >
+                            Mi ubicación actual
+                        </button>
+                        {locationError && (
+                            <div className="w-full mt-2 text-red-500 text-sm">
+                                {locationError}
+                            </div>
+                        )}
+                        {currentLocation && locationType === 'current' && (
+                            <div className="w-full mt-2 text-[#4A4E69] text-sm">
+                                Ubicación actual: {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
+                            </div>
+                        )}
+                    </>
                 )}
                 <button
                     className={`px-6 py-3 rounded-full transition-all duration-200 ${
