@@ -70,7 +70,7 @@ const HeaderPasajero: React.FC = () => {
 
     // Define menu items
     const menuItems: MenuItem[] = [
-        { label: "Solicitar viaje", path: "/" },
+        { label: "Solicitar viaje", path: "/dashboard/pasajero/solicitar-viaje" },
         { label: "Mis viajes", path: "/" },
         { label: "Solicitar conductores", path: "/dashboard/pasajero/lista-conductores" },
         { label: "Bandeja de mensajes", path: "/dashboard/pasajero/mi-bandeja-de-mensajes" },
@@ -106,7 +106,7 @@ const HeaderPasajero: React.FC = () => {
                 {/* Navigation - Center */}
                 <nav className="hidden md:flex items-center justify-start flex-1 px-4 mx-4">
                     <div className="flex items-center gap-6 justify-center">
-                        <Link to="/" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/pasajero/solicitar-viaje" className="text-sm font-medium hover:underline whitespace-nowrap">
                             Solicitar viaje
                         </Link>
                         <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
