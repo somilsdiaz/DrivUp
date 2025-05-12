@@ -3,8 +3,9 @@ import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } fro
 import { Link, useNavigate } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
 import { logout, getUserId } from "../../utils/auth";
+import { useCurrentUserProfileImage } from "../../utils/useProfileImage";
 
-// Define the MenuItem interface to match the one in menuResponsive.tsx
+// Interfaz que coincide con la que se usa en menuResponsive.tsx
 interface MenuItem {
     label: string;
     path: string;
@@ -17,6 +18,7 @@ const Header: React.FC = () => {
     const [userEmail, setUserEmail] = useState("usuario@example.com");
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const { profileImage } = useCurrentUserProfileImage();
 
     // Fetch user data
     useEffect(() => {
@@ -71,6 +73,7 @@ const Header: React.FC = () => {
         { label: "Buscar viaje", path: "/" },
         { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
         { label: "Viajes programados", path: "/rutas" },
+        { label: "Configuracion", path: "/dashboard/conductor/configuracion" },
         { label: "Contacto", path: "/contacto" },
         { label: "Cerrar sesión", path: "/" }
     ];
@@ -121,7 +124,7 @@ const Header: React.FC = () => {
                     >
                         <div className="h-8 w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
                             <img
-                                src="/avatar-placeholder.jpg"
+                                src={profileImage}
                                 alt="Profile"
                                 className="h-full w-full object-cover"
                                 onError={(e) => {
@@ -146,7 +149,7 @@ const Header: React.FC = () => {
                                     <User className="h-4 w-4" />
                                     Mi Perfil
                                 </Link>
-                                <Link to="/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                <Link to="/dashboard/conductor/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
                                     <Settings className="h-4 w-4" />
                                     Configuración
                                 </Link>

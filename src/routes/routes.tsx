@@ -16,6 +16,7 @@ import Configuracion from '../pages/configuracion';
 import SolicitudesPage from '../pages/vistaConductores/solicitudesPage';
 import BandejaMensajes from '../pages/vistaPasajeros/bandejaMensajes';
 import ListaConductores from '../pages/vistaPasajeros/listaConductores';
+import PageDetallesConductor from '../pages/pageDetallesConductor';
 import ListaPasajeros from '../pages/vistaConductores/listaPasajeros';
 
 const router = createBrowserRouter([
@@ -49,12 +50,12 @@ const router = createBrowserRouter([
         ),
     },
     {
-        path: "/dashboard/pasajero/configuracion",
+        path: "/dashboard/conductor/configuracion",
         element: (                
             <ProtectedRoute>
                 <RoleBasedRoute
-                    allowedRoles={["pasajero"]}
-                    redirectPath="/dashboard/pasajero"
+                    allowedRoles={["conductor y pasajero"]}  
+                    redirectPath="/dashboard/conductor"
                 >
                     <Configuracion />
                 </RoleBasedRoute>
@@ -162,6 +163,18 @@ const router = createBrowserRouter([
         element: (
             <ProtectedRoute>
                 <HomePasajeros />
+            </ProtectedRoute>
+        )
+    },{
+        path:"/dashboard/conductor/solicitudes/detallesConductor",
+        element:(
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                     <PageDetallesConductor/>
+                </RoleBasedRoute>
             </ProtectedRoute>
         )
     }

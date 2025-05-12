@@ -30,7 +30,7 @@ const Configuracion: React.FC = () => {
         <li className="font-medium">
             <button
               onClick={() => {
-                navigate("/");
+                navigate("/dashboard/conductor");
               }}
               className="w-full py-3 transition font-semibold hover:text-[#5AAA95] hover:scale-105"
             >
