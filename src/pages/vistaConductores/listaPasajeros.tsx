@@ -1,5 +1,7 @@
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getUserId } from "../../utils/auth";
 
 type Pasajero = {
   id: number;
@@ -23,6 +25,48 @@ type Usuario = {
 const ListaPasajeros = () => {
   const [pasajeros, setPasajeros] = useState<Pasajero[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  // Función para manejar el clic en "Contactar"
+  const handleContactClick = async (driverId: number) => {
+    try {
+      const currentUserId = getUserId();
+
+      if (!currentUserId) {
+        // Redirigir al login si no hay usuario autenticado
+        navigate('/login');
+        return;
+      }
+
+      // Crear o recuperar la conversación existente
+      const response = await fetch('https://drivup-backend.onrender.com/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: driverId,      // El ID del conductor
+          passengerId: currentUserId // El ID del pasajero actual
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear la conversación');
+      }
+
+      const conversationData = await response.json();
+
+      // Almacenar ID de la conversación en localStorage para que se abra automáticamente
+      localStorage.setItem('openConversationId', conversationData.id.toString());
+
+      // Redirigir a la bandeja de mensajes
+      navigate('/dashboard/conductor/solicitudes');
+    } catch (error) {
+      console.error('Error al contactar al conductor:', error);
+      setError('No se pudo contactar al conductor. Intenta nuevamente.');
+    }
+  };
+
 
   useEffect(() => {
     const fetchPasajeros = async () => {
@@ -42,7 +86,7 @@ const ListaPasajeros = () => {
             ]
               .filter(Boolean) // elimina null, undefined, '', 0, false
               .join(' ');
-            
+
 
             return { ...pasajero, nombre_completo };
           })
@@ -59,10 +103,16 @@ const ListaPasajeros = () => {
     fetchPasajeros();
   }, []);
 
+
   return (
     <HeaderFooterConductores>
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Pasajeros Buscando Viaje</h1>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
         {loading ? (
           <p className="text-center text-gray-500">Cargando pasajeros...</p>
         ) : (
@@ -83,7 +133,9 @@ const ListaPasajeros = () => {
                   <p className="text-gray-600">Descripción: {pasajero.descripcion}</p>
                 </div>
                 <div className="mt-4 md:mt-0 md:ml-6">
-                  <button className="cursor-pointer bg-[#F2B134] text-[#2D5DA1] font-bold px-4 py-2 rounded hover:bg-yellow-500">
+                  <button
+                    onClick={() => handleContactClick(pasajero.user_id)}
+                    className="cursor-pointer bg-[#F2B134] text-[#2D5DA1] font-bold px-4 py-2 rounded hover:bg-yellow-500">
                     Contactar
                   </button>
                 </div>
