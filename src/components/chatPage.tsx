@@ -738,7 +738,7 @@ const RequestPage: FC = () => {
     };
 
     return (
-        <main className="h-full bg-gradient-to-b from-[#F8F9FA] to-white overflow-hidden">
+        <main className="h-full overflow-hidden">
             <div className="container mx-auto py-3 md:py-6 px-2 md:px-4 h-full flex flex-col">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -752,9 +752,9 @@ const RequestPage: FC = () => {
 
                 {/* contenedor principal con altura fija para correcto funcionamiento en diferentes dispositivos */}
                 <div className="flex-grow h-[calc(100vh-90px)] md:h-[calc(100vh-120px)]">
-                    <div className="flex flex-col md:flex-row h-full overflow-hidden bg-white rounded-xl shadow-xl border border-[#4A4E69]/10 transition-all duration-300 hover:shadow-2xl">
+                    <div className="flex flex-col md:flex-row h-full overflow-hidden bg-white rounded-xl shadow-xs md:shadow-xl border border-[#4A4E69]/10 transition-all duration-300 ">
                         {/* lista de conversaciones (izquierda) */}
-                        <div className={`w-full md:w-1/3 h-full border-r border-[#4A4E69]/10 ${showChat ? 'hidden md:block' : 'block'}`}>
+                        <div className={`bg-gradient-to-b from-[#F8F9FA] to-white w-full md:w-1/3 h-full border-r border-[#4A4E69]/10 ${showChat ? 'hidden md:block' : 'block'}`}>
                             <ConversationList
                                 conversations={conversations}
                                 isLoading={isLoading}

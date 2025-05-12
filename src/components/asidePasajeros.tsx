@@ -5,11 +5,11 @@ import { useNavigate } from "react-router-dom";
 const AsidePasajeros = () => {
     const navigate = useNavigate();
     return (
-            <div className="flex flex-col md:flex-row p-6 gap-6 bg-gradient-to-b from-[#F8F9FA] to-white">
+            <div className="flex flex-col md:flex-row">
 
                 {/* Sección derecha: Aside Panel */}
                     {/* Sección de actualización en el menú lateral */}
-                    <div className="pt-6 mt-6 border-t border-white/30 hidden lg:block">
+                    <div className="pt-6 md:mt-36 border-t border-white/30  lg:block">
                         <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-yellow-300 to-yellow-500 shadow-lg p-6 transform transition-all duration-500 hover:scale-105">
                             <div className="absolute -top-4 -left-4 w-16 h-16 bg-yellow-400/60 rounded-full animate-pulse"></div>
                             <div className="absolute -top-6 -right-6 w-20 h-20 bg-yellow-600/40 rounded-full animate-pulse"></div>
@@ -18,7 +18,7 @@ const AsidePasajeros = () => {
                                 <div className="mb-4 flex items-center justify-center transform transition-all duration-300 hover:scale-110">
                                     <img src={rocket} alt="Rocket" className="h-18 w-18" />
                                 </div>
-                                <p className="text-lg font-semibold text-white">¿Buscas pasajeros para programar viajes?”</p>
+                                <p className="text-lg font-semibold text-white">¿Buscas pasajeros para programar viajes?</p>
                                 <p className="text-sm text-white/90 mb-4">Encuentra aqui los pasajeros que mas se adapten a tus preferencias de viajes</p>
                                 <button
                                     onClick={() => navigate("/dashboard/conductor/lista-pasajeros")}
