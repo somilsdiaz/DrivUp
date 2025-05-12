@@ -3,10 +3,12 @@ import Conductores  from "../../components/vistaPasajeros/detallesConductor/Cond
 import { useState } from "react";
 import { useGetConductores } from "../../hooks/useGetConductor";
 import { apiConductorProps } from "../../core/interfaces/conductorProps";
+import { useNavigate } from "react-router-dom";
 
 
 
 const ListaConductores = () => {
+  const navigate=useNavigate();
     const {data:conductores,isLoading,isError}=useGetConductores();
 
   const [filtroCapacidad, setFiltroCapacidad] = useState<number>(0);
@@ -70,7 +72,18 @@ const ListaConductores = () => {
                   </select>
                 </div>
                 </div>
+                {/* Solicatar Ya */}
+                <div className="max-[400px]:invisible text-white max-[768px]:text-xs hadow-md bg-gradient-to-r from-[#f7da52] to-[#e9b430] to-90% p-2 rounded-md mb-2 flex flex-col items-center gap-2">
+                <h2 className="max-[768px]:text-xs text-2xl text-center font-bold">¿Prefieres que un conductor contacte con contigo?</h2>
+                <p className="text-center">Comparte con otros conductores tu preferencias de viaje</p>
+                <button
+                onClick={() => { navigate("/dashboard/pasajero/preferencias-viajes"); }}
+                className="bg-gradient-to-r from-[#e9b430] from-45% to-[#f7da52] shadow-2xl text-white font-bold p-2 px-4 w-3/4 md:w-2/4
+                rounded-md cursor-pointer">
+                 Solicitar Ya
+                  </button>
                 
+                </div>
                 </section>
         
         
