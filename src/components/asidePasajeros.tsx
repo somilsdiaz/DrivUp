@@ -9,7 +9,7 @@ const AsidePasajeros = () => {
 
                 {/* Sección derecha: Aside Panel */}
                     {/* Sección de actualización en el menú lateral */}
-                    <div className="pt-6 md:mt-36 border-t border-white/30  lg:block">
+                    <div className="pt-6 lg:mt-12 border-t border-white/30  lg:block">
                         <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-yellow-300 to-yellow-500 shadow-lg p-6 transform transition-all duration-500 hover:scale-105">
                             <div className="absolute -top-4 -left-4 w-16 h-16 bg-yellow-400/60 rounded-full animate-pulse"></div>
                             <div className="absolute -top-6 -right-6 w-20 h-20 bg-yellow-600/40 rounded-full animate-pulse"></div>
