@@ -6,11 +6,25 @@ import MapPreview from '../../components/solicitarViaje/MapPreview';
 import RequestStatus from '../../components/solicitarViaje/RequestStatus';
 import DriverInfo from '../../components/solicitarViaje/DriverInfo';
 
+interface ConcentrationPoint {
+    id: number;
+    nombre: string;
+    latitud: string;
+    longitud: string;
+    descripcion: string | null;
+    created_at: string;
+    updated_at: string;
+    direccion_fisica: string;
+}
+
 const SolicitarViaje = () => {
     const [requestSubmitted, setRequestSubmitted] = useState(false);
     const [rideAccepted, setRideAccepted] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [estimatedArrival, setEstimatedArrival] = useState('');
+    const [concentrationPoints, setConcentrationPoints] = useState<ConcentrationPoint[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Mock data
     const rideEstimation = {
@@ -36,6 +50,31 @@ const SolicitarViaje = () => {
         languages: ['Español', 'Inglés'],
         vehicleFeatures: ['A/C', 'Música', 'Wifi'],
     };
+
+    // Fetch concentration points from API
+    useEffect(() => {
+        const fetchConcentrationPoints = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await fetch('http://localhost:5000/puntos-concentracion');
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                setConcentrationPoints(data);
+            } catch (err) {
+                setError('Error al cargar los puntos de concentración');
+                console.error('Error fetching concentration points:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchConcentrationPoints();
+    }, []);
 
     // Update time every minute
     useEffect(() => {
@@ -100,8 +139,32 @@ const SolicitarViaje = () => {
                             {/* Left Column - Location Selection */}
                             <div className="space-y-8">
                                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                                    <LocationSelector type="origin" onLocationChange={handleLocationChange} />
-                                    <LocationSelector type="destination" onLocationChange={handleLocationChange} />
+                                    {loading && (
+                                        <div className="p-8 text-center">
+                                            <p className="text-[#4A4E69]">Cargando puntos de concentración...</p>
+                                        </div>
+                                    )}
+                                    
+                                    {error && (
+                                        <div className="p-8 text-center">
+                                            <p className="text-red-500">{error}</p>
+                                        </div>
+                                    )}
+                                    
+                                    {!loading && !error && (
+                                        <>
+                                            <LocationSelector 
+                                                type="origin" 
+                                                onLocationChange={handleLocationChange} 
+                                                concentrationPoints={concentrationPoints}
+                                            />
+                                            <LocationSelector 
+                                                type="destination" 
+                                                onLocationChange={handleLocationChange} 
+                                                concentrationPoints={concentrationPoints}
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -112,6 +175,7 @@ const SolicitarViaje = () => {
                                 <button
                                     className="w-full bg-[#F2B134] text-[#4A4E69] py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#F2B134]/90 transition-all duration-200 transform hover:scale-[1.02] mb-4"
                                     onClick={handleSubmitRequest}
+                                    disabled={loading || !!error}
                                 >
                                     Enviar Solicitud
                                 </button>

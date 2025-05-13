@@ -1,8 +1,20 @@
 import { useState, useEffect } from 'react';
 
+interface ConcentrationPoint {
+    id: number;
+    nombre: string;
+    latitud: string;
+    longitud: string;
+    descripcion: string | null;
+    created_at: string;
+    updated_at: string;
+    direccion_fisica: string;
+}
+
 interface LocationSelectorProps {
     type: 'origin' | 'destination';
     onLocationChange: (type: string, value: string) => void;
+    concentrationPoints?: ConcentrationPoint[];
 }
 
 interface Coordinates {
@@ -10,11 +22,10 @@ interface Coordinates {
     longitude: number;
 }
 
-const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => {
+const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: LocationSelectorProps) => {
     const [locationType, setLocationType] = useState(type === 'origin' ? 'current' : 'manual');
     const [manualAddress, setManualAddress] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortBy, setSortBy] = useState<'distance' | 'popularity'>('distance');
     const [currentPage, setCurrentPage] = useState(1);
     const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
@@ -27,32 +38,10 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
         }
     }, []); // Empty dependency array means this runs once when component mounts
 
-    // Mock data - This should come from props or a service
-    const highConcentrationPoints = [
-        { id: 1, name: 'Universidad del Norte', address: 'Km.5 Vía Puerto Colombia', distance: '2.5 km', popularity: 'Alta' },
-        { id: 2, name: 'Estadio Romelio Martinez', address: 'Calle 72 #46-20', distance: '3.8 km', popularity: 'Media' },
-        { id: 3, name: 'Centro Comercial Buenavista', address: 'Cra. 53 #98-2 a 98-150', distance: '1.2 km', popularity: 'Alta' }
-    ];
-
-    const getFilteredAndSortedPoints = () => {
-        return highConcentrationPoints
-            .filter(point => 
-                point.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                point.address.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-            .sort((a, b) => {
-                if (sortBy === 'distance') {
-                    return parseFloat(a.distance) - parseFloat(b.distance);
-                } else {
-                    return a.popularity === 'Alta' ? -1 : b.popularity === 'Alta' ? 1 : 0;
-                }
-            });
-    };
 
     const getPaginatedPoints = () => {
-        const filteredPoints = getFilteredAndSortedPoints();
         const startIndex = (currentPage - 1) * itemsPerPage;
-        return filteredPoints.slice(startIndex, startIndex + itemsPerPage);
+        return concentrationPoints.slice(startIndex, startIndex + itemsPerPage);
     };
 
     const handleLocationTypeChange = async (newType: string) => {
@@ -82,6 +71,11 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
         } else {
             onLocationChange(type, newType);
         }
+    };
+
+    const handleSelectPoint = (point: ConcentrationPoint) => {
+        onLocationChange(type, `${point.latitud},${point.longitud}`);
+        setLocationType('hcp');
     };
 
     return (
@@ -173,14 +167,6 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <select
-                            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#2D5DA1]"
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as 'distance' | 'popularity')}
-                        >
-                            <option value="distance">Ordenar por distancia</option>
-                            <option value="popularity">Ordenar por popularidad</option>
-                        </select>
                     </div>
 
                     <div className="space-y-3">
@@ -188,22 +174,19 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
                             <div 
                                 key={point.id}
                                 className="p-4 border border-gray-200 rounded-xl hover:border-[#2D5DA1] transition-all duration-200 cursor-pointer"
-                                onClick={() => onLocationChange(type, point.name)}
+                                onClick={() => handleSelectPoint(point)}
                             >
                                 <div className="flex justify-between items-center">
                                     <div>
-                                        <h3 className="font-semibold text-[#4A4E69]">{point.name}</h3>
-                                        <p className="text-sm text-[#4A4E69]/60">{point.address}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-xs text-[#4A4E69]/60">Popularidad: {point.popularity}</span>
+                                        <h3 className="font-semibold text-[#4A4E69]">{point.nombre}</h3>
+                                        <p className="text-sm text-[#4A4E69]/60">{point.direccion_fisica}</p>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {getFilteredAndSortedPoints().length > itemsPerPage && (
+                    {concentrationPoints.length > itemsPerPage && (
                         <div className="flex justify-center gap-2 mt-4">
                             <button
                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -213,11 +196,11 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
                                 Anterior
                             </button>
                             <span className="px-3 py-1">
-                                Página {currentPage} de {Math.ceil(getFilteredAndSortedPoints().length / itemsPerPage)}
+                                Página {currentPage} de {Math.ceil(concentrationPoints.length / itemsPerPage)}
                             </span>
                             <button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(getFilteredAndSortedPoints().length / itemsPerPage)))}
-                                disabled={currentPage === Math.ceil(getFilteredAndSortedPoints().length / itemsPerPage)}
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(concentrationPoints.length / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(concentrationPoints.length / itemsPerPage)}
                                 className="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50"
                             >
                                 Siguiente
@@ -225,7 +208,7 @@ const LocationSelector = ({ type, onLocationChange }: LocationSelectorProps) => 
                         </div>
                     )}
 
-                    {getFilteredAndSortedPoints().length === 0 && (
+                    {concentrationPoints.length === 0 && (
                         <div className="text-center py-8 text-[#4A4E69]/60">
                             No se encontraron puntos de concentración
                         </div>
