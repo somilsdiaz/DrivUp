@@ -30,6 +30,7 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
     const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [filteredPoints, setFilteredPoints] = useState<ConcentrationPoint[]>([]);
+    const [selectedPointId, setSelectedPointId] = useState<number | null>(null);
     const itemsPerPage = 3;
 
     // Request location when component mounts if type is origin
@@ -61,6 +62,12 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
 
     const handleLocationTypeChange = async (newType: string) => {
         setLocationType(newType);
+        
+        // Reset selected point when changing location type
+        if (newType !== 'hcp') {
+            setSelectedPointId(null);
+        }
+        
         if (newType === 'current') {
             try {
                 setLocationError(null);
@@ -89,12 +96,27 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
     };
 
     const handleSelectPoint = (point: ConcentrationPoint) => {
+        setSelectedPointId(point.id);
         onLocationChange(type, `${point.latitud},${point.longitud}`);
         setLocationType('hcp');
     };
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
+    };
+
+    const getPointCardClasses = (pointId: number) => {
+        const baseClasses = "p-4 border rounded-xl transition-all duration-200 cursor-pointer";
+        
+        if (selectedPointId === pointId) {
+            return `${baseClasses} ${
+                type === 'origin' 
+                    ? 'border-[#2D5DA1] border-2 shadow-md bg-[#2D5DA1]/5' 
+                    : 'border-[#5AAA95] border-2 shadow-md bg-[#5AAA95]/5'
+            }`;
+        }
+        
+        return `${baseClasses} border-gray-200 hover:border-${type === 'origin' ? '[#2D5DA1]' : '[#5AAA95]'}/70`;
     };
 
     return (
@@ -195,7 +217,7 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
                         {getPaginatedPoints().map(point => (
                             <div 
                                 key={point.id}
-                                className="p-4 border border-gray-200 rounded-xl hover:border-[#2D5DA1] transition-all duration-200 cursor-pointer"
+                                className={getPointCardClasses(point.id)}
                                 onClick={() => handleSelectPoint(point)}
                             >
                                 <div className="flex justify-between items-center">
@@ -203,6 +225,13 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
                                         <h3 className="font-semibold text-[#4A4E69]">{point.nombre}</h3>
                                         <p className="text-sm text-[#4A4E69]/60">{point.direccion_fisica}</p>
                                     </div>
+                                    {selectedPointId === point.id && (
+                                        <div className={`h-6 w-6 rounded-full flex items-center justify-center ${type === 'origin' ? 'bg-[#2D5DA1]' : 'bg-[#5AAA95]'}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}

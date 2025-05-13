@@ -32,13 +32,19 @@ const MapPreview = ({
     const [destination, setDestination] = useState<Coordinates | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const mapRef = useState<HTMLDivElement | null>(null);
-    const mapInstanceRef = useState<any>(null);
+    const mapContainerRef = useRef<HTMLDivElement | null>(null);
+    const mapInstanceRef = useRef<any>(null);
     const originTimeoutRef = useRef<number | null>(null);
     const destinationTimeoutRef = useRef<number | null>(null);
+    const [debugInfo, setDebugInfo] = useState<string>('');
 
     // Default position (Barranquilla, Colombia)
     const defaultPosition: Coordinates = { lat: 11.0041, lng: -74.8070 };
+
+    // Función de debug para entender el estado de la carga
+    const addDebugInfo = (info: string) => {
+        setDebugInfo(prev => `${prev}\n${info}`);
+    };
 
     useEffect(() => {
         const processOriginCoordinates = async () => {
@@ -47,18 +53,22 @@ const MapPreview = ({
             try {
                 setLoading(true);
                 setError(null);
+                addDebugInfo(`Procesando origen: ${originCoords}`);
                 
                 // Handle "Mi ubicación actual" format (from navigator.geolocation)
                 if (originCoords.includes(',')) {
                     const [lat, lng] = originCoords.split(',').map(coord => parseFloat(coord.trim()));
                     if (!isNaN(lat) && !isNaN(lng)) {
+                        addDebugInfo(`Origen latitud/longitud detectados: ${lat}, ${lng}`);
                         setOrigin({ lat, lng });
+                        setLoading(false);
                         return;
                     }
                 }
                 
-                // If input is 'manual', don't attempt geocoding
-                if (originCoords === 'manual' || originCoords.trim() === '') {
+                // If input is 'manual' or type "hcp", don't attempt geocoding if empty
+                if (originCoords === 'manual' || originCoords === 'hcp' || originCoords.trim() === '') {
+                    addDebugInfo('Origen tipo "manual" o "hcp" sin dirección, no se procesa');
                     setLoading(false);
                     return;
                 }
@@ -72,6 +82,7 @@ const MapPreview = ({
                 // Set a delay to avoid making too many requests while user is typing
                 originTimeoutRef.current = window.setTimeout(async () => {
                     try {
+                        addDebugInfo(`Enviando solicitud para origen: ${originCoords}`);
                         const response = await fetch('http://localhost:5000/direccion-a-coordenadas', {
                             method: 'POST',
                             headers: {
@@ -88,15 +99,18 @@ const MapPreview = ({
                         
                         const data = await response.json();
                         if (data.success && data.coordenadas) {
+                            addDebugInfo(`Coordenadas de origen recibidas: ${data.coordenadas.lat}, ${data.coordenadas.lon}`);
                             setOrigin({ 
                                 lat: data.coordenadas.lat, 
                                 lng: data.coordenadas.lon 
                             });
                         } else {
+                            addDebugInfo(`Error al recibir coordenadas de origen: ${JSON.stringify(data)}`);
                             console.warn("No se pudieron obtener coordenadas:", data);
                             setError("No se pudieron obtener las coordenadas de origen");
                         }
                     } catch (err) {
+                        addDebugInfo(`Error en la solicitud de origen: ${err}`);
                         console.error("Error al procesar coordenadas de origen:", err);
                         setError("Error al procesar la dirección de origen");
                     } finally {
@@ -104,6 +118,7 @@ const MapPreview = ({
                     }
                 }, 1000); // Delay de 1 segundo
             } catch (err) {
+                addDebugInfo(`Error general en procesamiento de origen: ${err}`);
                 console.error("Error al procesar coordenadas de origen:", err);
                 setError("Error al procesar la dirección de origen");
                 setLoading(false);
@@ -116,18 +131,22 @@ const MapPreview = ({
             try {
                 setLoading(true);
                 setError(null);
+                addDebugInfo(`Procesando destino: ${destinationCoords}`);
                 
                 // Handle coordinates directly format
                 if (destinationCoords.includes(',')) {
                     const [lat, lng] = destinationCoords.split(',').map(coord => parseFloat(coord.trim()));
                     if (!isNaN(lat) && !isNaN(lng)) {
+                        addDebugInfo(`Destino latitud/longitud detectados: ${lat}, ${lng}`);
                         setDestination({ lat, lng });
+                        setLoading(false);
                         return;
                     }
                 }
                 
-                // If input is 'manual', don't attempt geocoding
-                if (destinationCoords === 'manual' || destinationCoords.trim() === '') {
+                // If input is 'manual' or type "hcp", don't attempt geocoding if empty
+                if (destinationCoords === 'manual' || destinationCoords === 'hcp' || destinationCoords.trim() === '') {
+                    addDebugInfo('Destino tipo "manual" o "hcp" sin dirección, no se procesa');
                     setLoading(false);
                     return;
                 }
@@ -141,6 +160,7 @@ const MapPreview = ({
                 // Set a delay to avoid making too many requests while user is typing
                 destinationTimeoutRef.current = window.setTimeout(async () => {
                     try {
+                        addDebugInfo(`Enviando solicitud para destino: ${destinationCoords}`);
                         const response = await fetch('http://localhost:5000/direccion-a-coordenadas', {
                             method: 'POST',
                             headers: {
@@ -157,15 +177,18 @@ const MapPreview = ({
                         
                         const data = await response.json();
                         if (data.success && data.coordenadas) {
+                            addDebugInfo(`Coordenadas de destino recibidas: ${data.coordenadas.lat}, ${data.coordenadas.lon}`);
                             setDestination({ 
                                 lat: data.coordenadas.lat, 
                                 lng: data.coordenadas.lon 
                             });
                         } else {
+                            addDebugInfo(`Error al recibir coordenadas de destino: ${JSON.stringify(data)}`);
                             console.warn("No se pudieron obtener coordenadas:", data);
                             setError("No se pudieron obtener las coordenadas de destino");
                         }
                     } catch (err) {
+                        addDebugInfo(`Error en la solicitud de destino: ${err}`);
                         console.error("Error al procesar coordenadas de destino:", err);
                         setError("Error al procesar la dirección de destino");
                     } finally {
@@ -173,14 +196,24 @@ const MapPreview = ({
                     }
                 }, 1000); // Delay de 1 segundo
             } catch (err) {
+                addDebugInfo(`Error general en procesamiento de destino: ${err}`);
                 console.error("Error al procesar coordenadas de destino:", err);
                 setError("Error al procesar la dirección de destino");
                 setLoading(false);
             }
         };
 
-        if (originCoords) processOriginCoordinates();
-        if (destinationCoords) processDestinationCoordinates();
+        if (originCoords) {
+            processOriginCoordinates();
+        } else {
+            addDebugInfo('No hay coordenadas de origen');
+        }
+        
+        if (destinationCoords) {
+            processDestinationCoordinates();
+        } else {
+            addDebugInfo('No hay coordenadas de destino');
+        }
         
         // Cleanup function to clear any pending timeouts
         return () => {
@@ -212,70 +245,112 @@ const MapPreview = ({
 
     // Initialize the map with vanilla Leaflet (bypassing React components entirely)
     useEffect(() => {
-        if (!origin && !destination) return;
-        if (loading || error) return;
-
-        // Clean up previous map instance if it exists
-        if (mapInstanceRef[0]) {
-            mapInstanceRef[0].remove();
-            mapInstanceRef[0] = null;
-        }
-
-        if (!mapRef[0]) return;
-
-        // Initialize map with vanilla Leaflet
-        const { center, zoom } = getMapConfig();
-        const map = L.map(mapRef[0]).setView([center.lat, center.lng], zoom);
-        
-        // Add the tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Add origin marker if it exists
-        if (origin) {
-            const originMarker = L.marker([origin.lat, origin.lng], { 
-                icon: createLeafletIcon('blue') 
-            }).addTo(map);
-            originMarker.bindPopup('Origen');
-        }
-
-        // Add destination marker if it exists
-        if (destination) {
-            const destMarker = L.marker([destination.lat, destination.lng], { 
-                icon: createLeafletIcon('green') 
-            }).addTo(map);
-            destMarker.bindPopup('Destino');
-        }
-
-        // Add polyline if both origin and destination exist
-        if (origin && destination) {
-            L.polyline(
-                [[origin.lat, origin.lng], [destination.lat, destination.lng]],
-                { 
-                    color: '#2D5DA1',
-                    weight: 3,
-                    opacity: 0.7,
-                    dashArray: '5, 10'
+        const initializeMap = () => {
+            try {
+                addDebugInfo('Intentando inicializar mapa...');
+                
+                // Si no hay origen ni destino y no está cargando o con error, mostramos el mensaje inicial
+                if (!origin && !destination) {
+                    addDebugInfo('No hay origen ni destino para mostrar en el mapa');
+                    setLoading(false);
+                    return;
                 }
-            ).addTo(map);
-        }
+                
+                if (loading) {
+                    addDebugInfo('Cargando, esperando...');
+                    return;
+                }
+                
+                if (error) {
+                    addDebugInfo(`Error presente: ${error}`);
+                    return;
+                }
+                
+                // Verificamos si el elemento del DOM está presente
+                if (!mapContainerRef.current) {
+                    addDebugInfo('El contenedor del mapa no está disponible');
+                    return;
+                }
+                
+                // Limpiamos cualquier mapa previo
+                if (mapInstanceRef.current) {
+                    addDebugInfo('Limpiando mapa anterior');
+                    mapInstanceRef.current.remove();
+                    mapInstanceRef.current = null;
+                }
 
-        // Store map instance for cleanup
-        mapInstanceRef[0] = map;
+                // Configuramos el mapa
+                const { center, zoom } = getMapConfig();
+                addDebugInfo(`Creando mapa con centro: ${center.lat}, ${center.lng}, zoom: ${zoom}`);
+                
+                // Creamos la instancia de mapa
+                const map = L.map(mapContainerRef.current).setView([center.lat, center.lng], zoom);
+                
+                // Añadimos la capa de tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Añadimos marcador de origen si existe
+                if (origin) {
+                    addDebugInfo(`Añadiendo marcador de origen: ${origin.lat}, ${origin.lng}`);
+                    const originMarker = L.marker([origin.lat, origin.lng], { 
+                        icon: createLeafletIcon('blue') 
+                    }).addTo(map);
+                    originMarker.bindPopup('Origen').openPopup();
+                }
+                
+                // Añadimos marcador de destino si existe
+                if (destination) {
+                    addDebugInfo(`Añadiendo marcador de destino: ${destination.lat}, ${destination.lng}`);
+                    const destMarker = L.marker([destination.lat, destination.lng], { 
+                        icon: createLeafletIcon('green') 
+                    }).addTo(map);
+                    destMarker.bindPopup('Destino');
+                }
+                
+                // Añadimos línea entre puntos si ambos existen
+                if (origin && destination) {
+                    addDebugInfo('Añadiendo línea entre puntos');
+                    L.polyline(
+                        [[origin.lat, origin.lng], [destination.lat, destination.lng]],
+                        { 
+                            color: '#2D5DA1',
+                            weight: 3,
+                            opacity: 0.7,
+                            dashArray: '5, 10'
+                        }
+                    ).addTo(map);
+                }
+                
+                // Guardamos la instancia del mapa para limpieza posterior
+                mapInstanceRef.current = map;
+                
+                // Refrescamos el mapa para asegurar que se dibuje correctamente
+                setTimeout(() => {
+                    if (mapInstanceRef.current) {
+                        mapInstanceRef.current.invalidateSize();
+                        addDebugInfo('Mapa inicializado correctamente');
+                    }
+                }, 100);
+            } catch (err) {
+                addDebugInfo(`Error al inicializar el mapa: ${err}`);
+                console.error('Error al inicializar el mapa:', err);
+                setError(`Error al cargar el mapa: ${err}`);
+            }
+        };
 
+        initializeMap();
+        
         // Cleanup function
         return () => {
-            if (mapInstanceRef[0]) {
-                mapInstanceRef[0].remove();
-                mapInstanceRef[0] = null;
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove();
+                mapInstanceRef.current = null;
+                addDebugInfo('Mapa eliminado en limpieza');
             }
         };
     }, [origin, destination, loading, error]);
-
-    const setMapContainer = (element: HTMLDivElement | null) => {
-        mapRef[0] = element;
-    };
 
     return (
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -315,12 +390,22 @@ const MapPreview = ({
                     </div>
                 )}
 
-                {/* The map container element - vanilla Leaflet will attach to this div */}
+                {/* Contenedor del mapa */}
                 <div
-                    ref={setMapContainer}
+                    ref={mapContainerRef}
                     className="h-full w-full"
-                    style={{ display: (!origin && !destination) || loading || error ? 'none' : 'block' }}
+                    style={{ 
+                        display: (!origin && !destination) || loading || error ? 'none' : 'block',
+                        zIndex: 1
+                    }}
                 ></div>
+                
+                {/* La sección de depuración está desactivada - Activar solo para desarrollo */}
+                {false && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 z-50 text-xs max-h-[150px] overflow-auto">
+                        <pre>{debugInfo}</pre>
+                    </div>
+                )}
             </div>
         </div>
     );
