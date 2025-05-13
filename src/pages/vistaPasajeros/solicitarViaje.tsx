@@ -25,6 +25,8 @@ const SolicitarViaje = () => {
     const [concentrationPoints, setConcentrationPoints] = useState<ConcentrationPoint[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [originCoords, setOriginCoords] = useState<string | undefined>(undefined);
+    const [destinationCoords, setDestinationCoords] = useState<string | undefined>(undefined);
 
     // Mock data
     const rideEstimation = {
@@ -107,6 +109,12 @@ const SolicitarViaje = () => {
     const handleLocationChange = (type: string, value: string) => {
         // Handle location changes here
         console.log(`Location ${type} changed to:`, value);
+        
+        if (type === 'origin') {
+            setOriginCoords(value);
+        } else if (type === 'destination') {
+            setDestinationCoords(value);
+        }
     };
 
     const formatTime = (date: Date) => {
@@ -170,12 +178,15 @@ const SolicitarViaje = () => {
 
                             {/* Right Column - Map and Details */}
                             <div className="space-y-8">
-                                <MapPreview />
+                                <MapPreview 
+                                    originCoords={originCoords} 
+                                    destinationCoords={destinationCoords} 
+                                />
                                 <RideDetails rideEstimation={rideEstimation} />
                                 <button
                                     className="w-full bg-[#F2B134] text-[#4A4E69] py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#F2B134]/90 transition-all duration-200 transform hover:scale-[1.02] mb-4"
                                     onClick={handleSubmitRequest}
-                                    disabled={loading || !!error}
+                                    disabled={loading || !!error || !originCoords || !destinationCoords}
                                 >
                                     Enviar Solicitud
                                 </button>
