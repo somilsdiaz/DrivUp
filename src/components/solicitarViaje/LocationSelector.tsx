@@ -29,6 +29,7 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
     const [currentPage, setCurrentPage] = useState(1);
     const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
+    const [filteredPoints, setFilteredPoints] = useState<ConcentrationPoint[]>([]);
     const itemsPerPage = 3;
 
     // Request location when component mounts if type is origin
@@ -38,10 +39,24 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
         }
     }, []); // Empty dependency array means this runs once when component mounts
 
+    // Filter points based on search term
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredPoints(concentrationPoints);
+        } else {
+            const filtered = concentrationPoints.filter(point => 
+                point.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                point.direccion_fisica.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredPoints(filtered);
+        }
+        // Reset to first page when search term changes
+        setCurrentPage(1);
+    }, [searchTerm, concentrationPoints]);
 
     const getPaginatedPoints = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
-        return concentrationPoints.slice(startIndex, startIndex + itemsPerPage);
+        return filteredPoints.slice(startIndex, startIndex + itemsPerPage);
     };
 
     const handleLocationTypeChange = async (newType: string) => {
@@ -76,6 +91,10 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
     const handleSelectPoint = (point: ConcentrationPoint) => {
         onLocationChange(type, `${point.latitud},${point.longitud}`);
         setLocationType('hcp');
+    };
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
     };
 
     return (
@@ -158,14 +177,17 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
             {locationType === 'hcp' && (
                 <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="flex-1">
+                        <div className="flex-1 relative">
                             <input
                                 type="text"
                                 placeholder="Buscar punto de concentración..."
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#2D5DA1]"
+                                className="w-full px-4 py-3 pl-12 border border-gray-200 rounded-lg focus:outline-none focus:border-[#2D5DA1] focus:ring-2 focus:ring-[#2D5DA1]/20"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={handleSearch}
                             />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#4A4E69]/60 absolute left-4 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                         </div>
                     </div>
 
@@ -186,7 +208,7 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
                         ))}
                     </div>
 
-                    {concentrationPoints.length > itemsPerPage && (
+                    {filteredPoints.length > itemsPerPage && (
                         <div className="flex justify-center gap-2 mt-4">
                             <button
                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -196,11 +218,11 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
                                 Anterior
                             </button>
                             <span className="px-3 py-1">
-                                Página {currentPage} de {Math.ceil(concentrationPoints.length / itemsPerPage)}
+                                Página {currentPage} de {Math.ceil(filteredPoints.length / itemsPerPage)}
                             </span>
                             <button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(concentrationPoints.length / itemsPerPage)))}
-                                disabled={currentPage === Math.ceil(concentrationPoints.length / itemsPerPage)}
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredPoints.length / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(filteredPoints.length / itemsPerPage)}
                                 className="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50"
                             >
                                 Siguiente
@@ -208,7 +230,7 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
                         </div>
                     )}
 
-                    {concentrationPoints.length === 0 && (
+                    {filteredPoints.length === 0 && (
                         <div className="text-center py-8 text-[#4A4E69]/60">
                             No se encontraron puntos de concentración
                         </div>
