@@ -368,6 +368,79 @@ const SolicitarViaje = () => {
         }, [callback, delay]);
     };
 
+    // Check for active ride requests when component mounts
+    useEffect(() => {
+        const checkActiveRequest = async () => {
+            const id = getUserId();
+            setUserId(id);
+            
+            if (!id) {
+                setCheckingActiveRequest(false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${id}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.tieneSolicitudActiva) {
+                    // User has an active ride request, show the RequestStatus component
+                    setRequestSubmitted(true);
+                    
+                    // Check if a driver has accepted the ride
+                    if (data.estadoSolicitud === 'ACEPTADA') {
+                        setRideAccepted(true);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking active ride requests:', error);
+                setErrorWithModal('Error al verificar solicitudes de viaje activas');
+            } finally {
+                setCheckingActiveRequest(false);
+            }
+        };
+        
+        checkActiveRequest();
+    }, []);
+
+    // Poll for ride status updates
+    useEffect(() => {
+        // Only poll when we have an active request but no driver yet
+        if (!requestSubmitted || rideAccepted || !userId) {
+            return;
+        }
+        
+        const checkRideStatus = async () => {
+            try {
+                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${userId}`);
+                
+                if (!response.ok) {
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                // If a driver has accepted the ride, update the state
+                if (data.success && data.tieneSolicitudActiva && data.estadoSolicitud === 'ACEPTADA') {
+                    setRideAccepted(true);
+                }
+            } catch (error) {
+                console.error('Error polling ride status:', error);
+            }
+        };
+        
+        // Check every 5 seconds
+        const intervalId = setInterval(checkRideStatus, 5000);
+        
+        // Cleanup interval on unmount or when status changes
+        return () => clearInterval(intervalId);
+    }, [requestSubmitted, rideAccepted, userId]);
+
     const handleSubmitRequest = async () => {
         if (!originCoords || !destinationCoords) {
             setErrorWithModal("Por favor seleccione origen y destino válidos");
@@ -468,9 +541,6 @@ const SolicitarViaje = () => {
 
             // Request submitted successfully
             setRequestSubmitted(true);
-            
-            // Simulate driver acceptance (in a real app, this would come from a websocket or polling)
-            setTimeout(() => setRideAccepted(true), 3000);
         } catch (error) {
             console.error("Error al enviar solicitud de viaje:", error);
             setErrorWithModal(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
@@ -574,41 +644,6 @@ const SolicitarViaje = () => {
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     };
-
-    // Check for active ride requests when component mounts
-    useEffect(() => {
-        const checkActiveRequest = async () => {
-            const id = getUserId();
-            setUserId(id);
-            
-            if (!id) {
-                setCheckingActiveRequest(false);
-                return;
-            }
-            
-            try {
-                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${id}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status} ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.success && data.tieneSolicitudActiva) {
-                    // User has an active ride request, show the RequestStatus component
-                    setRequestSubmitted(true);
-                }
-            } catch (error) {
-                console.error('Error checking active ride requests:', error);
-                setErrorWithModal('Error al verificar solicitudes de viaje activas');
-            } finally {
-                setCheckingActiveRequest(false);
-            }
-        };
-        
-        checkActiveRequest();
-    }, []);
 
     return (
         <HeaderFooterPasajeros>
