@@ -540,7 +540,7 @@ const SolicitarViaje = () => {
             console.log("Ride request submitted successfully:", responseData);
 
             // Request submitted successfully
-            setRequestSubmitted(true);
+        setRequestSubmitted(true);
         } catch (error) {
             console.error("Error al enviar solicitud de viaje:", error);
             setErrorWithModal(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
@@ -596,13 +596,13 @@ const SolicitarViaje = () => {
         // Handle different location types
         if (locType === 'current' || locType === 'hcp') {
             // For current location or concentration points, we already have coordinates
-            if (type === 'origin') {
-                setOriginCoords(value);
+        if (type === 'origin') {
+            setOriginCoords(value);
                 if (pointId) {
                     setOriginConcentrationPointId(pointId);
                 }
-            } else if (type === 'destination') {
-                setDestinationCoords(value);
+        } else if (type === 'destination') {
+            setDestinationCoords(value);
                 if (pointId) {
                     setDestinationConcentrationPointId(pointId);
                 }
@@ -641,25 +641,30 @@ const SolicitarViaje = () => {
         }
     };
 
+    // Update the formatTime function to use 12-hour format
     const formatTime = (date: Date) => {
-        return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+        });
     };
 
     return (
         <HeaderFooterPasajeros>
             <div className="min-h-screen bg-[#F8F9FA]">
                 {/* Header Section with Gradient - Full Width */}
-                <div className="w-full bg-gradient-to-r from-[#2D5DA1] to-[#5AAA95] p-8 mb-8 relative overflow-hidden">
+                <div className="w-full bg-gradient-to-r from-[#2D5DA1] to-[#5AAA95] p-6 mb-6 relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
                     <div className="max-w-7xl mx-auto relative">
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start ml-6">
                             <div>
-                                <h1 className="text-4xl font-bold text-white mb-3">Solicitar Viaje</h1>
-                                <p className="text-xl text-white/80">Encuentra tu viaje de manera rápida y segura</p>
+                                <h1 className="text-2xl font-bold text-white mb-2 ">Solicitar Viaje</h1>
+                                <p className="text-base text-white/80">Encuentra tu viaje de manera rápida y segura</p>
                             </div>
-                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-white">
-                                <p className="text-sm opacity-80">Hora actual</p>
-                                <p className="text-2xl font-bold">{formatTime(currentTime)}</p>
+                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-white">
+                                <p className="text-xs opacity-80">Hora actual</p>
+                                <p className="text-xl font-medium">{formatTime(currentTime)}</p>
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface RequestStatusProps {
     onCancel: () => void;
@@ -7,11 +7,6 @@ interface RequestStatusProps {
 
 const RequestStatus = ({ onCancel, userId }: RequestStatusProps) => {
     const [isCancelling, setIsCancelling] = useState(false);
-
-    // Scroll to top when component mounts
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
 
     const handleCancelRide = async () => {
         if (!userId) return;
