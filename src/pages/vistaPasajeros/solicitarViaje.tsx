@@ -18,6 +18,49 @@ interface ConcentrationPoint {
     direccion_fisica: string;
 }
 
+// Define RideEstimation interface to match the component props
+interface RideEstimation {
+    distance: string;
+    duration: string;
+    price: string;
+    basePrice: number;
+    serviceFee: number;
+    totalPrice: number;
+    detailedData?: {
+        distancia?: {
+            metros: number;
+            kilometros: number;
+        };
+        tiempo?: {
+            tiempoTotalMinutos: number;
+            desglose: {
+                tiempoViajeBasico: number;
+                tiempoTrafico: number;
+                tiempoRecogida: number;
+                tiempoLlegada: number;
+            };
+        };
+        costo?: {
+            costoMinimo: number;
+            costoMaximo: number;
+            desglose: {
+                costoBase: number;
+                costoPorPasajero: number;
+                comisionPlataforma: number;
+                factorPasajeros: number;
+            };
+        };
+    };
+    alternativeOptions?: {
+        [key: string]: {
+            costo: {
+                costoMinimo: number;
+                costoMaximo: number;
+            };
+        };
+    };
+}
+
 const SolicitarViaje = () => {
     const [requestSubmitted, setRequestSubmitted] = useState(false);
     const [rideAccepted, setRideAccepted] = useState(false);
@@ -42,18 +85,18 @@ const SolicitarViaje = () => {
     const [originConcentrationPointId, setOriginConcentrationPointId] = useState<number | null>(null);
     const [destinationConcentrationPointId, setDestinationConcentrationPointId] = useState<number | null>(null);
     const [submittingRequest, setSubmittingRequest] = useState(false);
+    const [passengerCount, setPassengerCount] = useState<number>(4);
+    const [calculatingRide, setCalculatingRide] = useState<boolean>(false);
 
-    // Mock data
-    const rideEstimation = {
-        distance: '12.5 km',
-        duration: '25 min',
-        price: '$15,000 COP',
-        surge: 1.2,
-        basePrice: 12500,
-        surgeMultiplier: 1.2,
-        serviceFee: 2000,
-        totalPrice: 15000,
-    };
+    // Mock data - will be replaced with real data from API
+    const [rideEstimation, setRideEstimation] = useState<RideEstimation>({
+        distance: '0 km',
+        duration: '0 min',
+        price: '$0 COP',
+        basePrice: 0,
+        serviceFee: 0,
+        totalPrice: 0,
+    });
 
     const driverInfo = {
         name: 'Carlos Rodriguez',
@@ -110,6 +153,86 @@ const SolicitarViaje = () => {
             setEstimatedArrival(arrival.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }));
         }
     }, [rideEstimation.duration]);
+
+    // Calculate ride information when origin or destination coordinates change
+    useEffect(() => {
+        const calculateRideInfo = async () => {
+            if (!originCoords || !destinationCoords) {
+                return;
+            }
+
+            setCalculatingRide(true);
+            
+            try {
+                const [originLat, originLon] = originCoords.split(',');
+                const [destLat, destLon] = destinationCoords.split(',');
+                
+                // Check if coordinates are valid
+                if (!originLat || !originLon || !destLat || !destLon) {
+                    return;
+                }
+                
+                const requestBody = {
+                    origen_lat: originLat,
+                    origen_lon: originLon,
+                    destino_lat: destLat,
+                    destino_lon: destLon,
+                    es_origen_concentracion: locationType.origin === 'hcp',
+                    es_destino_concentracion: locationType.destination === 'hcp',
+                    num_pasajeros: passengerCount
+                };
+                
+                const response = await fetch("http://localhost:5000/calcular-info-viaje", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Format a nicer price string
+                    const formatCurrency = (min: number, max: number) => {
+                        const formatter = new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP',
+                            maximumFractionDigits: 0
+                        });
+                        
+                        return `${formatter.format(min)} - ${formatter.format(max)}`;
+                    };
+                    
+                    // Get ride info based on selected passenger count
+                    const rideInfo = data.info_viaje;
+                    
+                    // Update ride estimation
+                    setRideEstimation({
+                        distance: `${rideInfo.distancia.kilometros.toFixed(1)} km`,
+                        duration: `${rideInfo.tiempo.tiempoTotalMinutos} min`,
+                        price: formatCurrency(rideInfo.costo.costoMinimo, rideInfo.costo.costoMaximo),
+                        basePrice: rideInfo.costo.desglose.costoBase,
+                        serviceFee: rideInfo.costo.desglose.comisionPlataforma,
+                        totalPrice: rideInfo.costo.costoMaximo,
+                        detailedData: rideInfo,
+                        alternativeOptions: data.escenarios
+                    });
+                }
+            } catch (error) {
+                console.error("Error calculating ride info:", error);
+                setError("Error al calcular información del viaje");
+            } finally {
+                setCalculatingRide(false);
+            }
+        };
+        
+        calculateRideInfo();
+    }, [originCoords, destinationCoords, locationType.origin, locationType.destination, passengerCount]);
 
     // Check if coordinates belong to a concentration point
     const isConcentrationPoint = async (lat: string, lon: string): Promise<boolean> => {
@@ -260,7 +383,8 @@ const SolicitarViaje = () => {
                 es_origen_concentracion: isOriginConcentration,
                 origen_pmcp_id: isOriginConcentration ? originPointId : null,
                 es_destino_concentracion: isDestinationConcentration,
-                destino_pmcp_id: isDestinationConcentration ? destinationPointId : null
+                destino_pmcp_id: isDestinationConcentration ? destinationPointId : null,
+                num_pasajeros: passengerCount
             };
 
             // Validate data completeness before sending
@@ -296,10 +420,10 @@ const SolicitarViaje = () => {
             console.log("Ride request submitted successfully:", responseData);
 
             // Request submitted successfully
-        setRequestSubmitted(true);
+            setRequestSubmitted(true);
             
             // Simulate driver acceptance (in a real app, this would come from a websocket or polling)
-        setTimeout(() => setRideAccepted(true), 3000);
+            setTimeout(() => setRideAccepted(true), 3000);
         } catch (error) {
             console.error("Error al enviar solicitud de viaje:", error);
             setError(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
@@ -471,11 +595,16 @@ const SolicitarViaje = () => {
                                     originCoords={originCoords} 
                                     destinationCoords={destinationCoords} 
                                 />
-                                <RideDetails rideEstimation={rideEstimation} />
+                                <RideDetails 
+                                    rideEstimation={rideEstimation} 
+                                    passengerCount={passengerCount}
+                                    setPassengerCount={setPassengerCount}
+                                    isLoading={calculatingRide}
+                                />
                                 <button
                                     className="w-full bg-[#F2B134] text-[#4A4E69] py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#F2B134]/90 transition-all duration-200 transform hover:scale-[1.02] mb-4 flex items-center justify-center"
                                     onClick={handleSubmitRequest}
-                                    disabled={loading || !!error || !originCoords || !destinationCoords || submittingRequest}
+                                    disabled={loading || !!error || !originCoords || !destinationCoords || submittingRequest || calculatingRide}
                                 >
                                     {submittingRequest ? (
                                         <>
