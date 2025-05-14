@@ -178,8 +178,8 @@ const SolicitarViaje = () => {
                     destino_lat: destLat,
                     destino_lon: destLon,
                     es_origen_concentracion: locationType.origin === 'hcp',
-                    es_destino_concentracion: locationType.destination === 'hcp',
-                    num_pasajeros: passengerCount
+                    es_destino_concentracion: locationType.destination === 'hcp'
+                    // Removed num_pasajeros as we'll handle all passenger scenarios from the response
                 };
                 
                 const response = await fetch("http://localhost:5000/calcular-info-viaje", {
@@ -208,8 +208,9 @@ const SolicitarViaje = () => {
                         return `${formatter.format(min)} - ${formatter.format(max)}`;
                     };
                     
-                    // Get ride info based on selected passenger count
-                    const rideInfo = data.info_viaje;
+                    // Get ride info based on current passenger count
+                    const selectedScenario = `pasajeros_${passengerCount}`;
+                    const rideInfo = data.escenarios[selectedScenario] || data.info_viaje;
                     
                     // Update ride estimation
                     setRideEstimation({
@@ -232,7 +233,38 @@ const SolicitarViaje = () => {
         };
         
         calculateRideInfo();
-    }, [originCoords, destinationCoords, locationType.origin, locationType.destination, passengerCount]);
+    }, [originCoords, destinationCoords, locationType.origin, locationType.destination]); // Removed passengerCount
+
+    // Update price when passenger count changes without making a new API call
+    useEffect(() => {
+        // Skip if we don't have alternative options yet or detailedData
+        if (!rideEstimation.alternativeOptions || !rideEstimation.detailedData) return;
+        
+        const selectedScenario = `pasajeros_${passengerCount}`;
+        const scenarioData = rideEstimation.alternativeOptions[selectedScenario];
+        
+        if (scenarioData && scenarioData.costo) {
+            const formatCurrency = (min: number, max: number) => {
+                const formatter = new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    maximumFractionDigits: 0
+                });
+                
+                return `${formatter.format(min)} - ${formatter.format(max)}`;
+            };
+            
+            // Instead of updating the complex nested structure, let's just update 
+            // the price display and use the already calculated scenario data for display
+            setRideEstimation(prev => {
+                return {
+                    ...prev,
+                    price: formatCurrency(scenarioData.costo.costoMinimo, scenarioData.costo.costoMaximo),
+                    totalPrice: scenarioData.costo.costoMaximo
+                };
+            });
+        }
+    }, [passengerCount, rideEstimation.alternativeOptions]);
 
     // Check if coordinates belong to a concentration point
     const isConcentrationPoint = async (lat: string, lon: string): Promise<boolean> => {
@@ -420,10 +452,10 @@ const SolicitarViaje = () => {
             console.log("Ride request submitted successfully:", responseData);
 
             // Request submitted successfully
-            setRequestSubmitted(true);
+        setRequestSubmitted(true);
             
             // Simulate driver acceptance (in a real app, this would come from a websocket or polling)
-            setTimeout(() => setRideAccepted(true), 3000);
+        setTimeout(() => setRideAccepted(true), 3000);
         } catch (error) {
             console.error("Error al enviar solicitud de viaje:", error);
             setError(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
@@ -479,13 +511,13 @@ const SolicitarViaje = () => {
         // Handle different location types
         if (locType === 'current' || locType === 'hcp') {
             // For current location or concentration points, we already have coordinates
-            if (type === 'origin') {
-                setOriginCoords(value);
+        if (type === 'origin') {
+            setOriginCoords(value);
                 if (pointId) {
                     setOriginConcentrationPointId(pointId);
                 }
-            } else if (type === 'destination') {
-                setDestinationCoords(value);
+        } else if (type === 'destination') {
+            setDestinationCoords(value);
                 if (pointId) {
                     setDestinationConcentrationPointId(pointId);
                 }

@@ -1,3 +1,5 @@
+import React, { useMemo } from 'react';
+
 interface RideEstimation {
     distance: string;
     duration: string;
@@ -50,28 +52,37 @@ interface RideDetailsProps {
     isLoading?: boolean;
 }
 
-const RideDetails = ({ rideEstimation, passengerCount, setPassengerCount, isLoading = false }: RideDetailsProps) => {
-    // Format currency
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            maximumFractionDigits: 0
-        }).format(amount);
-    };
+const RideDetails: React.FC<RideDetailsProps> = ({ 
+    rideEstimation, 
+    passengerCount, 
+    setPassengerCount, 
+    isLoading = false 
+}) => {
+    // Format currency - memoize to avoid recreation on every render
+    const formatCurrency = useMemo(() => {
+        return (amount: number) => {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                maximumFractionDigits: 0
+            }).format(amount);
+        };
+    }, []);
 
-    // Get the price display text based on price format
-    const getPriceDisplay = () => {
+    // Memoize price display to prevent unnecessary recalculations
+    const priceDisplay = useMemo(() => {
         if (isLoading) {
             return "Calculando...";
         }
         
-        if (rideEstimation.detailedData?.costo) {
-            const { costoMinimo, costoMaximo } = rideEstimation.detailedData.costo;
-            return `${formatCurrency(costoMinimo)} - ${formatCurrency(costoMaximo)}`;
-        }
-        
         return rideEstimation.price;
+    }, [isLoading, rideEstimation.price]);
+
+    // Handle passenger count change without full rerender
+    const handlePassengerChange = (count: number) => {
+        if (count !== passengerCount) {
+            setPassengerCount(count);
+        }
     };
 
     return (
@@ -120,7 +131,7 @@ const RideDetails = ({ rideEstimation, passengerCount, setPassengerCount, isLoad
                                     <p className="font-semibold text-[#4A4E69]">Precio</p>
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-[#F2B134]">{getPriceDisplay()}</p>
+                                    <p className="text-2xl font-bold text-[#F2B134]">{priceDisplay}</p>
                                 </div>
                             </div>
                         </div>
@@ -138,7 +149,7 @@ const RideDetails = ({ rideEstimation, passengerCount, setPassengerCount, isLoad
                                     {[3, 4, 5].map((num) => (
                                         <button
                                             key={num}
-                                            onClick={() => setPassengerCount(num)}
+                                            onClick={() => handlePassengerChange(num)}
                                             className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg transition-all ${
                                                 passengerCount === num
                                                     ? 'bg-[#2D5DA1] text-white shadow-md'
@@ -169,4 +180,4 @@ const RideDetails = ({ rideEstimation, passengerCount, setPassengerCount, isLoad
     );
 };
 
-export default RideDetails; 
+export default React.memo(RideDetails); 
