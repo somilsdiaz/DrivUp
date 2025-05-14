@@ -5,6 +5,7 @@ import RideDetails from '../../components/solicitarViaje/RideDetails';
 import MapPreview from '../../components/solicitarViaje/MapPreview';
 import RequestStatus from '../../components/solicitarViaje/RequestStatus';
 import DriverInfo from '../../components/solicitarViaje/DriverInfo';
+import ErrorModal from '../../components/solicitarViaje/ErrorModal';
 import { getUserId } from '../../utils/auth';
 
 interface ConcentrationPoint {
@@ -69,6 +70,7 @@ const SolicitarViaje = () => {
     const [concentrationPoints, setConcentrationPoints] = useState<ConcentrationPoint[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [originCoords, setOriginCoords] = useState<string | undefined>(undefined);
     const [destinationCoords, setDestinationCoords] = useState<string | undefined>(undefined);
     const [locationType, setLocationType] = useState<{ origin: string; destination: string }>({
@@ -111,6 +113,17 @@ const SolicitarViaje = () => {
         vehicleFeatures: ['A/C', 'Música', 'Wifi'],
     };
 
+    // Update error handler to show modal
+    const setErrorWithModal = (errorMsg: string) => {
+        setError(errorMsg);
+        setIsErrorModalOpen(true);
+    };
+
+    // Handle closing the error modal
+    const handleCloseErrorModal = () => {
+        setIsErrorModalOpen(false);
+    };
+
     // Fetch concentration points from API
     useEffect(() => {
         const fetchConcentrationPoints = async () => {
@@ -126,7 +139,7 @@ const SolicitarViaje = () => {
                 const data = await response.json();
                 setConcentrationPoints(data);
             } catch (err) {
-                setError('Error al cargar los puntos de concentración');
+                setErrorWithModal('Error al cargar los puntos de concentración');
                 console.error('Error fetching concentration points:', err);
             } finally {
                 setLoading(false);
@@ -226,7 +239,7 @@ const SolicitarViaje = () => {
                 }
             } catch (error) {
                 console.error("Error calculating ride info:", error);
-                setError("Error al calcular información del viaje");
+                setErrorWithModal("Error al calcular información del viaje");
             } finally {
                 setCalculatingRide(false);
             }
@@ -355,13 +368,13 @@ const SolicitarViaje = () => {
 
     const handleSubmitRequest = async () => {
         if (!originCoords || !destinationCoords) {
-            setError("Por favor seleccione origen y destino válidos");
+            setErrorWithModal("Por favor seleccione origen y destino válidos");
             return;
         }
 
         const userId = getUserId();
         if (!userId) {
-            setError("Usuario no autenticado");
+            setErrorWithModal("Usuario no autenticado");
             return;
         }
 
@@ -400,7 +413,7 @@ const SolicitarViaje = () => {
 
             // Validate that at least one point is a concentration point
             if (!isOriginConcentration && !isDestinationConcentration) {
-                setError("Al menos un punto (origen o destino) debe ser un punto de concentración.");
+                setErrorWithModal("Al menos un punto (origen o destino) debe ser un punto de concentración.");
                 setSubmittingRequest(false);
                 return;
             }
@@ -421,13 +434,13 @@ const SolicitarViaje = () => {
 
             // Validate data completeness before sending
             if (isOriginConcentration && !originPointId) {
-                setError("El origen es un punto de concentración pero no se ha identificado el ID del punto.");
+                setErrorWithModal("El origen es un punto de concentración pero no se ha identificado el ID del punto.");
                 setSubmittingRequest(false);
                 return;
             }
 
             if (isDestinationConcentration && !destinationPointId) {
-                setError("El destino es un punto de concentración pero no se ha identificado el ID del punto.");
+                setErrorWithModal("El destino es un punto de concentración pero no se ha identificado el ID del punto.");
                 setSubmittingRequest(false);
                 return;
             }
@@ -452,13 +465,13 @@ const SolicitarViaje = () => {
             console.log("Ride request submitted successfully:", responseData);
 
             // Request submitted successfully
-        setRequestSubmitted(true);
+            setRequestSubmitted(true);
             
             // Simulate driver acceptance (in a real app, this would come from a websocket or polling)
-        setTimeout(() => setRideAccepted(true), 3000);
+            setTimeout(() => setRideAccepted(true), 3000);
         } catch (error) {
             console.error("Error al enviar solicitud de viaje:", error);
-            setError(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
+            setErrorWithModal(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
         } finally {
             setSubmittingRequest(false);
         }
@@ -511,13 +524,13 @@ const SolicitarViaje = () => {
         // Handle different location types
         if (locType === 'current' || locType === 'hcp') {
             // For current location or concentration points, we already have coordinates
-        if (type === 'origin') {
-            setOriginCoords(value);
+            if (type === 'origin') {
+                setOriginCoords(value);
                 if (pointId) {
                     setOriginConcentrationPointId(pointId);
                 }
-        } else if (type === 'destination') {
-            setDestinationCoords(value);
+            } else if (type === 'destination') {
+                setDestinationCoords(value);
                 if (pointId) {
                     setDestinationConcentrationPointId(pointId);
                 }
@@ -543,7 +556,7 @@ const SolicitarViaje = () => {
             }
         } catch (error) {
             console.error(`Error converting ${type} address to coordinates:`, error);
-            setError(`Error al convertir la dirección de ${type === 'origin' ? 'origen' : 'destino'} a coordenadas`);
+            setErrorWithModal(`Error al convertir la dirección de ${type === 'origin' ? 'origen' : 'destino'} a coordenadas`);
         }
     }, 1000); // 1 second delay
 
@@ -592,13 +605,7 @@ const SolicitarViaje = () => {
                                         </div>
                                     )}
                                     
-                                    {error && (
-                                        <div className="p-8 text-center">
-                                            <p className="text-red-500">{error}</p>
-                                        </div>
-                                    )}
-                                    
-                                    {!loading && !error && (
+                                    {!loading && (
                                         <>
                                             <LocationSelector 
                                                 type="origin" 
@@ -648,21 +655,6 @@ const SolicitarViaje = () => {
                                         </>
                                     ) : 'Enviar Solicitud'}
                                 </button>
-                                
-                                {error && (
-                                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-lg">
-                                        <div className="flex">
-                                            <div className="flex-shrink-0">
-                                                <svg className="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <div className="ml-3">
-                                                <p className="text-sm text-red-700">{error}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     ) : (
@@ -679,6 +671,13 @@ const SolicitarViaje = () => {
                         </div>
                     )}
                 </div>
+                
+                {/* Error Modal */}
+                <ErrorModal 
+                    isOpen={isErrorModalOpen} 
+                    message={error || ''} 
+                    onClose={handleCloseErrorModal} 
+                />
             </div>
         </HeaderFooterPasajeros>
     );
