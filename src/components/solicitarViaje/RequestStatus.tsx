@@ -1,8 +1,40 @@
+import { useState } from 'react';
+
 interface RequestStatusProps {
     onCancel: () => void;
+    userId: string | null;
 }
 
-const RequestStatus = ({ onCancel }: RequestStatusProps) => {
+const RequestStatus = ({ onCancel, userId }: RequestStatusProps) => {
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const handleCancelRide = async () => {
+        if (!userId) return;
+        
+        try {
+            setIsCancelling(true);
+            
+            // Call API to cancel the active ride request
+            const response = await fetch(`http://localhost:5000/cancelar-solicitud/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error al cancelar la solicitud');
+            }
+            
+            // Call the parent component's onCancel function
+            onCancel();
+        } catch (error) {
+            console.error('Error cancelling ride request:', error);
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
     return (
         <div className="p-8 text-center">
             <div className="mb-8">
@@ -23,10 +55,19 @@ const RequestStatus = ({ onCancel }: RequestStatusProps) => {
             </div>
 
             <button
-                className="w-full bg-[#FF6B6B] text-white py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#FF6B6B]/90 transition-all duration-200"
-                onClick={onCancel}
+                className="w-full bg-[#FF6B6B] text-white py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#FF6B6B]/90 transition-all duration-200 flex justify-center items-center"
+                onClick={handleCancelRide}
+                disabled={isCancelling}
             >
-                Cancelar Solicitud
+                {isCancelling ? (
+                    <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Cancelando...
+                    </>
+                ) : 'Cancelar Solicitud'}
             </button>
         </div>
     );

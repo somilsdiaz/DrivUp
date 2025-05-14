@@ -89,6 +89,8 @@ const SolicitarViaje = () => {
     const [submittingRequest, setSubmittingRequest] = useState(false);
     const [passengerCount, setPassengerCount] = useState<number>(4);
     const [calculatingRide, setCalculatingRide] = useState<boolean>(false);
+    const [checkingActiveRequest, setCheckingActiveRequest] = useState(true);
+    const [userId, setUserId] = useState<string | null>(null);
 
     // Mock data - will be replaced with real data from API
     const [rideEstimation, setRideEstimation] = useState<RideEstimation>({
@@ -477,7 +479,7 @@ const SolicitarViaje = () => {
         }
     };
 
-    const handleCancelRequest = () => {
+    const handleCancelRequest = async () => {
         setRequestSubmitted(false);
         setRideAccepted(false);
     };
@@ -573,6 +575,41 @@ const SolicitarViaje = () => {
         return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     };
 
+    // Check for active ride requests when component mounts
+    useEffect(() => {
+        const checkActiveRequest = async () => {
+            const id = getUserId();
+            setUserId(id);
+            
+            if (!id) {
+                setCheckingActiveRequest(false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${id}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.tieneSolicitudActiva) {
+                    // User has an active ride request, show the RequestStatus component
+                    setRequestSubmitted(true);
+                }
+            } catch (error) {
+                console.error('Error checking active ride requests:', error);
+                setErrorWithModal('Error al verificar solicitudes de viaje activas');
+            } finally {
+                setCheckingActiveRequest(false);
+            }
+        };
+        
+        checkActiveRequest();
+    }, []);
+
     return (
         <HeaderFooterPasajeros>
             <div className="min-h-screen bg-[#F8F9FA]">
@@ -594,7 +631,26 @@ const SolicitarViaje = () => {
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4">
-                    {!requestSubmitted ? (
+                    {checkingActiveRequest ? (
+                        <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+                            <div className="mb-4">
+                                <div className="w-16 h-16 border-4 border-[#2D5DA1] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                            </div>
+                            <p className="text-[#4A4E69]">Verificando solicitudes activas...</p>
+                        </div>
+                    ) : requestSubmitted ? (
+                        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                            {!rideAccepted ? (
+                                <RequestStatus onCancel={handleCancelRequest} userId={userId} />
+                            ) : (
+                                <DriverInfo 
+                                    driverInfo={driverInfo}
+                                    estimatedArrival={estimatedArrival}
+                                    onCancel={handleCancelRequest}
+                                />
+                            )}
+                        </div>
+                    ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Left Column - Location Selection */}
                             <div className="space-y-8">
@@ -656,18 +712,6 @@ const SolicitarViaje = () => {
                                     ) : 'Enviar Solicitud'}
                                 </button>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                            {!rideAccepted ? (
-                                <RequestStatus onCancel={handleCancelRequest} />
-                            ) : (
-                                <DriverInfo 
-                                    driverInfo={driverInfo}
-                                    estimatedArrival={estimatedArrival}
-                                    onCancel={handleCancelRequest}
-                                />
-                            )}
                         </div>
                     )}
                 </div>
