@@ -15,9 +15,11 @@ interface DriverInfoProps {
     onCancel: () => void;
 }
 
+// componente que muestra la informacion del conductor asignado al pasajero
 const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps) => {
     return (
         <div className="p-8">
+            {/* seccion de mensaje de confirmacion */}
             <div className="text-center mb-8">
                 <div className="w-24 h-24 bg-[#5AAA95] rounded-full flex items-center justify-center mx-auto mb-6">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,6 +30,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps)
                 <p className="text-xl text-[#4A4E69]/80">Tu conductor está en camino</p>
             </div>
 
+            {/* tarjeta con los datos del conductor y vehiculo */}
             <div className="bg-[#F8F9FA] p-8 rounded-xl mb-8">
                 <div className="flex items-center mb-8">
                     <img 
@@ -54,6 +57,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps)
                     </div>
                 </div>
 
+                {/* informacion del vehiculo y tiempos estimados */}
                 <div className="grid grid-cols-2 gap-6">
                     <div className="bg-white p-6 rounded-xl">
                         <p className="text-sm text-[#4A4E69]/60 mb-2">Vehículo</p>
@@ -81,6 +85,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps)
                 </div>
             </div>
 
+            {/* espacio reservado para el mapa */}
             <div className="h-[400px] bg-[#F8F9FA] rounded-xl mb-8 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
@@ -92,6 +97,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps)
                 </div>
             </div>
 
+            {/* boton para cancelar viaje */}
             <button
                 className="w-full bg-[#FF6B6B] text-white py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#FF6B6B]/90 transition-all duration-200"
                 onClick={onCancel}

@@ -52,13 +52,14 @@ interface RideDetailsProps {
     isLoading?: boolean;
 }
 
+// componente que muestra los detalles del viaje, precio, distancia y tiempo estimado
 const RideDetails: React.FC<RideDetailsProps> = ({ 
     rideEstimation, 
     passengerCount, 
     setPassengerCount, 
     isLoading = false 
 }) => {
-    // Format currency - memoize to avoid recreation on every render
+    // funcion para formatear valores monetarios
     const formatCurrency = useMemo(() => {
         return (amount: number) => {
             return new Intl.NumberFormat('es-CO', {
@@ -69,7 +70,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
         };
     }, []);
 
-    // Memoize price display to prevent unnecessary recalculations
+    // calcula el precio a mostrar (o mensaje de carga)
     const priceDisplay = useMemo(() => {
         if (isLoading) {
             return "Calculando...";
@@ -78,7 +79,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
         return rideEstimation.price;
     }, [isLoading, rideEstimation.price]);
 
-    // Handle passenger count change without full rerender
+    // actualiza el numero de pasajeros sin volver a renderizar todo
     const handlePassengerChange = (count: number) => {
         if (count !== passengerCount) {
             setPassengerCount(count);
@@ -96,7 +97,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                     </div>
                 ) : (
                     <>
-                        {/* Info elements with price highlighted */}
+                        {/* tarjeta con precio destacado */}
                         <div className="mb-6">
                             <div className="bg-[#F8F9FA] p-6 rounded-xl mb-4 border-l-4 border-[#F2B134]">
                                 <div className="flex items-center mb-3">
@@ -110,6 +111,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                                 </div>
                             </div>
                             
+                            {/* tarjetas con distancia y tiempo */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-[#F8F9FA] p-6 rounded-xl">
                                     <div className="flex items-center mb-3">
@@ -140,7 +142,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                             </div>
                         </div>
 
-                        {/* Passenger selection with improved message */}
+                        {/* selector de numero de pasajeros */}
                         <div className="bg-[#F8F9FA] p-6 rounded-xl">
                             <div className="flex items-center mb-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#4A4E69] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -149,6 +151,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                                 <p className="font-semibold text-[#4A4E69]">Número de pasajeros</p>
                             </div>
                             
+                            {/* mensaje informativo sobre precios compartidos */}
                             <div className="mb-4 p-4 bg-[#2D5DA1]/10 rounded-lg border-l-4 border-[#2D5DA1]">
                                 <p className="text-sm text-[#4A4E69]">
                                     <span className="font-semibold">¡Ahorra compartiendo!</span> Dependiendo de la cantidad de personas del viaje compartido, el precio del viaje puede disminuir. Prueba esta herramienta para que compares los precios. Nuestro sistema buscará emparejarte con el máximo número de pasajeros para que se minimice el precio a pagar.
@@ -156,6 +159,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                                 </p>
                             </div>
                             
+                            {/* botones para seleccionar cantidad de pasajeros */}
                             <div className="flex justify-between items-center">
                                 <div className="flex space-x-4">
                                     {[3, 4, 5].map((num) => (
@@ -173,6 +177,7 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                                     ))}
                                 </div>
                                 
+                                {/* muestra precio estimado para la cantidad de pasajeros seleccionada */}
                                 {rideEstimation.alternativeOptions && 
                                  rideEstimation.alternativeOptions[`pasajeros_${passengerCount}`] && (
                                     <div className="text-right">

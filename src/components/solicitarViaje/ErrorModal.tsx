@@ -6,18 +6,20 @@ interface ErrorModalProps {
   isOpen: boolean;
 }
 
+// componente modal que muestra mensajes de error
 const ErrorModal: React.FC<ErrorModalProps> = ({ message, onClose, isOpen }) => {
+  // si no esta abierto, no renderizar nada
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Semi-transparent overlay */}
+      {/* capa semitransparente que oscurece el fondo */}
       <div 
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       ></div>
 
-      {/* Modal content */}
+      {/* contenido del modal */}
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md z-10 mx-4 animate-fadeIn">
         <div className="flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">

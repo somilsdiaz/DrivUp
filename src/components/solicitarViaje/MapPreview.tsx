@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Leaf marker icons fix
+// correccion para los iconos de marcadores en leaflet
 const createLeafletIcon = (color: string) => new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -23,6 +23,7 @@ interface MapPreviewProps {
     destinationCoords?: string;
 }
 
+// componente que muestra un mapa con la ruta entre el origen y destino
 const MapPreview = ({
     title = "Mapa con ruta prevista",
     originCoords,
@@ -38,14 +39,15 @@ const MapPreview = ({
     const destinationTimeoutRef = useRef<number | null>(null);
     const [debugInfo, setDebugInfo] = useState<string>('');
 
-    // Default position (Barranquilla, Colombia)
+    // posicion por defecto (barranquilla, colombia)
     const defaultPosition: Coordinates = { lat: 11.0041, lng: -74.8070 };
 
-    // Función de debug para entender el estado de la carga
+    // funcion para registrar informacion de depuracion
     const addDebugInfo = (info: string) => {
         setDebugInfo(prev => `${prev}\n${info}`);
     };
 
+    // procesa las coordenadas de origen y destino cuando cambian
     useEffect(() => {
         const processOriginCoordinates = async () => {
             if (!originCoords) return;
@@ -55,7 +57,7 @@ const MapPreview = ({
                 setError(null);
                 addDebugInfo(`Procesando origen: ${originCoords}`);
                 
-                // Handle "Mi ubicación actual" format (from navigator.geolocation)
+                // procesa coordenadas directas (formato latitud,longitud)
                 if (originCoords.includes(',')) {
                     const [lat, lng] = originCoords.split(',').map(coord => parseFloat(coord.trim()));
                     if (!isNaN(lat) && !isNaN(lng)) {
@@ -66,24 +68,23 @@ const MapPreview = ({
                     }
                 }
                 
-                // If input is 'manual' or type "hcp", don't attempt geocoding if empty
+                // omite geocodificacion para entradas vacías
                 if (originCoords === 'manual' || originCoords === 'hcp' || originCoords.trim() === '') {
                     addDebugInfo('Origen tipo "manual" o "hcp" sin dirección, no se procesa');
                     setLoading(false);
                     return;
                 }
                 
-                // Handle manual address through API
-                // Clear previous timeout
+                // procesa direccion manual mediante la api
                 if (originTimeoutRef.current) {
                     clearTimeout(originTimeoutRef.current);
                 }
                 
-                // Set a delay to avoid making too many requests while user is typing
+                // retrasa la solicitud para evitar demasiadas llamadas mientras el usuario escribe
                 originTimeoutRef.current = window.setTimeout(async () => {
                     try {
                         addDebugInfo(`Enviando solicitud para origen: ${originCoords}`);
-                        const response = await fetch('http://localhost:5000/direccion-a-coordenadas', {
+                        const response = await fetch('https://drivup-backend.onrender.com/direccion-a-coordenadas', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -116,7 +117,7 @@ const MapPreview = ({
                     } finally {
                         setLoading(false);
                     }
-                }, 1000); // Delay de 1 segundo
+                }, 1000);
             } catch (err) {
                 addDebugInfo(`Error general en procesamiento de origen: ${err}`);
                 console.error("Error al procesar coordenadas de origen:", err);
@@ -125,7 +126,9 @@ const MapPreview = ({
             }
         };
         
+        // logica similar para procesar coordenadas de destino
         const processDestinationCoordinates = async () => {
+            // codigo similar al de origen, pero para destino
             if (!destinationCoords) return;
             
             try {
@@ -133,7 +136,6 @@ const MapPreview = ({
                 setError(null);
                 addDebugInfo(`Procesando destino: ${destinationCoords}`);
                 
-                // Handle coordinates directly format
                 if (destinationCoords.includes(',')) {
                     const [lat, lng] = destinationCoords.split(',').map(coord => parseFloat(coord.trim()));
                     if (!isNaN(lat) && !isNaN(lng)) {
@@ -144,24 +146,20 @@ const MapPreview = ({
                     }
                 }
                 
-                // If input is 'manual' or type "hcp", don't attempt geocoding if empty
                 if (destinationCoords === 'manual' || destinationCoords === 'hcp' || destinationCoords.trim() === '') {
                     addDebugInfo('Destino tipo "manual" o "hcp" sin dirección, no se procesa');
                     setLoading(false);
                     return;
                 }
                 
-                // Handle manual address through API
-                // Clear previous timeout
                 if (destinationTimeoutRef.current) {
                     clearTimeout(destinationTimeoutRef.current);
                 }
                 
-                // Set a delay to avoid making too many requests while user is typing
                 destinationTimeoutRef.current = window.setTimeout(async () => {
                     try {
                         addDebugInfo(`Enviando solicitud para destino: ${destinationCoords}`);
-                        const response = await fetch('http://localhost:5000/direccion-a-coordenadas', {
+                        const response = await fetch('https://drivup-backend.onrender.com/direccion-a-coordenadas', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -194,7 +192,7 @@ const MapPreview = ({
                     } finally {
                         setLoading(false);
                     }
-                }, 1000); // Delay de 1 segundo
+                }, 1000);
             } catch (err) {
                 addDebugInfo(`Error general en procesamiento de destino: ${err}`);
                 console.error("Error al procesar coordenadas de destino:", err);
@@ -215,7 +213,7 @@ const MapPreview = ({
             addDebugInfo('No hay coordenadas de destino');
         }
         
-        // Cleanup function to clear any pending timeouts
+        // limpia los timeouts pendientes
         return () => {
             if (originTimeoutRef.current) {
                 clearTimeout(originTimeoutRef.current);
@@ -226,7 +224,7 @@ const MapPreview = ({
         };
     }, [originCoords, destinationCoords]);
 
-    // Calculate the center and zoom based on available coordinates
+    // calcula el centro y zoom del mapa segun las coordenadas disponibles
     const getMapConfig = () => {
         if (origin && destination) {
             const center = {
@@ -243,13 +241,13 @@ const MapPreview = ({
         }
     };
 
-    // Initialize the map with vanilla Leaflet (bypassing React components entirely)
+    // inicializa el mapa con leaflet cuando cambian las coordenadas
     useEffect(() => {
         const initializeMap = () => {
             try {
                 addDebugInfo('Intentando inicializar mapa...');
                 
-                // Si no hay origen ni destino y no está cargando o con error, mostramos el mensaje inicial
+                // verifica si hay datos suficientes para mostrar el mapa
                 if (!origin && !destination) {
                     addDebugInfo('No hay origen ni destino para mostrar en el mapa');
                     setLoading(false);
@@ -266,32 +264,32 @@ const MapPreview = ({
                     return;
                 }
                 
-                // Verificamos si el elemento del DOM está presente
+                // verifica si el contenedor del mapa esta disponible
                 if (!mapContainerRef.current) {
                     addDebugInfo('El contenedor del mapa no está disponible');
                     return;
                 }
                 
-                // Limpiamos cualquier mapa previo
+                // limpia el mapa anterior si existe
                 if (mapInstanceRef.current) {
                     addDebugInfo('Limpiando mapa anterior');
                     mapInstanceRef.current.remove();
                     mapInstanceRef.current = null;
                 }
 
-                // Configuramos el mapa
+                // configura el mapa con las coordenadas disponibles
                 const { center, zoom } = getMapConfig();
                 addDebugInfo(`Creando mapa con centro: ${center.lat}, ${center.lng}, zoom: ${zoom}`);
                 
-                // Creamos la instancia de mapa
+                // crea la instancia del mapa
                 const map = L.map(mapContainerRef.current).setView([center.lat, center.lng], zoom);
                 
-                // Añadimos la capa de tiles
+                // agrega capa de openstreetmap
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
                 
-                // Añadimos marcador de origen si existe
+                // agrega marcador para el origen
                 if (origin) {
                     addDebugInfo(`Añadiendo marcador de origen: ${origin.lat}, ${origin.lng}`);
                     const originMarker = L.marker([origin.lat, origin.lng], { 
@@ -300,7 +298,7 @@ const MapPreview = ({
                     originMarker.bindPopup('Origen').openPopup();
                 }
                 
-                // Añadimos marcador de destino si existe
+                // agrega marcador para el destino
                 if (destination) {
                     addDebugInfo(`Añadiendo marcador de destino: ${destination.lat}, ${destination.lng}`);
                     const destMarker = L.marker([destination.lat, destination.lng], { 
@@ -309,7 +307,7 @@ const MapPreview = ({
                     destMarker.bindPopup('Destino');
                 }
                 
-                // Añadimos línea entre puntos si ambos existen
+                // dibuja una linea entre origen y destino
                 if (origin && destination) {
                     addDebugInfo('Añadiendo línea entre puntos');
                     L.polyline(
@@ -323,10 +321,10 @@ const MapPreview = ({
                     ).addTo(map);
                 }
                 
-                // Guardamos la instancia del mapa para limpieza posterior
+                // guarda la instancia del mapa para limpiar despues
                 mapInstanceRef.current = map;
                 
-                // Refrescamos el mapa para asegurar que se dibuje correctamente
+                // actualiza el tamaño del mapa para evitar problemas de renderizado
                 setTimeout(() => {
                     if (mapInstanceRef.current) {
                         mapInstanceRef.current.invalidateSize();
@@ -342,7 +340,7 @@ const MapPreview = ({
 
         initializeMap();
         
-        // Cleanup function
+        // limpia el mapa al desmontar el componente
         return () => {
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.remove();
@@ -355,6 +353,7 @@ const MapPreview = ({
     return (
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="h-[400px] bg-[#F8F9FA] relative">
+                {/* indicador de carga */}
                 {loading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
                         <div className="text-center">
@@ -367,6 +366,7 @@ const MapPreview = ({
                     </div>
                 )}
 
+                {/* mensaje de error */}
                 {error && (
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center p-4 bg-red-50 rounded-lg max-w-md">
@@ -378,6 +378,7 @@ const MapPreview = ({
                     </div>
                 )}
 
+                {/* mensaje cuando no hay coordenadas */}
                 {!origin && !destination && !loading && !error && (
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
@@ -390,7 +391,7 @@ const MapPreview = ({
                     </div>
                 )}
 
-                {/* Contenedor del mapa */}
+                {/* contenedor para el mapa de leaflet */}
                 <div
                     ref={mapContainerRef}
                     className="h-full w-full"
@@ -400,7 +401,7 @@ const MapPreview = ({
                     }}
                 ></div>
                 
-                {/* La sección de depuración está desactivada - Activar solo para desarrollo */}
+                {/* panel de depuracion (desactivado) */}
                 {false && (
                     <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 z-50 text-xs max-h-[150px] overflow-auto">
                         <pre>{debugInfo}</pre>

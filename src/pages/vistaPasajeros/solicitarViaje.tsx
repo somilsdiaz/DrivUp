@@ -62,7 +62,9 @@ interface RideEstimation {
     };
 }
 
+// pagina principal para solicitar un viaje
 const SolicitarViaje = () => {
+    // estados para el flujo de la solicitud
     const [requestSubmitted, setRequestSubmitted] = useState(false);
     const [rideAccepted, setRideAccepted] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -71,6 +73,8 @@ const SolicitarViaje = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    
+    // estados para las coordenadas y tipos de ubicacion
     const [originCoords, setOriginCoords] = useState<string | undefined>(undefined);
     const [destinationCoords, setDestinationCoords] = useState<string | undefined>(undefined);
     const [locationType, setLocationType] = useState<{ origin: string; destination: string }>({
@@ -86,13 +90,15 @@ const SolicitarViaje = () => {
     });
     const [originConcentrationPointId, setOriginConcentrationPointId] = useState<number | null>(null);
     const [destinationConcentrationPointId, setDestinationConcentrationPointId] = useState<number | null>(null);
+    
+    // estados para el proceso de solicitud
     const [submittingRequest, setSubmittingRequest] = useState(false);
     const [passengerCount, setPassengerCount] = useState<number>(4);
     const [calculatingRide, setCalculatingRide] = useState<boolean>(false);
     const [checkingActiveRequest, setCheckingActiveRequest] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
 
-    // Mock data - will be replaced with real data from API
+    // datos iniciales de estimacion del viaje
     const [rideEstimation, setRideEstimation] = useState<RideEstimation>({
         distance: '0 km',
         duration: '0 min',
@@ -102,6 +108,7 @@ const SolicitarViaje = () => {
         totalPrice: 0,
     });
 
+    // datos de ejemplo del conductor
     const driverInfo = {
         name: 'Carlos Rodriguez',
         rating: 4.8,
@@ -115,24 +122,24 @@ const SolicitarViaje = () => {
         vehicleFeatures: ['A/C', 'Música', 'Wifi'],
     };
 
-    // Update error handler to show modal
+    // funcion para mostrar errores en el modal
     const setErrorWithModal = (errorMsg: string) => {
         setError(errorMsg);
         setIsErrorModalOpen(true);
     };
 
-    // Handle closing the error modal
+    // cerrar el modal de error
     const handleCloseErrorModal = () => {
         setIsErrorModalOpen(false);
     };
 
-    // Fetch concentration points from API
+    // obtener los puntos de concentracion de la api
     useEffect(() => {
         const fetchConcentrationPoints = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await fetch('http://localhost:5000/puntos-concentracion');
+                const response = await fetch('https://drivup-backend.onrender.com/puntos-concentracion');
                 
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -151,7 +158,7 @@ const SolicitarViaje = () => {
         fetchConcentrationPoints();
     }, []);
 
-    // Update time every minute
+    // actualizar hora cada minuto
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(new Date());
@@ -159,7 +166,7 @@ const SolicitarViaje = () => {
         return () => clearInterval(timer);
     }, []);
 
-    // Calculate estimated arrival time
+    // calcular hora estimada de llegada
     useEffect(() => {
         if (rideEstimation.duration) {
             const [minutes] = rideEstimation.duration.split(' ');
@@ -169,7 +176,7 @@ const SolicitarViaje = () => {
         }
     }, [rideEstimation.duration]);
 
-    // Calculate ride information when origin or destination coordinates change
+    // calcular informacion del viaje cuando cambian origen o destino
     useEffect(() => {
         const calculateRideInfo = async () => {
             if (!originCoords || !destinationCoords) {
@@ -182,7 +189,7 @@ const SolicitarViaje = () => {
                 const [originLat, originLon] = originCoords.split(',');
                 const [destLat, destLon] = destinationCoords.split(',');
                 
-                // Check if coordinates are valid
+                // verifica que las coordenadas sean validas
                 if (!originLat || !originLon || !destLat || !destLon) {
                     return;
                 }
@@ -194,10 +201,10 @@ const SolicitarViaje = () => {
                     destino_lon: destLon,
                     es_origen_concentracion: locationType.origin === 'hcp',
                     es_destino_concentracion: locationType.destination === 'hcp'
-                    // Removed num_pasajeros as we'll handle all passenger scenarios from the response
                 };
                 
-                const response = await fetch("http://localhost:5000/calcular-info-viaje", {
+                // llamada a la api para calcular informacion del viaje
+                const response = await fetch("https://drivup-backend.onrender.com/calcular-info-viaje", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -212,7 +219,7 @@ const SolicitarViaje = () => {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Format a nicer price string
+                    // formatea la cadena de precio
                     const formatCurrency = (min: number, max: number) => {
                         const formatter = new Intl.NumberFormat('es-CO', {
                             style: 'currency',
@@ -223,11 +230,11 @@ const SolicitarViaje = () => {
                         return `${formatter.format(min)} - ${formatter.format(max)}`;
                     };
                     
-                    // Get ride info based on current passenger count
+                    // obtiene la informacion para el numero de pasajeros seleccionado
                     const selectedScenario = `pasajeros_${passengerCount}`;
                     const rideInfo = data.escenarios[selectedScenario] || data.info_viaje;
                     
-                    // Update ride estimation
+                    // actualiza la estimacion del viaje
                     setRideEstimation({
                         distance: `${rideInfo.distancia.kilometros.toFixed(1)} km`,
                         duration: `${rideInfo.tiempo.tiempoTotalMinutos} min`,
@@ -248,11 +255,11 @@ const SolicitarViaje = () => {
         };
         
         calculateRideInfo();
-    }, [originCoords, destinationCoords, locationType.origin, locationType.destination]); // Removed passengerCount
+    }, [originCoords, destinationCoords, locationType.origin, locationType.destination]);
 
-    // Update price when passenger count changes without making a new API call
+    // actualizar precio cuando cambia el numero de pasajeros
     useEffect(() => {
-        // Skip if we don't have alternative options yet or detailedData
+        // si no hay opciones alternativas o datos detallados, no hacer nada
         if (!rideEstimation.alternativeOptions || !rideEstimation.detailedData) return;
         
         const selectedScenario = `pasajeros_${passengerCount}`;
@@ -269,8 +276,7 @@ const SolicitarViaje = () => {
                 return `${formatter.format(min)} - ${formatter.format(max)}`;
             };
             
-            // Instead of updating the complex nested structure, let's just update 
-            // the price display and use the already calculated scenario data for display
+            // actualiza solo el precio sin recalcular todo
             setRideEstimation(prev => {
                 return {
                     ...prev,
@@ -281,10 +287,10 @@ const SolicitarViaje = () => {
         }
     }, [passengerCount, rideEstimation.alternativeOptions]);
 
-    // Check if coordinates belong to a concentration point
+    // verifica si las coordenadas pertenecen a un punto de concentracion
     const isConcentrationPoint = async (lat: string, lon: string): Promise<boolean> => {
         try {
-            const response = await fetch(`http://localhost:5000/verificar-punto-concentracion?lat=${lat}&lon=${lon}`);
+            const response = await fetch(`https://drivup-backend.onrender.com/verificar-punto-concentracion?lat=${lat}&lon=${lon}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -296,10 +302,10 @@ const SolicitarViaje = () => {
         }
     };
 
-    // Convert address to coordinates
+    // convierte direccion a coordenadas
     const convertAddressToCoordinates = async (address: string): Promise<{lat: string, lon: string} | null> => {
         try {
-            const response = await fetch("http://localhost:5000/direccion-a-coordenadas", {
+            const response = await fetch("https://drivup-backend.onrender.com/direccion-a-coordenadas", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -325,15 +331,15 @@ const SolicitarViaje = () => {
         }
     };
 
-    // Check if coordinates match a concentration point and return its ID
+    // verifica si las coordenadas corresponden a un punto de concentracion y devuelve su ID
     const checkConcentrationPoint = async (lat: string, lon: string): Promise<number | null> => {
         try {
-            // Get if the point is near a concentration point
+            // verifica si el punto esta cerca de un punto de concentracion
             const isNearConcentration = await isConcentrationPoint(lat, lon);
             
             if (isNearConcentration) {
-                // Find the closest concentration point
-                const response = await fetch(`http://localhost:5000/puntos-concentracion-cercanos?lat=${lat}&lon=${lon}&limit=1`);
+                // busca el punto de concentracion mas cercano
+                const response = await fetch(`https://drivup-backend.onrender.com/puntos-concentracion-cercanos?lat=${lat}&lon=${lon}&limit=1`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -353,7 +359,7 @@ const SolicitarViaje = () => {
         }
     };
 
-    // Debounce function to delay API calls
+    // funcion para retrasar llamadas a la api cuando se escriben direcciones
     const useDebounce = (callback: Function, delay: number) => {
         const timeoutRef = useRef<NodeJS.Timeout | null>(null);
         
@@ -368,7 +374,7 @@ const SolicitarViaje = () => {
         }, [callback, delay]);
     };
 
-    // Check for active ride requests when component mounts
+    // verifica si hay solicitudes de viaje activas al cargar el componente
     useEffect(() => {
         const checkActiveRequest = async () => {
             const id = getUserId();
@@ -380,7 +386,7 @@ const SolicitarViaje = () => {
             }
             
             try {
-                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${id}`);
+                const response = await fetch(`https://drivup-backend.onrender.com/verificar-solicitud-activa/${id}`);
                 
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -389,10 +395,10 @@ const SolicitarViaje = () => {
                 const data = await response.json();
                 
                 if (data.success && data.tieneSolicitudActiva) {
-                    // User has an active ride request, show the RequestStatus component
+                    // el usuario tiene una solicitud activa, mostrar componente de estado
                     setRequestSubmitted(true);
                     
-                    // Check if a driver has accepted the ride
+                    // verifica si un conductor ha aceptado el viaje
                     if (data.estadoSolicitud === 'ACEPTADA') {
                         setRideAccepted(true);
                     }
@@ -408,16 +414,16 @@ const SolicitarViaje = () => {
         checkActiveRequest();
     }, []);
 
-    // Poll for ride status updates
+    // consulta periodicamente si la solicitud ha sido aceptada
     useEffect(() => {
-        // Only poll when we have an active request but no driver yet
+        // solo consulta cuando hay una solicitud activa pero sin conductor asignado
         if (!requestSubmitted || rideAccepted || !userId) {
             return;
         }
         
         const checkRideStatus = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${userId}`);
+                const response = await fetch(`https://drivup-backend.onrender.com/verificar-solicitud-activa/${userId}`);
                 
                 if (!response.ok) {
                     return;
@@ -425,7 +431,7 @@ const SolicitarViaje = () => {
                 
                 const data = await response.json();
                 
-                // If a driver has accepted the ride, update the state
+                // si un conductor ha aceptado el viaje, actualiza el estado
                 if (data.success && data.tieneSolicitudActiva && data.estadoSolicitud === 'ACEPTADA') {
                     setRideAccepted(true);
                 }
@@ -434,13 +440,14 @@ const SolicitarViaje = () => {
             }
         };
         
-        // Check every 5 seconds
+        // consulta cada 5 segundos
         const intervalId = setInterval(checkRideStatus, 5000);
         
-        // Cleanup interval on unmount or when status changes
+        // limpia el intervalo al desmontar o cuando cambia el estado
         return () => clearInterval(intervalId);
     }, [requestSubmitted, rideAccepted, userId]);
 
+    // envia la solicitud de viaje al backend
     const handleSubmitRequest = async () => {
         if (!originCoords || !destinationCoords) {
             setErrorWithModal("Por favor seleccione origen y destino válidos");
@@ -457,19 +464,19 @@ const SolicitarViaje = () => {
         setError(null);
 
         try {
-            // Parse coordinates
+            // extrae las coordenadas
             const [originLat, originLon] = originCoords.split(',');
             const [destLat, destLon] = destinationCoords.split(',');
 
-            // Determine if origin is a concentration point
+            // determina si el origen es un punto de concentracion
             let isOriginConcentration = locationType.origin === 'hcp';
             let originPointId = originConcentrationPointId;
 
-            // Determine if destination is a concentration point
+            // determina si el destino es un punto de concentracion
             let isDestinationConcentration = locationType.destination === 'hcp';
             let destinationPointId = destinationConcentrationPointId;
 
-            // If the user hasn't explicitly selected a concentration point, check if the coordinates match one
+            // si el usuario no ha seleccionado explicitamente un punto de concentracion, verifica si las coordenadas coinciden
             if (!isOriginConcentration) {
                 const nearPointId = await checkConcentrationPoint(originLat, originLon);
                 if (nearPointId) {
@@ -486,14 +493,14 @@ const SolicitarViaje = () => {
                 }
             }
 
-            // Validate that at least one point is a concentration point
+            // valida que al menos un punto sea un punto de concentracion
             if (!isOriginConcentration && !isDestinationConcentration) {
                 setErrorWithModal("Al menos un punto (origen o destino) debe ser un punto de concentración.");
                 setSubmittingRequest(false);
                 return;
             }
 
-            // Create request body
+            // crea el cuerpo de la solicitud
             const requestBody = {
                 pasajero_id: parseInt(userId),
                 origen_lat: parseFloat(originLat),
@@ -507,7 +514,7 @@ const SolicitarViaje = () => {
                 num_pasajeros: passengerCount
             };
 
-            // Validate data completeness before sending
+            // valida que los datos esten completos antes de enviar
             if (isOriginConcentration && !originPointId) {
                 setErrorWithModal("El origen es un punto de concentración pero no se ha identificado el ID del punto.");
                 setSubmittingRequest(false);
@@ -522,8 +529,8 @@ const SolicitarViaje = () => {
 
             console.log("Sending ride request:", requestBody);
 
-            // Send request to API
-            const response = await fetch("http://localhost:5000/solicitudes-viaje", {
+            // envia la solicitud a la api
+            const response = await fetch("https://drivup-backend.onrender.com/solicitudes-viaje", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -539,8 +546,8 @@ const SolicitarViaje = () => {
             const responseData = await response.json();
             console.log("Ride request submitted successfully:", responseData);
 
-            // Request submitted successfully
-        setRequestSubmitted(true);
+            // solicitud enviada correctamente
+            setRequestSubmitted(true);
         } catch (error) {
             console.error("Error al enviar solicitud de viaje:", error);
             setErrorWithModal(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
@@ -549,42 +556,43 @@ const SolicitarViaje = () => {
         }
     };
 
+    // maneja la cancelacion de una solicitud
     const handleCancelRequest = async () => {
         setRequestSubmitted(false);
         setRideAccepted(false);
     };
 
+    // maneja los cambios en la seleccion de ubicacion
     const handleLocationChange = async (type: string, value: string, locType?: string, pointId?: number) => {
-        // Handle location changes here
         console.log(`Location ${type} changed to:`, value, locType);
         
-        // Update the location type
+        // actualiza el tipo de ubicacion
         if (locType) {
             setLocationType(prev => ({ ...prev, [type]: locType }));
             
-            // Update disabled options based on the origin selection
+            // actualiza las opciones deshabilitadas segun la seleccion de origen
             if (type === 'origin') {
                 if (locType === 'hcp') {
-                    // If origin is concentration point, only manual address is allowed for destination
+                    // si el origen es punto de concentracion, solo se permite direccion manual para destino
                     setDisabledOptions({
                         origin: [],
                         destination: ['hcp']
                     });
                     
-                    // If destination was previously set to hcp, change it to manual
+                    // si el destino estaba establecido como punto de concentracion, cambiarlo a manual
                     if (locationType.destination === 'hcp') {
                         setLocationType(prev => ({ ...prev, destination: 'manual' }));
                         setDestinationConcentrationPointId(null);
                         setDestinationCoords(undefined);
                     }
                 } else {
-                    // If origin is current or manual, only concentration point is allowed for destination
+                    // si el origen es ubicacion actual o manual, solo se permite punto de concentracion para destino
                     setDisabledOptions({
                         origin: [],
                         destination: ['manual', 'current']
                     });
                     
-                    // If destination was previously set to manual, change it to hcp
+                    // si el destino estaba establecido como manual, cambiarlo a punto de concentracion
                     if (locationType.destination === 'manual') {
                         setLocationType(prev => ({ ...prev, destination: 'hcp' }));
                         setDestinationCoords(undefined);
@@ -593,16 +601,16 @@ const SolicitarViaje = () => {
             }
         }
         
-        // Handle different location types
+        // maneja diferentes tipos de ubicacion
         if (locType === 'current' || locType === 'hcp') {
-            // For current location or concentration points, we already have coordinates
-        if (type === 'origin') {
-            setOriginCoords(value);
+            // para ubicacion actual o puntos de concentracion, ya tenemos las coordenadas
+            if (type === 'origin') {
+                setOriginCoords(value);
                 if (pointId) {
                     setOriginConcentrationPointId(pointId);
                 }
-        } else if (type === 'destination') {
-            setDestinationCoords(value);
+            } else if (type === 'destination') {
+                setDestinationCoords(value);
                 if (pointId) {
                     setDestinationConcentrationPointId(pointId);
                 }
@@ -610,7 +618,7 @@ const SolicitarViaje = () => {
         }
     };
 
-    // Process manual address after typing has stopped
+    // procesa la direccion manual despues de que el usuario deja de escribir
     const processManualAddress = useDebounce(async (type: string, value: string) => {
         if (value.trim() === '') return;
         
@@ -630,18 +638,18 @@ const SolicitarViaje = () => {
             console.error(`Error converting ${type} address to coordinates:`, error);
             setErrorWithModal(`Error al convertir la dirección de ${type === 'origin' ? 'origen' : 'destino'} a coordenadas`);
         }
-    }, 1000); // 1 second delay
+    }, 1000); // 1 segundo de retraso
 
-    // Handle manual address input
+    // maneja la entrada de direccion manual
     const handleManualAddressInput = (type: string, value: string) => {
-        // Just update the location type, but don't trigger coordinate conversion yet
+        // solo actualiza el tipo de ubicacion, pero no activa la conversion de coordenadas todavia
         if (type === 'origin' || type === 'destination') {
-            // Call the debounced function to process the address
+            // llama a la funcion retrasada para procesar la direccion
             processManualAddress(type, value);
         }
     };
 
-    // Update the formatTime function to use 12-hour format
+    // formatea la hora en formato de 12 horas
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString('en-US', { 
             hour: 'numeric', 
@@ -653,7 +661,7 @@ const SolicitarViaje = () => {
     return (
         <HeaderFooterPasajeros>
             <div className="min-h-screen bg-[#F8F9FA]">
-                {/* Header Section with Gradient - Full Width */}
+                {/* seccion de encabezado con degradado */}
                 <div className="w-full bg-gradient-to-r from-[#2D5DA1] to-[#5AAA95] p-6 mb-6 relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
                     <div className="max-w-7xl mx-auto relative">
@@ -672,6 +680,7 @@ const SolicitarViaje = () => {
 
                 <div className="max-w-7xl mx-auto px-4">
                     {checkingActiveRequest ? (
+                        // pantalla de carga mientras se verifica si hay solicitudes activas
                         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
                             <div className="mb-4">
                                 <div className="w-16 h-16 border-4 border-[#2D5DA1] border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -679,6 +688,7 @@ const SolicitarViaje = () => {
                             <p className="text-[#4A4E69]">Verificando solicitudes activas...</p>
                         </div>
                     ) : requestSubmitted ? (
+                        // muestra el estado de la solicitud o informacion del conductor
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                             {!rideAccepted ? (
                                 <RequestStatus onCancel={handleCancelRequest} userId={userId} />
@@ -691,8 +701,9 @@ const SolicitarViaje = () => {
                             )}
                         </div>
                     ) : (
+                        // formulario de solicitud de viaje
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Left Column - Location Selection */}
+                            {/* columna izquierda - seleccion de ubicacion */}
                             <div className="space-y-8">
                                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                                     {loading && (
@@ -724,7 +735,7 @@ const SolicitarViaje = () => {
                                 </div>
                             </div>
 
-                            {/* Right Column - Map and Details */}
+                            {/* columna derecha - mapa y detalles */}
                             <div className="space-y-8">
                                 <MapPreview 
                                     originCoords={originCoords} 
@@ -756,7 +767,7 @@ const SolicitarViaje = () => {
                     )}
                 </div>
                 
-                {/* Error Modal */}
+                {/* modal de error */}
                 <ErrorModal 
                     isOpen={isErrorModalOpen} 
                     message={error || ''} 

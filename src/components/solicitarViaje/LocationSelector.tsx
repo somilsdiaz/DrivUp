@@ -38,6 +38,7 @@ interface AddressInfo {
     };
 }
 
+// componente para seleccionar ubicaciones (origen o destino)
 const LocationSelector = ({ 
     type, 
     onLocationChange, 
@@ -46,6 +47,7 @@ const LocationSelector = ({
     disabledOptions = [],
     selectedLocationType
 }: LocationSelectorProps) => {
+    // estado para el tipo de ubicacion (current, manual, hcp)
     const [locationType, setLocationType] = useState(type === 'origin' ? 'current' : 'manual');
     const [manualAddress, setManualAddress] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -58,21 +60,21 @@ const LocationSelector = ({
     const [isLoadingAddress, setIsLoadingAddress] = useState(false);
     const itemsPerPage = 3;
 
-    // Sync the local locationType with parent component's selectedLocationType if provided
+    // sincroniza el tipo de ubicacion con el seleccionado por el componente padre
     useEffect(() => {
         if (selectedLocationType && selectedLocationType !== locationType) {
             setLocationType(selectedLocationType);
         }
     }, [selectedLocationType]);
 
-    // Request location when component mounts if type is origin
+    // solicita la ubicacion actual al iniciar si el tipo es origen
     useEffect(() => {
         if (type === 'origin') {
             handleLocationTypeChange('current');
         }
     }, []); // Empty dependency array means this runs once when component mounts
 
-    // Filter points based on search term
+    // filtra puntos de concentracion segun el termino de busqueda
     useEffect(() => {
         if (searchTerm.trim() === '') {
             setFilteredPoints(concentrationPoints);
@@ -83,11 +85,11 @@ const LocationSelector = ({
             );
             setFilteredPoints(filtered);
         }
-        // Reset to first page when search term changes
+        // vuelve a la primera pagina al cambiar la busqueda
         setCurrentPage(1);
     }, [searchTerm, concentrationPoints]);
 
-    // Fetch address from coordinates
+    // obtiene la direccion a partir de coordenadas
     useEffect(() => {
         const fetchAddress = async () => {
             if (!currentLocation) return;
@@ -95,7 +97,7 @@ const LocationSelector = ({
             try {
                 setIsLoadingAddress(true);
                 const response = await fetch(
-                    `http://localhost:5000/coordenadas-a-direccion?lat=${currentLocation.latitude}&lon=${currentLocation.longitude}`
+                    `https://drivup-backend.onrender.com/coordenadas-a-direccion?lat=${currentLocation.latitude}&lon=${currentLocation.longitude}`
                 );
                 
                 if (!response.ok) {
@@ -121,20 +123,22 @@ const LocationSelector = ({
         }
     }, [currentLocation]);
 
+    // devuelve los puntos paginados
     const getPaginatedPoints = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredPoints.slice(startIndex, startIndex + itemsPerPage);
     };
 
+    // maneja el cambio de tipo de ubicacion
     const handleLocationTypeChange = async (newType: string) => {
-        // If option is disabled, don't allow selection
+        // si la opcion esta deshabilitada, no permitir seleccion
         if (disabledOptions.includes(newType)) {
             return;
         }
         
         setLocationType(newType);
         
-        // Reset selected point when changing location type
+        // reinicia el punto seleccionado al cambiar el tipo de ubicacion
         if (newType !== 'hcp') {
             setSelectedPointId(null);
         }
@@ -142,6 +146,7 @@ const LocationSelector = ({
         if (newType === 'current') {
             try {
                 setLocationError(null);
+                // solicita la ubicacion actual del navegador
                 const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject, {
                         enableHighAccuracy: true,
@@ -162,51 +167,53 @@ const LocationSelector = ({
                 console.error('Error getting location:', error);
             }
         } else if (newType === 'manual') {
-            // For manual input, we pass the locationType but the value will be updated later
+            // para entrada manual, solo notificamos el cambio de tipo
             if (manualAddress) {
-                // Don't call onLocationChange here to avoid immediate API calls
-                // Just notify that we're now in manual mode
                 onLocationChange(type, '', 'manual');
             } else {
                 onLocationChange(type, '', 'manual');
             }
         } else if (newType === 'hcp') {
             if (selectedPointId) {
-                // If we're switching to concentration point and already have one selected, keep it
+                // si cambiamos a punto de concentracion y ya hay uno seleccionado, lo mantenemos
                 const point = concentrationPoints.find(p => p.id === selectedPointId);
                 if (point) {
                     onLocationChange(type, `${point.latitud},${point.longitud}`, 'hcp', point.id);
                 }
             } else {
-                // Just notify that we're now in hcp mode but no point is selected yet
+                // notificamos que estamos en modo hcp pero aun no hay punto seleccionado
                 onLocationChange(type, '', 'hcp');
             }
         }
     };
 
+    // maneja la seleccion de un punto de concentracion
     const handleSelectPoint = (point: ConcentrationPoint) => {
         setSelectedPointId(point.id);
         onLocationChange(type, `${point.latitud},${point.longitud}`, 'hcp', point.id);
         setLocationType('hcp');
     };
 
+    // maneja el cambio de direccion manual
     const handleManualAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setManualAddress(value);
         
-        // Use the debounced version for address-to-coordinates conversion
+        // usa la version con retraso para la conversion de direccion a coordenadas
         if (onManualAddressInput) {
             onManualAddressInput(type, value);
         } else {
-            // Fallback to old behavior if debounced version not provided
+            // comportamiento alternativo si no se proporciona version con retraso
             onLocationChange(type, value, 'manual');
         }
     };
 
+    // maneja la busqueda de puntos de concentracion
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
 
+    // determina las clases css para los botones segun su estado
     const getButtonClasses = (buttonType: string) => {
         const baseClasses = "px-6 py-3 rounded-full transition-all duration-200";
         const isDisabled = disabledOptions.includes(buttonType);
@@ -227,6 +234,7 @@ const LocationSelector = ({
         return `${baseClasses} bg-[#F8F9FA] text-[#4A4E69] hover:bg-[#2D5DA1]/10`;
     };
 
+    // determina las clases css para las tarjetas de puntos segun su estado
     const getPointCardClasses = (pointId: number) => {
         const baseClasses = "p-4 border rounded-xl transition-all duration-200 cursor-pointer";
         
@@ -243,6 +251,7 @@ const LocationSelector = ({
 
     return (
         <div className="p-8 border-b border-gray-100">
+            {/* cabecera con icono y titulo */}
             <div className="flex items-center mb-6">
                 <div className={`w-12 h-12 rounded-full ${type === 'origin' ? 'bg-[#2D5DA1]/10' : 'bg-[#5AAA95]/10'} flex items-center justify-center mr-4`}>
                     <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${type === 'origin' ? 'text-[#2D5DA1]' : 'text-[#5AAA95]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -253,6 +262,7 @@ const LocationSelector = ({
                 <h2 className="text-2xl font-semibold text-[#4A4E69]">{type === 'origin' ? 'Origen' : 'Destino'}</h2>
             </div>
 
+            {/* botones para seleccionar tipo de ubicacion */}
             <div className="flex flex-wrap gap-3 mb-6">
                 {type === 'origin' && (
                     <>
@@ -297,6 +307,7 @@ const LocationSelector = ({
                 </button>
             </div>
 
+            {/* campo de entrada para direccion manual */}
             {locationType === 'manual' && (
                 <div className="relative">
                     <input
@@ -312,6 +323,7 @@ const LocationSelector = ({
                 </div>
             )}
 
+            {/* seleccion de punto de concentracion */}
             {locationType === 'hcp' && (
                 <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row gap-3">
@@ -329,6 +341,7 @@ const LocationSelector = ({
                         </div>
                     </div>
 
+                    {/* lista de puntos de concentracion */}
                     <div className="space-y-3">
                         {getPaginatedPoints().map(point => (
                             <div 
@@ -353,6 +366,7 @@ const LocationSelector = ({
                         ))}
                     </div>
 
+                    {/* paginacion */}
                     {filteredPoints.length > itemsPerPage && (
                         <div className="flex justify-center gap-2 mt-4">
                             <button
@@ -375,6 +389,7 @@ const LocationSelector = ({
                         </div>
                     )}
 
+                    {/* mensaje cuando no hay resultados */}
                     {filteredPoints.length === 0 && (
                         <div className="text-center py-8 text-[#4A4E69]/60">
                             No se encontraron puntos de concentración

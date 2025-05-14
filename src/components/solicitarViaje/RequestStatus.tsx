@@ -5,17 +5,19 @@ interface RequestStatusProps {
     userId: string | null;
 }
 
+// componente que muestra el estado de la solicitud de viaje mientras se espera un conductor
 const RequestStatus = ({ onCancel, userId }: RequestStatusProps) => {
     const [isCancelling, setIsCancelling] = useState(false);
 
+    // funcion para cancelar la solicitud de viaje en curso
     const handleCancelRide = async () => {
         if (!userId) return;
         
         try {
             setIsCancelling(true);
             
-            // Call API to cancel the active ride request
-            const response = await fetch(`http://localhost:5000/cancelar-solicitud/${userId}`, {
+            // llamada a la api para cancelar la solicitud activa
+            const response = await fetch(`https://drivup-backend.onrender.com/cancelar-solicitud/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -26,7 +28,7 @@ const RequestStatus = ({ onCancel, userId }: RequestStatusProps) => {
                 throw new Error('Error al cancelar la solicitud');
             }
             
-            // Call the parent component's onCancel function
+            // notificar al componente padre que se cancelo la solicitud
             onCancel();
         } catch (error) {
             console.error('Error cancelling ride request:', error);
@@ -37,6 +39,7 @@ const RequestStatus = ({ onCancel, userId }: RequestStatusProps) => {
 
     return (
         <div className="p-8 text-center">
+            {/* animacion de carga */}
             <div className="mb-6">
                 <div className="w-20 h-20 border-4 border-[#2D5DA1] border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
