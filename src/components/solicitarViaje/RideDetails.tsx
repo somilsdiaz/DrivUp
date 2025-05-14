@@ -96,34 +96,9 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-3 gap-6 mb-6">
-                            <div className="bg-[#F8F9FA] p-6 rounded-xl">
-                                <div className="flex items-center mb-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#2D5DA1] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                    </svg>
-                                    <p className="font-semibold text-[#4A4E69]">Distancia</p>
-                                </div>
-                                <p className="text-2xl font-bold text-[#2D5DA1]">
-                                    {rideEstimation.detailedData?.distancia 
-                                        ? `${rideEstimation.detailedData.distancia.kilometros.toFixed(1)} km`
-                                        : rideEstimation.distance}
-                                </p>
-                            </div>
-                            <div className="bg-[#F8F9FA] p-6 rounded-xl">
-                                <div className="flex items-center mb-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#5AAA95] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <p className="font-semibold text-[#4A4E69]">Tiempo</p>
-                                </div>
-                                <p className="text-2xl font-bold text-[#5AAA95]">
-                                    {rideEstimation.detailedData?.tiempo 
-                                        ? `${rideEstimation.detailedData.tiempo.tiempoTotalMinutos} min`
-                                        : rideEstimation.duration}
-                                </p>
-                            </div>
-                            <div className="bg-[#F8F9FA] p-6 rounded-xl">
+                        {/* Info elements with price highlighted */}
+                        <div className="mb-6">
+                            <div className="bg-[#F8F9FA] p-6 rounded-xl mb-4 border-l-4 border-[#F2B134]">
                                 <div className="flex items-center mb-3">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#F2B134] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -131,12 +106,41 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                                     <p className="font-semibold text-[#4A4E69]">Precio</p>
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-[#F2B134]">{priceDisplay}</p>
+                                    <p className="text-3xl font-bold text-[#F2B134]">{priceDisplay}</p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-[#F8F9FA] p-6 rounded-xl">
+                                    <div className="flex items-center mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#2D5DA1] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        </svg>
+                                        <p className="font-semibold text-[#4A4E69]">Distancia</p>
+                                    </div>
+                                    <p className="text-2xl font-bold text-[#2D5DA1]">
+                                        {rideEstimation.detailedData?.distancia 
+                                            ? `${rideEstimation.detailedData.distancia.kilometros.toFixed(1)} km`
+                                            : rideEstimation.distance}
+                                    </p>
+                                </div>
+                                <div className="bg-[#F8F9FA] p-6 rounded-xl">
+                                    <div className="flex items-center mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#5AAA95] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p className="font-semibold text-[#4A4E69]">Tiempo</p>
+                                    </div>
+                                    <p className="text-2xl font-bold text-[#5AAA95]">
+                                        {rideEstimation.detailedData?.tiempo 
+                                            ? `${rideEstimation.detailedData.tiempo.tiempoTotalMinutos} min`
+                                            : rideEstimation.duration}
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Passenger selection */}
+                        {/* Passenger selection with improved message */}
                         <div className="bg-[#F8F9FA] p-6 rounded-xl">
                             <div className="flex items-center mb-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#4A4E69] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,6 +148,14 @@ const RideDetails: React.FC<RideDetailsProps> = ({
                                 </svg>
                                 <p className="font-semibold text-[#4A4E69]">Número de pasajeros</p>
                             </div>
+                            
+                            <div className="mb-4 p-4 bg-[#2D5DA1]/10 rounded-lg border-l-4 border-[#2D5DA1]">
+                                <p className="text-sm text-[#4A4E69]">
+                                    <span className="font-semibold">¡Ahorra compartiendo!</span> Dependiendo de la cantidad de personas del viaje compartido, el precio del viaje puede disminuir. Prueba esta herramienta para que compares los precios. Nuestro sistema buscará emparejarte con el máximo número de pasajeros para que se minimice el precio a pagar.
+                                    <span className="block mt-1 text-xs font-medium">- Equipo de DrivUp</span>
+                                </p>
+                            </div>
+                            
                             <div className="flex justify-between items-center">
                                 <div className="flex space-x-4">
                                     {[3, 4, 5].map((num) => (
