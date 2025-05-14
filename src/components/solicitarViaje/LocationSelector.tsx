@@ -13,7 +13,7 @@ interface ConcentrationPoint {
 
 interface LocationSelectorProps {
     type: 'origin' | 'destination';
-    onLocationChange: (type: string, value: string) => void;
+    onLocationChange: (type: string, value: string, locationType?: string, pointId?: number) => void;
     concentrationPoints?: ConcentrationPoint[];
 }
 
@@ -85,24 +85,39 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
                 };
                 
                 setCurrentLocation(coords);
-                onLocationChange(type, `${coords.latitude},${coords.longitude}`);
+                onLocationChange(type, `${coords.latitude},${coords.longitude}`, 'current');
             } catch (error) {
                 setLocationError('No se pudo obtener tu ubicación. Por favor, verifica que hayas dado permiso de ubicación.');
                 console.error('Error getting location:', error);
             }
-        } else {
-            onLocationChange(type, newType);
+        } else if (newType === 'manual') {
+            // For manual input, we pass the locationType but the value will be updated later
+            if (manualAddress) {
+                onLocationChange(type, manualAddress, 'manual');
+            }
+        } else if (newType === 'hcp' && selectedPointId) {
+            // If we're switching to concentration point and already have one selected, keep it
+            const point = concentrationPoints.find(p => p.id === selectedPointId);
+            if (point) {
+                onLocationChange(type, `${point.latitud},${point.longitud}`, 'hcp', point.id);
+            }
         }
     };
 
     const handleSelectPoint = (point: ConcentrationPoint) => {
         setSelectedPointId(point.id);
-        onLocationChange(type, `${point.latitud},${point.longitud}`);
+        onLocationChange(type, `${point.latitud},${point.longitud}`, 'hcp', point.id);
         setLocationType('hcp');
     };
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
+    };
+
+    const handleManualAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setManualAddress(value);
+        onLocationChange(type, value, 'manual');
     };
 
     const getPointCardClasses = (pointId: number) => {
@@ -185,10 +200,7 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
                         placeholder={`Ingrese dirección de ${type === 'origin' ? 'origen' : 'destino'}`}
                         className="w-full p-4 pl-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5DA1] focus:border-transparent transition-all duration-200"
                         value={manualAddress}
-                        onChange={(e) => {
-                            setManualAddress(e.target.value);
-                            onLocationChange(type, e.target.value);
-                        }}
+                        onChange={handleManualAddressChange}
                     />
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#4A4E69] absolute left-4 top-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
