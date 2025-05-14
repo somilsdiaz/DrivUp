@@ -25,6 +25,19 @@ interface Coordinates {
     longitude: number;
 }
 
+interface AddressInfo {
+    direccion: string;
+    detallesDireccion?: {
+        road?: string;
+        neighbourhood?: string;
+        town?: string;
+        state?: string;
+        region?: string;
+        postcode?: string;
+        country?: string;
+    };
+}
+
 const LocationSelector = ({ 
     type, 
     onLocationChange, 
@@ -41,6 +54,8 @@ const LocationSelector = ({
     const [locationError, setLocationError] = useState<string | null>(null);
     const [filteredPoints, setFilteredPoints] = useState<ConcentrationPoint[]>([]);
     const [selectedPointId, setSelectedPointId] = useState<number | null>(null);
+    const [addressInfo, setAddressInfo] = useState<AddressInfo | null>(null);
+    const [isLoadingAddress, setIsLoadingAddress] = useState(false);
     const itemsPerPage = 3;
 
     // Sync the local locationType with parent component's selectedLocationType if provided
@@ -71,6 +86,40 @@ const LocationSelector = ({
         // Reset to first page when search term changes
         setCurrentPage(1);
     }, [searchTerm, concentrationPoints]);
+
+    // Fetch address from coordinates
+    useEffect(() => {
+        const fetchAddress = async () => {
+            if (!currentLocation) return;
+            
+            try {
+                setIsLoadingAddress(true);
+                const response = await fetch(
+                    `http://localhost:5000/coordenadas-a-direccion?lat=${currentLocation.latitude}&lon=${currentLocation.longitude}`
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Error fetching address');
+                }
+                
+                const data = await response.json();
+                if (data.success) {
+                    setAddressInfo({
+                        direccion: data.direccion,
+                        detallesDireccion: data.detallesDireccion
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching address:', error);
+            } finally {
+                setIsLoadingAddress(false);
+            }
+        };
+        
+        if (currentLocation) {
+            fetchAddress();
+        }
+    }, [currentLocation]);
 
     const getPaginatedPoints = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -220,8 +269,14 @@ const LocationSelector = ({
                             </div>
                         )}
                         {currentLocation && locationType === 'current' && (
-                            <div className="w-full mt-2 text-[#4A4E69] text-sm">
-                                Ubicación actual: {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
+                            <div className="w-full mt-2 ml-3 text-[#4A4E69] text-sm">
+                                {isLoadingAddress ? (
+                                    <span>Obteniendo dirección...</span>
+                                ) : addressInfo ? (
+                                    <>Ubicación actual: {addressInfo.direccion}</>
+                                ) : (
+                                    <>Ubicación actual: {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}</>
+                                )}
                             </div>
                         )}
                     </>
