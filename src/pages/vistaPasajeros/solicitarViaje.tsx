@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import HeaderFooterPasajeros from "../../layouts/headerFooterPasajeros";
 import LocationSelector from '../../components/solicitarViaje/LocationSelector';
 import RideDetails from '../../components/solicitarViaje/RideDetails';
@@ -176,6 +176,21 @@ const SolicitarViaje = () => {
         }
     };
 
+    // Debounce function to delay API calls
+    const useDebounce = (callback: Function, delay: number) => {
+        const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+        
+        return useCallback((...args: any[]) => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+            
+            timeoutRef.current = setTimeout(() => {
+                callback(...args);
+            }, delay);
+        }, [callback, delay]);
+    };
+
     const handleSubmitRequest = async () => {
         if (!originCoords || !destinationCoords) {
             setError("Por favor seleccione origen y destino válidos");
@@ -314,27 +329,37 @@ const SolicitarViaje = () => {
                     setDestinationConcentrationPointId(pointId);
                 }
             }
-        } else if (locType === 'manual') {
-            // For manual address, we need to convert it to coordinates
-            // Store the value for now, but don't set coordinates until it's converted
-            if (value.trim() === '') return;
-            
-            try {
-                const coords = await convertAddressToCoordinates(value);
-                if (coords) {
-                    const coordString = `${coords.lat},${coords.lon}`;
-                    if (type === 'origin') {
-                        setOriginCoords(coordString);
-                        setOriginConcentrationPointId(null);
-                    } else if (type === 'destination') {
-                        setDestinationCoords(coordString);
-                        setDestinationConcentrationPointId(null);
-                    }
+        }
+    };
+
+    // Process manual address after typing has stopped
+    const processManualAddress = useDebounce(async (type: string, value: string) => {
+        if (value.trim() === '') return;
+        
+        try {
+            const coords = await convertAddressToCoordinates(value);
+            if (coords) {
+                const coordString = `${coords.lat},${coords.lon}`;
+                if (type === 'origin') {
+                    setOriginCoords(coordString);
+                    setOriginConcentrationPointId(null);
+                } else if (type === 'destination') {
+                    setDestinationCoords(coordString);
+                    setDestinationConcentrationPointId(null);
                 }
-            } catch (error) {
-                console.error(`Error converting ${type} address to coordinates:`, error);
-                setError(`Error al convertir la dirección de ${type === 'origin' ? 'origen' : 'destino'} a coordenadas`);
             }
+        } catch (error) {
+            console.error(`Error converting ${type} address to coordinates:`, error);
+            setError(`Error al convertir la dirección de ${type === 'origin' ? 'origen' : 'destino'} a coordenadas`);
+        }
+    }, 1000); // 1 second delay
+
+    // Handle manual address input
+    const handleManualAddressInput = (type: string, value: string) => {
+        // Just update the location type, but don't trigger coordinate conversion yet
+        if (type === 'origin' || type === 'destination') {
+            // Call the debounced function to process the address
+            processManualAddress(type, value);
         }
     };
 
@@ -385,11 +410,13 @@ const SolicitarViaje = () => {
                                             <LocationSelector 
                                                 type="origin" 
                                                 onLocationChange={handleLocationChange} 
+                                                onManualAddressInput={handleManualAddressInput}
                                                 concentrationPoints={concentrationPoints}
                                             />
                                             <LocationSelector 
                                                 type="destination" 
                                                 onLocationChange={handleLocationChange} 
+                                                onManualAddressInput={handleManualAddressInput}
                                                 concentrationPoints={concentrationPoints}
                                             />
                                         </>

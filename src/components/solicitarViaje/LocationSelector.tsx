@@ -14,6 +14,7 @@ interface ConcentrationPoint {
 interface LocationSelectorProps {
     type: 'origin' | 'destination';
     onLocationChange: (type: string, value: string, locationType?: string, pointId?: number) => void;
+    onManualAddressInput?: (type: string, value: string) => void;
     concentrationPoints?: ConcentrationPoint[];
 }
 
@@ -22,7 +23,7 @@ interface Coordinates {
     longitude: number;
 }
 
-const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: LocationSelectorProps) => {
+const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concentrationPoints = [] }: LocationSelectorProps) => {
     const [locationType, setLocationType] = useState(type === 'origin' ? 'current' : 'manual');
     const [manualAddress, setManualAddress] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -93,7 +94,9 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
         } else if (newType === 'manual') {
             // For manual input, we pass the locationType but the value will be updated later
             if (manualAddress) {
-                onLocationChange(type, manualAddress, 'manual');
+                // Don't call onLocationChange here to avoid immediate API calls
+                // Just notify that we're now in manual mode
+                onLocationChange(type, '', 'manual');
             }
         } else if (newType === 'hcp' && selectedPointId) {
             // If we're switching to concentration point and already have one selected, keep it
@@ -117,7 +120,14 @@ const LocationSelector = ({ type, onLocationChange, concentrationPoints = [] }: 
     const handleManualAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setManualAddress(value);
-        onLocationChange(type, value, 'manual');
+        
+        // Use the debounced version for address-to-coordinates conversion
+        if (onManualAddressInput) {
+            onManualAddressInput(type, value);
+        } else {
+            // Fallback to old behavior if debounced version not provided
+            onLocationChange(type, value, 'manual');
+        }
     };
 
     const getPointCardClasses = (pointId: number) => {
