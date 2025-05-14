@@ -20,11 +20,25 @@ import PageDetallesConductor from '../pages/pageDetallesConductor';
 import ListaPasajeros from '../pages/vistaConductores/listaPasajeros';
 import { PreferenciasViajes } from '../pages/preferenciasViajes';
 import SolicitarViaje from '../pages/vistaPasajeros/solicitarViaje';
+import ListaViajes from '../pages/vistaConductores/listaViajes';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
     //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
+    {
+        path: "/dashboard/conductor/lista-viajes",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["conductor"]}
+                    redirectPath="/dashboard/conductor"
+                >
+                    <ListaViajes />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
     {
         path: "/dashboard/conductor/lista-pasajeros",
         element:(                 
