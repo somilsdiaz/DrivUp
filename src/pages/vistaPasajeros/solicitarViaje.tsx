@@ -32,6 +32,13 @@ const SolicitarViaje = () => {
         origin: 'current',
         destination: 'manual'
     });
+    const [disabledOptions, setDisabledOptions] = useState<{
+        origin: string[];
+        destination: string[];
+    }>({
+        origin: [],
+        destination: ['manual']  // Start with manual disabled for destination since origin starts as 'current'
+    });
     const [originConcentrationPointId, setOriginConcentrationPointId] = useState<number | null>(null);
     const [destinationConcentrationPointId, setDestinationConcentrationPointId] = useState<number | null>(null);
     const [submittingRequest, setSubmittingRequest] = useState(false);
@@ -289,10 +296,10 @@ const SolicitarViaje = () => {
             console.log("Ride request submitted successfully:", responseData);
 
             // Request submitted successfully
-            setRequestSubmitted(true);
+        setRequestSubmitted(true);
             
             // Simulate driver acceptance (in a real app, this would come from a websocket or polling)
-            setTimeout(() => setRideAccepted(true), 3000);
+        setTimeout(() => setRideAccepted(true), 3000);
         } catch (error) {
             console.error("Error al enviar solicitud de viaje:", error);
             setError(error instanceof Error ? error.message : "Error al enviar la solicitud de viaje");
@@ -313,6 +320,36 @@ const SolicitarViaje = () => {
         // Update the location type
         if (locType) {
             setLocationType(prev => ({ ...prev, [type]: locType }));
+            
+            // Update disabled options based on the origin selection
+            if (type === 'origin') {
+                if (locType === 'hcp') {
+                    // If origin is concentration point, only manual address is allowed for destination
+                    setDisabledOptions({
+                        origin: [],
+                        destination: ['hcp']
+                    });
+                    
+                    // If destination was previously set to hcp, change it to manual
+                    if (locationType.destination === 'hcp') {
+                        setLocationType(prev => ({ ...prev, destination: 'manual' }));
+                        setDestinationConcentrationPointId(null);
+                        setDestinationCoords(undefined);
+                    }
+                } else {
+                    // If origin is current or manual, only concentration point is allowed for destination
+                    setDisabledOptions({
+                        origin: [],
+                        destination: ['manual', 'current']
+                    });
+                    
+                    // If destination was previously set to manual, change it to hcp
+                    if (locationType.destination === 'manual') {
+                        setLocationType(prev => ({ ...prev, destination: 'hcp' }));
+                        setDestinationCoords(undefined);
+                    }
+                }
+            }
         }
         
         // Handle different location types
@@ -412,12 +449,16 @@ const SolicitarViaje = () => {
                                                 onLocationChange={handleLocationChange} 
                                                 onManualAddressInput={handleManualAddressInput}
                                                 concentrationPoints={concentrationPoints}
+                                                disabledOptions={disabledOptions.origin}
+                                                selectedLocationType={locationType.origin}
                                             />
                                             <LocationSelector 
                                                 type="destination" 
                                                 onLocationChange={handleLocationChange} 
                                                 onManualAddressInput={handleManualAddressInput}
                                                 concentrationPoints={concentrationPoints}
+                                                disabledOptions={disabledOptions.destination}
+                                                selectedLocationType={locationType.destination}
                                             />
                                         </>
                                     )}

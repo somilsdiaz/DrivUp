@@ -16,6 +16,8 @@ interface LocationSelectorProps {
     onLocationChange: (type: string, value: string, locationType?: string, pointId?: number) => void;
     onManualAddressInput?: (type: string, value: string) => void;
     concentrationPoints?: ConcentrationPoint[];
+    disabledOptions?: string[];
+    selectedLocationType?: string;
 }
 
 interface Coordinates {
@@ -23,7 +25,14 @@ interface Coordinates {
     longitude: number;
 }
 
-const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concentrationPoints = [] }: LocationSelectorProps) => {
+const LocationSelector = ({ 
+    type, 
+    onLocationChange, 
+    onManualAddressInput, 
+    concentrationPoints = [],
+    disabledOptions = [],
+    selectedLocationType
+}: LocationSelectorProps) => {
     const [locationType, setLocationType] = useState(type === 'origin' ? 'current' : 'manual');
     const [manualAddress, setManualAddress] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -33,6 +42,13 @@ const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concen
     const [filteredPoints, setFilteredPoints] = useState<ConcentrationPoint[]>([]);
     const [selectedPointId, setSelectedPointId] = useState<number | null>(null);
     const itemsPerPage = 3;
+
+    // Sync the local locationType with parent component's selectedLocationType if provided
+    useEffect(() => {
+        if (selectedLocationType && selectedLocationType !== locationType) {
+            setLocationType(selectedLocationType);
+        }
+    }, [selectedLocationType]);
 
     // Request location when component mounts if type is origin
     useEffect(() => {
@@ -62,6 +78,11 @@ const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concen
     };
 
     const handleLocationTypeChange = async (newType: string) => {
+        // If option is disabled, don't allow selection
+        if (disabledOptions.includes(newType)) {
+            return;
+        }
+        
         setLocationType(newType);
         
         // Reset selected point when changing location type
@@ -97,12 +118,19 @@ const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concen
                 // Don't call onLocationChange here to avoid immediate API calls
                 // Just notify that we're now in manual mode
                 onLocationChange(type, '', 'manual');
+            } else {
+                onLocationChange(type, '', 'manual');
             }
-        } else if (newType === 'hcp' && selectedPointId) {
-            // If we're switching to concentration point and already have one selected, keep it
-            const point = concentrationPoints.find(p => p.id === selectedPointId);
-            if (point) {
-                onLocationChange(type, `${point.latitud},${point.longitud}`, 'hcp', point.id);
+        } else if (newType === 'hcp') {
+            if (selectedPointId) {
+                // If we're switching to concentration point and already have one selected, keep it
+                const point = concentrationPoints.find(p => p.id === selectedPointId);
+                if (point) {
+                    onLocationChange(type, `${point.latitud},${point.longitud}`, 'hcp', point.id);
+                }
+            } else {
+                // Just notify that we're now in hcp mode but no point is selected yet
+                onLocationChange(type, '', 'hcp');
             }
         }
     };
@@ -111,10 +139,6 @@ const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concen
         setSelectedPointId(point.id);
         onLocationChange(type, `${point.latitud},${point.longitud}`, 'hcp', point.id);
         setLocationType('hcp');
-    };
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
     };
 
     const handleManualAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,6 +152,30 @@ const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concen
             // Fallback to old behavior if debounced version not provided
             onLocationChange(type, value, 'manual');
         }
+    };
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const getButtonClasses = (buttonType: string) => {
+        const baseClasses = "px-6 py-3 rounded-full transition-all duration-200";
+        const isDisabled = disabledOptions.includes(buttonType);
+        const isSelected = locationType === buttonType;
+        
+        if (isDisabled) {
+            return `${baseClasses} bg-gray-200 text-gray-500 cursor-not-allowed`;
+        }
+        
+        if (isSelected) {
+            return `${baseClasses} ${
+                type === 'origin' 
+                ? 'bg-[#2D5DA1] text-white shadow-md' 
+                : 'bg-[#5AAA95] text-white shadow-md'
+            }`;
+        }
+        
+        return `${baseClasses} bg-[#F8F9FA] text-[#4A4E69] hover:bg-[#2D5DA1]/10`;
     };
 
     const getPointCardClasses = (pointId: number) => {
@@ -160,16 +208,13 @@ const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concen
                 {type === 'origin' && (
                     <>
                         <button
-                            className={`px-6 py-3 rounded-full transition-all duration-200 ${
-                                locationType === 'current' 
-                                ? 'bg-[#2D5DA1] text-white shadow-md' 
-                                : 'bg-[#F8F9FA] text-[#4A4E69] hover:bg-[#2D5DA1]/10'
-                            }`}
+                            className={getButtonClasses('current')}
                             onClick={() => handleLocationTypeChange('current')}
+                            disabled={disabledOptions.includes('current')}
                         >
                             Mi ubicación actual
                         </button>
-                        {locationError && (
+                        {locationError && locationType === 'current' && (
                             <div className="w-full mt-2 text-red-500 text-sm">
                                 {locationError}
                             </div>
@@ -182,22 +227,16 @@ const LocationSelector = ({ type, onLocationChange, onManualAddressInput, concen
                     </>
                 )}
                 <button
-                    className={`px-6 py-3 rounded-full transition-all duration-200 ${
-                        locationType === 'manual' 
-                        ? `${type === 'origin' ? 'bg-[#2D5DA1]' : 'bg-[#5AAA95]'} text-white shadow-md` 
-                        : 'bg-[#F8F9FA] text-[#4A4E69] hover:bg-[#2D5DA1]/10'
-                    }`}
+                    className={getButtonClasses('manual')}
                     onClick={() => handleLocationTypeChange('manual')}
+                    disabled={disabledOptions.includes('manual')}
                 >
                     Dirección manual
                 </button>
                 <button
-                    className={`px-6 py-3 rounded-full transition-all duration-200 ${
-                        locationType === 'hcp' 
-                        ? `${type === 'origin' ? 'bg-[#2D5DA1]' : 'bg-[#5AAA95]'} text-white shadow-md` 
-                        : 'bg-[#F8F9FA] text-[#4A4E69] hover:bg-[#2D5DA1]/10'
-                    }`}
+                    className={getButtonClasses('hcp')}
                     onClick={() => handleLocationTypeChange('hcp')}
+                    disabled={disabledOptions.includes('hcp')}
                 >
                     Punto de concentración
                 </button>
