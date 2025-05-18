@@ -90,51 +90,51 @@ const HeaderPasajero: React.FC = () => {
 
     return (
         <header className="sticky top-0 z-40 bg-[#003E69] text-white">
-            <div className="container flex h-16 items-center justify-between py-4 px-4 mx-auto">
+            <div className="container flex h-16 items-center justify-between py-4 px-2 sm:px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
                     <Link
                         to="/"
-                        className="text-2xl font-bold flex items-center space-x-2">
-                        <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-16 w-16 mb-2 mr-3" />
+                        className="text-xl md:text-2xl font-bold flex items-center">
+                        <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-12 w-12 md:h-16 md:w-16 mb-2 mr-1 md:mr-3" />
                         <span className="m-0 p-0">Driv</span><span className="m-0 p-0 text-[#4ade80]">Up</span>
                     </Link>
                 </div>
 
                 {/* Navigation - Center */}
-                <nav className="hidden md:flex items-center justify-start flex-1 px-4 mx-4">
-                    <div className="flex items-center gap-6 justify-center">
-                        <Link to="/dashboard/pasajero/solicitar-viaje" className="text-sm font-medium hover:underline whitespace-nowrap">
+                <nav className="hidden md:flex items-center justify-center flex-1">
+                    <div className="flex items-center gap-2 lg:gap-6 justify-center flex-wrap">
+                        <Link to="/dashboard/pasajero/solicitar-viaje" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Solicitar viaje
                         </Link>
-                        <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/rutas" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Mis Viajes
                         </Link>
-                        <Link to="/dashboard/pasajero/lista-conductores" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/pasajero/lista-conductores" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Solicitar conductor
                         </Link>
-                        <Link to="/dashboard/pasajero/mi-bandeja-de-mensajes" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/pasajero/mi-bandeja-de-mensajes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Bandeja de mensajes
                         </Link>
                     </div>
                 </nav>
 
                 {/* User Profile - Far right */}
-                <div className="hidden md:flex items-center gap-2 flex-shrink-0 relative" ref={profileMenuRef}>
+                <div className="hidden md:flex items-center gap-1 lg:gap-2 flex-shrink-0 relative" ref={profileMenuRef}>
                     <div
-                        className="flex items-center gap-2 cursor-pointer hover:bg-[#0051A8] rounded-md px-3 py-1.5"
+                        className="flex items-center gap-1 lg:gap-2 cursor-pointer hover:bg-[#0051A8] rounded-md px-2 lg:px-3 py-1.5"
                         onClick={toggleProfileMenu}
                     >
-                        <span className="text-sm font-medium">Mi cuenta</span>
-                        <ChevronDown className="h-4 w-4" />
+                        <span className="text-xs lg:text-sm font-medium">Mi cuenta</span>
+                        <ChevronDown className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
                     </div>
 
                     {/* Profile Dropdown Menu */}
                     {isProfileMenuOpen && (
                         <div className="absolute right-0 top-12 bg-[#003E69] border border-[#276A9C] rounded-md shadow-lg py-2 w-48 z-50">
                             <div className="px-4 py-2 border-b border-[#276A9C]">
-                                <p className="text-sm font-medium">{userName}</p>
-                                <p className="text-xs text-gray-300">{userEmail}</p>
+                                <p className="text-sm font-medium truncate">{userName}</p>
+                                <p className="text-xs text-gray-300 truncate">{userEmail}</p>
                             </div>
                             <div className="py-1">
                                 <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">

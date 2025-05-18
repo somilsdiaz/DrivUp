@@ -131,7 +131,7 @@ const HomePasajeros = () => {
                         <path fill="#fff" d="M44.8,-67.2C56.6,-59.2,63.7,-44.2,68.2,-29.2C72.7,-14.2,74.6,0.8,70.2,14.7C65.8,28.6,55.1,41.4,42.2,50.7C29.3,60,14.7,65.8,-0.7,66.7C-16.1,67.6,-32.2,63.6,-44.2,54.1C-56.2,44.6,-64.1,29.6,-67.2,13.2C-70.3,-3.2,-68.6,-21,-59.7,-33.2C-50.8,-45.4,-34.7,-52,-19.1,-59.2C-3.5,-66.4,11.6,-74.2,26.2,-74.2C40.8,-74.2,54.8,-66.2,44.8,-67.2Z" transform="translate(100 100)" />
                     </svg>
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between relative z-10 gap-8 md:gap-16">
-                        <div className="flex-1 text-center md:text-left">
+                        <div className="flex-1 text-center md:text-left p-3 lg:p-0">
                             <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 drop-shadow-lg animate-fade-in">¡Bienvenido{userData.name ? ", " + userData.name : ""}!</h1>
                             <p className="text-lg md:text-xl text-white/80 mb-4 animate-fade-in-slow">Tu experiencia de viaje comienza aquí.</p>
                             <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6 mt-2 animate-fade-in-slow">
@@ -181,7 +181,7 @@ const HomePasajeros = () => {
                                     )}
                                 </div>
                             </div>
-                            <p className="text-white mt-4 font-medium animate-fade-in text-lg md:text-xl drop-shadow">{userData.name} {userData.second_name} {userData.last_name} {userData.second_last_name}
+                            <p className="text-white mt-4 font-medium animate-fade-in text-lg md:text-xl drop-shadow mr-3 lg:mr-0">{userData.name} {userData.second_name} {userData.last_name} {userData.second_last_name}
                                 
                             </p>
                             <div className="flex flex-col items-center md:items-start gap-1 mt-1">

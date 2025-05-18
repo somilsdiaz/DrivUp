@@ -92,42 +92,42 @@ const Header: React.FC = () => {
 
     return (
         <header className="sticky top-0 z-40 border-b bg-[#0a0d35] text-white">
-            <div className="container flex h-16 items-center justify-between py-4 px-4 mx-auto">
+            <div className="container flex h-16 items-center justify-between py-4 px-2 sm:px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
                     <Link
                         to="/dashboard/conductor"
-                        className="text-2xl font-bold flex items-center space-x-2">
-                        <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-16 w-16 mb-2 mr-3" />
+                        className="text-xl md:text-2xl font-bold flex items-center">
+                        <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-12 w-12 md:h-16 md:w-16 mb-2 mr-1 md:mr-3" />
                         <span className="m-0 p-0">Driv</span><span className="m-0 p-0 text-[#4ade80]">Up</span>
                     </Link>
                 </div>
 
                 {/* Navigation - Center */}
-                <nav className="hidden md:flex items-center justify-start flex-1 px-4 mx-4">
-                    <div className="flex items-center gap-6 justify-center">
-                        <Link to="/dashboard/conductor/lista-viajes" className="text-sm font-medium hover:underline whitespace-nowrap">
+                <nav className="hidden md:flex items-center justify-center flex-1">
+                    <div className="flex items-center gap-2 lg:gap-6 justify-center flex-wrap">
+                        <Link to="/dashboard/conductor/lista-viajes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Buscar Viaje
                         </Link>
-                        <Link to="/dashboard/conductor" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/conductor" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Mis viajes
                         </Link>
-                        <Link to="/dashboard/conductor/solicitudes" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/dashboard/conductor/solicitudes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Solicitudes
                         </Link>
-                        <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/rutas" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Viajes programados
                         </Link>
                     </div>
                 </nav>
 
                 {/* User Profile - Far right */}
-                <div className="hidden md:flex items-center gap-2 flex-shrink-0 relative" ref={profileMenuRef}>
+                <div className="hidden md:flex items-center gap-1 lg:gap-2 flex-shrink-0 relative" ref={profileMenuRef}>
                     <div
-                        className="flex items-center gap-2 cursor-pointer hover:bg-[#1a1f55] rounded-md px-3 py-1.5"
+                        className="flex items-center gap-1 lg:gap-2 cursor-pointer hover:bg-[#1a1f55] rounded-md px-2 lg:px-3 py-1.5"
                         onClick={toggleProfileMenu}
                     >
-                        <div className="h-8 w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
+                        <div className="h-7 w-7 lg:h-8 lg:w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
                             <img
                                 src={profileImage}
                                 alt="Profile"
@@ -138,8 +138,8 @@ const Header: React.FC = () => {
                                 }}
                             />
                         </div>
-                        <span className="text-sm font-medium">{userName}</span>
-                        <ChevronDown className="h-4 w-4" />
+                        <span className="text-xs lg:text-sm font-medium truncate max-w-[80px] lg:max-w-full">{userName}</span>
+                        <ChevronDown className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
                     </div>
 
                     {/* Profile Dropdown Menu */}
