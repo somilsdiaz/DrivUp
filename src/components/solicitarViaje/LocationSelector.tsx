@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AddressInfoModal from './AddressInfoModal';
 
 interface ConcentrationPoint {
     id: number;
@@ -66,6 +67,7 @@ const LocationSelector = ({
     const [selectedPointId, setSelectedPointId] = useState<number | null>(null);
     const [addressInfo, setAddressInfo] = useState<AddressInfo | null>(null);
     const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
     const itemsPerPage = 3;
 
     // sincroniza el tipo de ubicacion con el seleccionado por el componente padre
@@ -314,6 +316,13 @@ const LocationSelector = ({
         return `${baseClasses} border-gray-200 hover:border-${type === 'origin' ? '[#2D5DA1]' : '[#5AAA95]'}/70`;
     };
 
+    // Función para manejar la visibilidad del modal de información
+    const toggleInfoModal = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowInfoModal(prev => !prev);
+    };
+
     return (
         <div className="p-8 border-b border-gray-100">
             {/* cabecera con icono y titulo */}
@@ -370,13 +379,26 @@ const LocationSelector = ({
                         )}
                     </>
                 )}
-                <button
-                    className={getButtonClasses('manual')}
-                    onClick={() => handleLocationTypeChange('manual')}
-                    disabled={disabledOptions.includes('manual')}
-                >
-                    Dirección manual
-                </button>
+                <div className="relative flex items-center">
+                    <button
+                        className={getButtonClasses('manual')}
+                        onClick={() => handleLocationTypeChange('manual')}
+                        disabled={disabledOptions.includes('manual')}
+                    >
+                        Dirección manual
+                    </button>
+                    {locationType === 'manual' && (
+                        <button 
+                            onClick={toggleInfoModal}
+                            className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#2D5DA1]/10 text-[#2D5DA1] hover:bg-[#2D5DA1]/20 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#2D5DA1]/30 shadow-sm"
+                            title="Información sobre formato de direcciones"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
                 <button
                     className={getButtonClasses('hcp')}
                     onClick={() => handleLocationTypeChange('hcp')}
@@ -476,6 +498,9 @@ const LocationSelector = ({
                     )}
                 </div>
             )}
+
+            {/* Modal de información sobre formato de direcciones */}
+            <AddressInfoModal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} />
         </div>
     );
 };
