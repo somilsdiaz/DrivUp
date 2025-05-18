@@ -3,7 +3,6 @@ import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } fro
 import { Link, useNavigate } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
 import { logout, getUserId } from "../../utils/auth";
-import { useCurrentUserProfileImage } from "../../utils/useProfileImage";
 
 //MenuItem interface to match the one in menuResponsive.tsx
 interface MenuItem {
@@ -18,7 +17,6 @@ const HeaderPasajero: React.FC = () => {
     const [userEmail, setUserEmail] = useState("usuario@example.com");
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
-    const { profileImage } = useCurrentUserProfileImage();
 
     // Fetch user data
     useEffect(() => {
@@ -75,7 +73,7 @@ const HeaderPasajero: React.FC = () => {
         { label: "Solicitar conductores", path: "/dashboard/pasajero/lista-conductores" },
         { label: "Bandeja de mensajes", path: "/dashboard/pasajero/mi-bandeja-de-mensajes" },
         { label: "Mi perfil", path: "/" },
-        { label: "Configuracion", path: "/dashboard/pasajero/configuracion" },
+        { label: "Configuracion", path: "/" },
         { label: "Ayuda/Soporte", path: "/" },
         { label: "Cerrar sesión", path: "/" }
     ];
