@@ -765,6 +765,7 @@ const SolicitarViaje = () => {
                                                 selectedLocationType={locationType.origin}
                                                 onCurrentLocationIsCP={handleCurrentLocationIsCP}
                                                 isCPHighlighted={currentLocationIsCP !== null && locationType.origin === 'current'}
+                                                detectedCPInfo={currentLocationIsCP}
                                             />
                                             <LocationSelector 
                                                 type="destination" 

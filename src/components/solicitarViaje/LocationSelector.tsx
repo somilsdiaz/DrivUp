@@ -21,6 +21,7 @@ interface LocationSelectorProps {
     onCurrentLocationIsCP?: (concentrationPoint: any) => void;
     isCPHighlighted?: boolean;
     originIsCPHighlighted?: boolean;
+    detectedCPInfo?: ConcentrationPoint;
 }
 
 interface Coordinates {
@@ -51,7 +52,8 @@ const LocationSelector = ({
     selectedLocationType,
     onCurrentLocationIsCP,
     isCPHighlighted = false,
-    originIsCPHighlighted = false
+    originIsCPHighlighted = false,
+    detectedCPInfo
 }: LocationSelectorProps) => {
     // estado para el tipo de ubicacion (current, manual, hcp)
     const [locationType, setLocationType] = useState(type === 'origin' ? 'current' : 'manual');
@@ -349,6 +351,20 @@ const LocationSelector = ({
                                     <>Ubicación actual: {addressInfo.direccion}</>
                                 ) : (
                                     <>Ubicación actual: {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}</>
+                                )}
+
+                                {/* Mostrar información cuando es un punto de concentración */}
+                                {type === 'origin' && isCPHighlighted && (
+                                    <div className="mt-2 text-[#2D5DA1] bg-[#2D5DA1]/10 px-3 py-2 rounded-lg flex items-center font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                        </svg>
+                                        Punto de concentración detectado: {
+                                            detectedCPInfo?.nombre || 
+                                            concentrationPoints.find(point => selectedPointId === point.id)?.nombre || 
+                                            'Punto de concentración'
+                                        }
+                                    </div>
                                 )}
                             </div>
                         )}
