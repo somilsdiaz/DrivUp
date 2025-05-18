@@ -71,12 +71,12 @@ const Header: React.FC = () => {
     // Define menu items
     const menuItems: MenuItem[] = [
         { label: "Buscar viaje", path: "/dashboard/conductor/lista-viajes" },
-        { label: "Mis viajes", path: "/" },
+        { label: "Mis viajes", path: "/en-proceso" },
         { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
-        { label: "Viajes programados", path: "/rutas" },
-        { label: "Mi perfil", path: "" },
+        { label: "Viajes programados", path: "/en-proceso" },
+        { label: "Mi perfil", path: "/en-proceso" },
         { label: "Configuracion", path: "/dashboard/conductor/configuracion" },
-        { label: "Ayuda/Soporte", path: "/" },
+        { label: "Ayuda/Soporte", path: "/en-proceso" },
         { label: "Cerrar sesión", path: "/" }
     ];
 
@@ -109,13 +109,13 @@ const Header: React.FC = () => {
                         <Link to="/dashboard/conductor/lista-viajes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Buscar Viaje
                         </Link>
-                        <Link to="/dashboard/conductor" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
+                        <Link to="/en-proceso" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Mis viajes
                         </Link>
                         <Link to="/dashboard/conductor/solicitudes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Solicitudes
                         </Link>
-                        <Link to="/rutas" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
+                        <Link to="/en-proceso" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Viajes programados
                         </Link>
                     </div>
@@ -150,7 +150,7 @@ const Header: React.FC = () => {
                                 <p className="text-xs text-gray-400">{userEmail}</p>
                             </div>
                             <div className="py-1">
-                                <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
                                     <User className="h-4 w-4" />
                                     Mi Perfil
                                 </Link>
@@ -158,7 +158,7 @@ const Header: React.FC = () => {
                                     <Settings className="h-4 w-4" />
                                     Configuración
                                 </Link>
-                                <Link to="/ayuda" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
                                     <HelpCircle className="h-4 w-4" />
                                     Ayuda/Soporte
                                 </Link>

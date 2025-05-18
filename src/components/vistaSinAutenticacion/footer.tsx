@@ -16,17 +16,17 @@ const Footer: React.FC = () => {
     {
       title: "Plataforma",
       links: [
-        { name: "Cómo funciona", link: "/como-funciona" },
-        { name: "Características", link: "/caracteristicas" },
-        { name: "Precios", link: "/precios" },
-        { name: "FAQ", link: "/faq" },
+        { name: "Cómo funciona", link: "/en-proceso" },
+        { name: "Características", link: "/en-proceso" },
+        { name: "Precios", link: "/en-proceso" },
+        { name: "FAQ", link: "/en-proceso" },
       ],
     },
     {
       title: "Compañía",
       links: [
         { name: "Sobre nosotros", link: "/acerca-de" },
-        { name: "Carreras", link: "/carreras" },
+        { name: "Carreras", link: "/en-proceso" },
         { name: "Contacto", link: "/contacto" },
       ],
     },
@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
                 ))}
               </ul>
             </div>
-             
+
           ))}
         </div>
 

@@ -21,6 +21,7 @@ import ListaPasajeros from '../pages/vistaConductores/listaPasajeros';
 import { PreferenciasViajes } from '../pages/preferenciasViajes';
 import SolicitarViaje from '../pages/vistaPasajeros/solicitarViaje';
 import ListaViajes from '../pages/vistaConductores/listaViajes';
+import InProcess from '../components/skeletons/inProcess';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -219,7 +220,12 @@ const router = createBrowserRouter([
                 </RoleBasedRoute>
             </ProtectedRoute>
         ),
+    },
+    {
+        path: "/en-proceso",
+        element: <InProcess />
     }
+    
 ]);
 
 export const AppRoutes = () => {

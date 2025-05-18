@@ -69,12 +69,12 @@ const HeaderPasajero: React.FC = () => {
     // Define menu items
     const menuItems: MenuItem[] = [
         { label: "Solicitar viaje", path: "/dashboard/pasajero/solicitar-viaje" },
-        { label: "Mis viajes", path: "/" },
+        { label: "Mis viajes", path: "/en-proceso" },
         { label: "Solicitar conductores", path: "/dashboard/pasajero/lista-conductores" },
         { label: "Bandeja de mensajes", path: "/dashboard/pasajero/mi-bandeja-de-mensajes" },
-        { label: "Mi perfil", path: "/" },
-        { label: "Configuracion", path: "/" },
-        { label: "Ayuda/Soporte", path: "/" },
+        { label: "Mi perfil", path: "/en-proceso" },
+        { label: "Configuracion", path: "/en-proceso" },
+        { label: "Ayuda/Soporte", path: "/en-proceso" },
         { label: "Cerrar sesión", path: "/" }
     ];
 
@@ -107,7 +107,7 @@ const HeaderPasajero: React.FC = () => {
                         <Link to="/dashboard/pasajero/solicitar-viaje" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Solicitar viaje
                         </Link>
-                        <Link to="/rutas" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
+                        <Link to="/en-proceso" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Mis Viajes
                         </Link>
                         <Link to="/dashboard/pasajero/lista-conductores" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
@@ -137,15 +137,15 @@ const HeaderPasajero: React.FC = () => {
                                 <p className="text-xs text-gray-300 truncate">{userEmail}</p>
                             </div>
                             <div className="py-1">
-                                <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
+                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
                                     <User className="h-4 w-4" />
                                     Mi Perfil
                                 </Link>
-                                <Link to="/dashboard/pasajero/configuracion" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
+                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
                                     <Settings className="h-4 w-4" />
                                     Configuración
                                 </Link>
-                                <Link to="/ayuda" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
+                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#0051A8] w-full text-left">
                                     <HelpCircle className="h-4 w-4" />
                                     Ayuda/Soporte
                                 </Link>
