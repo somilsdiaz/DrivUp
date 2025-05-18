@@ -97,6 +97,8 @@ const SolicitarViaje = () => {
     const [calculatingRide, setCalculatingRide] = useState<boolean>(false);
     const [checkingActiveRequest, setCheckingActiveRequest] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
+    // Nuevo estado para controlar si la ubicación actual es un punto de concentración
+    const [currentLocationIsCP, setCurrentLocationIsCP] = useState<any>(null);
 
     // datos iniciales de estimacion del viaje
     const [rideEstimation, setRideEstimation] = useState<RideEstimation>({
@@ -132,6 +134,12 @@ const SolicitarViaje = () => {
     const handleCloseErrorModal = () => {
         setIsErrorModalOpen(false);
     };
+
+    // Nuevo useEffect para manejar el scroll
+    useEffect(() => {
+        // Restaurar posición de scroll al inicio
+        window.scrollTo(0, 0);
+    }, []);  // Ejecutar solo una vez al montar el componente
 
     // obtener los puntos de concentracion de la api
     useEffect(() => {
@@ -476,8 +484,34 @@ const SolicitarViaje = () => {
             let isDestinationConcentration = locationType.destination === 'hcp';
             let destinationPointId = destinationConcentrationPointId;
 
+            // Debug información
+            console.log('Estado inicial solicitud:', {
+                locationType,
+                currentLocationIsCP,
+                originCoords,
+                destinationCoords,
+                isOriginConcentration,
+                originPointId
+            });
+
+            let finalOriginLat = originLat;
+            let finalOriginLon = originLon;
+
+            // Si la ubicación actual es un punto de concentración, usamos esos datos
+            if (currentLocationIsCP && locationType.origin === 'current') {
+                isOriginConcentration = true;
+                originPointId = currentLocationIsCP.id;
+                // Usar las coordenadas del punto de concentración en lugar de la ubicación actual
+                finalOriginLat = currentLocationIsCP.latitud;
+                finalOriginLon = currentLocationIsCP.longitud;
+                
+                console.log('Origen actualizado a punto de concentración:', {
+                    origin: `${finalOriginLat},${finalOriginLon}`,
+                    pointId: originPointId
+                });
+            }
             // si el usuario no ha seleccionado explicitamente un punto de concentracion, verifica si las coordenadas coinciden
-            if (!isOriginConcentration) {
+            else if (!isOriginConcentration) {
                 const nearPointId = await checkConcentrationPoint(originLat, originLon);
                 if (nearPointId) {
                     isOriginConcentration = true;
@@ -492,52 +526,27 @@ const SolicitarViaje = () => {
                     destinationPointId = nearPointId;
                 }
             }
-
-            // valida que al menos un punto sea un punto de concentracion
-            if (!isOriginConcentration && !isDestinationConcentration) {
-                setErrorWithModal("Al menos un punto (origen o destino) debe ser un punto de concentración.");
-                setSubmittingRequest(false);
-                return;
-            }
-
-            // crea el cuerpo de la solicitud
-            const requestBody = {
-                pasajero_id: parseInt(userId),
-                origen_lat: parseFloat(originLat),
-                origen_lon: parseFloat(originLon),
-                destino_lat: parseFloat(destLat),
-                destino_lon: parseFloat(destLon),
-                es_origen_concentracion: isOriginConcentration,
-                origen_pmcp_id: isOriginConcentration ? originPointId : null,
-                es_destino_concentracion: isDestinationConcentration,
-                destino_pmcp_id: isDestinationConcentration ? destinationPointId : null,
-                num_pasajeros: passengerCount
-            };
-
-            // valida que los datos esten completos antes de enviar
-            if (isOriginConcentration && !originPointId) {
-                setErrorWithModal("El origen es un punto de concentración pero no se ha identificado el ID del punto.");
-                setSubmittingRequest(false);
-                return;
-            }
-
-            if (isDestinationConcentration && !destinationPointId) {
-                setErrorWithModal("El destino es un punto de concentración pero no se ha identificado el ID del punto.");
-                setSubmittingRequest(false);
-                return;
-            }
-
-            console.log("Sending ride request:", requestBody);
-
-            // envia la solicitud a la api
+            
+            // Realizar solicitud con los datos finales
             const response = await fetch("https://drivup-backend.onrender.com/solicitudes-viaje", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(requestBody),
+                body: JSON.stringify({
+                    pasajero_id: parseInt(userId),
+                    origen_lat: parseFloat(finalOriginLat),
+                    origen_lon: parseFloat(finalOriginLon),
+                    destino_lat: parseFloat(destLat),
+                    destino_lon: parseFloat(destLon),
+                    es_origen_concentracion: isOriginConcentration,
+                    es_destino_concentracion: isDestinationConcentration,
+                    origen_pmcp_id: isOriginConcentration ? originPointId : null,
+                    destino_pmcp_id: isDestinationConcentration ? destinationPointId : null,
+                    num_pasajeros: passengerCount
+                }),
             });
-
+            
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -569,6 +578,11 @@ const SolicitarViaje = () => {
         // actualiza el tipo de ubicacion
         if (locType) {
             setLocationType(prev => ({ ...prev, [type]: locType }));
+            
+            // Si el tipo es origen y no es 'current', limpiar el estado de currentLocationIsCP
+            if (type === 'origin' && locType !== 'current') {
+                setCurrentLocationIsCP(null);
+            }
             
             // actualiza las opciones deshabilitadas segun la seleccion de origen
             if (type === 'origin') {
@@ -658,6 +672,34 @@ const SolicitarViaje = () => {
         });
     };
 
+    // Maneja cuando la ubicación actual es un punto de concentración
+    const handleCurrentLocationIsCP = (concentrationPoint: any) => {
+        console.log('Ubicación actual es un punto de concentración:', concentrationPoint);
+        setCurrentLocationIsCP(concentrationPoint);
+        
+        // Si hay un destino seleccionado y es un punto de concentración, cambiarlo a manual
+        if (locationType.destination === 'hcp') {
+            setDestinationConcentrationPointId(null);
+        }
+        
+        // Forzar selección de dirección manual para el destino
+        setLocationType(prev => ({ ...prev, destination: 'manual' }));
+        
+        // Deshabilitar "punto de concentración" para destino
+        setDisabledOptions({
+            origin: [],
+            destination: ['hcp']
+        });
+        
+        // Almacenar el ID del punto de concentración para usarlo en el envío
+        setOriginConcentrationPointId(concentrationPoint.id);
+        
+        // Asegurar que la página se mantiene en la parte superior
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 100);
+    };
+
     return (
         <HeaderFooterPasajeros>
             <div className="min-h-screen bg-[#F8F9FA]">
@@ -721,6 +763,9 @@ const SolicitarViaje = () => {
                                                 concentrationPoints={concentrationPoints}
                                                 disabledOptions={disabledOptions.origin}
                                                 selectedLocationType={locationType.origin}
+                                                onCurrentLocationIsCP={handleCurrentLocationIsCP}
+                                                isCPHighlighted={currentLocationIsCP !== null && locationType.origin === 'current'}
+                                                detectedCPInfo={currentLocationIsCP}
                                             />
                                             <LocationSelector 
                                                 type="destination" 
@@ -729,6 +774,7 @@ const SolicitarViaje = () => {
                                                 concentrationPoints={concentrationPoints}
                                                 disabledOptions={disabledOptions.destination}
                                                 selectedLocationType={locationType.destination}
+                                                originIsCPHighlighted={currentLocationIsCP !== null && locationType.origin === 'current'}
                                             />
                                         </>
                                     )}
