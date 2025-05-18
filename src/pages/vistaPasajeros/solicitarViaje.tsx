@@ -135,6 +135,12 @@ const SolicitarViaje = () => {
         setIsErrorModalOpen(false);
     };
 
+    // Nuevo useEffect para manejar el scroll
+    useEffect(() => {
+        // Restaurar posición de scroll al inicio
+        window.scrollTo(0, 0);
+    }, []);  // Ejecutar solo una vez al montar el componente
+
     // obtener los puntos de concentracion de la api
     useEffect(() => {
         const fetchConcentrationPoints = async () => {
@@ -687,6 +693,11 @@ const SolicitarViaje = () => {
         
         // Almacenar el ID del punto de concentración para usarlo en el envío
         setOriginConcentrationPointId(concentrationPoint.id);
+        
+        // Asegurar que la página se mantiene en la parte superior
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 100);
     };
 
     return (

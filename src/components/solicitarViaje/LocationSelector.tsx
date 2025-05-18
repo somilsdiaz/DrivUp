@@ -75,6 +75,15 @@ const LocationSelector = ({
         // Forzar tipo 'manual' si es destino y el origen es un punto de concentración
         if (type === 'destination' && originIsCPHighlighted && locationType !== 'manual') {
             setLocationType('manual');
+            
+            // Asegurar que no se desplace automáticamente
+            setTimeout(() => {
+                // Restaurar la posición del scroll (solo si es necesario)
+                const scrollY = window.scrollY;
+                if (scrollY > 0) {
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                }
+            }, 50);
         }
     }, [selectedLocationType, originIsCPHighlighted, type, locationType]);
 
@@ -190,6 +199,11 @@ const LocationSelector = ({
                             const data = await response.json();
                             if (data.esPuntoConcentracion && onCurrentLocationIsCP) {
                                 onCurrentLocationIsCP(data.puntoConcentracion);
+                                
+                                // Asegurar que la página se mantiene en la parte superior
+                                setTimeout(() => {
+                                    window.scrollTo(0, 0);
+                                }, 100);
                             }
                         }
                     } catch (error) {
@@ -365,7 +379,6 @@ const LocationSelector = ({
                         className="w-full p-4 pl-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5DA1] focus:border-transparent transition-all duration-200"
                         value={manualAddress}
                         onChange={handleManualAddressChange}
-                        autoFocus={type === 'destination' && originIsCPHighlighted}
                     />
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#4A4E69] absolute left-4 top-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
