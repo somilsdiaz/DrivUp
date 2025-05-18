@@ -1,6 +1,7 @@
 import HeaderFooterPasajeros from "../../layouts/headerFooterPasajeros";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useProfileImage } from "../../utils/useProfileImage";
 
 const benefits = [
     {
@@ -71,6 +72,9 @@ const HomePasajeros = () => {
     const [userRole, setUserRole] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    
+    // Usar el hook para obtener la imagen de perfil
+    const { profileImage, isLoading: loadingProfileImage } = useProfileImage(userData.id);
 
     // Tarjetas dinámicas según el rol
     const getQuickActions = () => {
@@ -134,7 +138,7 @@ const HomePasajeros = () => {
                                 {userRole === "conductor y pasajero" && (
                                     <Link to="/dashboard/conductor">
                                         <button className="inline-flex items-center gap-2 bg-white/90 text-[#2D5DA1] px-5 py-2 rounded-full font-semibold shadow-lg hover:bg-[#F2B134]/90 hover:text-[#4A4E69] transition-all duration-200 text-sm border border-[#F2B134] animate-pop-in">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m4 0h-1v4h-1m-4 0h-1v-4h-1m4 0h-1v4h-1m-4 0h-1v-4h-1m4 0h-1v4h-1" /><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m4 0h-1v4h-1m-4 0h-1v-4h-1m4 0h-1v4h-1m-4 0h-1v4h-1m4 0h-1v4h-1" /><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
                                             Ir a mi dashboard conductor
                                         </button>
                                     </Link>
@@ -147,18 +151,38 @@ const HomePasajeros = () => {
                                 <span className="absolute w-full h-full rounded-full bg-gradient-to-tr from-[#F2B134]/40 via-[#5AAA95]/30 to-[#2D5DA1]/30 blur-2xl animate-pulse-slow"></span>
                                 {/* Avatar */}
                                 <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-white/30 border-4 border-[#F2B134] flex items-center justify-center shadow-xl overflow-hidden">
-                                    <svg className="w-20 h-20 md:w-28 md:h-28 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    {loadingProfileImage ? (
+                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 animate-pulse">
+                                            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                        </div>
+                                    ) : (
+                                        <img 
+                                            src={profileImage} 
+                                            alt="Foto de perfil" 
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                // Fallback a SVG si la imagen falla en cargar
+                                                const target = e.target as HTMLImageElement;
+                                                target.onerror = null;
+                                                target.style.display = 'none';
+                                                const parent = target.parentElement;
+                                                if (parent) {
+                                                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                                                    svg.setAttribute('class', 'w-20 h-20 md:w-28 md:h-28 text-white');
+                                                    svg.setAttribute('fill', 'none');
+                                                    svg.setAttribute('stroke', 'currentColor');
+                                                    svg.setAttribute('strokeWidth', '2');
+                                                    svg.setAttribute('viewBox', '0 0 24 24');
+                                                    svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />';
+                                                    parent.appendChild(svg);
+                                                }
+                                            }}
+                                        />
+                                    )}
                                 </div>
                             </div>
                             <p className="text-white mt-4 font-medium animate-fade-in text-lg md:text-xl drop-shadow">{userData.name} {userData.second_name} {userData.last_name} {userData.second_last_name}
-                                {userRole === "conductor y pasajero" && (
-                                    <Link to="/dashboard/conductor">
-                                        <button className="inline-flex items-center gap-2 bg-white/90 text-[#2D5DA1] px-5 py-2 rounded-full font-semibold shadow-lg hover:bg-[#F2B134]/90 hover:text-[#4A4E69] transition-all duration-200 text-sm border border-[#F2B134] animate-pop-in ml-2 mt-2 md:mt-0">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m4 0h-1v4h-1m-4 0h-1v4h-1m4 0h-1v4h-1m-4 0h-1v4h-1m4 0h-1v4h-1" /><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
-                                            Ir a mi dashboard conductor
-                                        </button>
-                                    </Link>
-                                )}
+                                
                             </p>
                             <div className="flex flex-col items-center md:items-start gap-1 mt-1">
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#F2B134]/90 text-[#4A4E69] font-bold uppercase tracking-wide text-xs shadow-md border border-[#fff]/30">{userRole || "-"}</span>

@@ -127,18 +127,7 @@ const HeaderPasajero: React.FC = () => {
                         className="flex items-center gap-2 cursor-pointer hover:bg-[#0051A8] rounded-md px-3 py-1.5"
                         onClick={toggleProfileMenu}
                     >
-                        <div className="h-8 w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
-                            <img
-                                src={profileImage}
-                                alt="Profile"
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
-                                }}
-                            />
-                        </div>
-                        <span className="text-sm font-medium">{userName}</span>
+                        <span className="text-sm font-medium">Mi cuenta</span>
                         <ChevronDown className="h-4 w-4" />
                     </div>
 
