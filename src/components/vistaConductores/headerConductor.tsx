@@ -3,8 +3,6 @@ import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } fro
 import { Link, useNavigate } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
 import { logout, getUserId } from "../../utils/auth";
-import { useCurrentUserProfileImage } from "../../utils/useProfileImage";
-
 // Interfaz que coincide con la que se usa en menuResponsive.tsx
 interface MenuItem {
     label: string;
@@ -18,7 +16,6 @@ const Header: React.FC = () => {
     const [userEmail, setUserEmail] = useState("usuario@example.com");
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
-    const { profileImage } = useCurrentUserProfileImage();
 
     // Fetch user data
     useEffect(() => {
@@ -91,7 +88,7 @@ const Header: React.FC = () => {
     };
 
     return (
-        <header className="sticky top-0 z-40 border-b bg-[#0a0d35] text-white">
+        <header className="sticky top-0 z-40 bg-[#0a0d35] text-white">
             <div className="container flex h-16 items-center justify-between py-4 px-2 sm:px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
@@ -127,18 +124,7 @@ const Header: React.FC = () => {
                         className="flex items-center gap-1 lg:gap-2 cursor-pointer hover:bg-[#1a1f55] rounded-md px-2 lg:px-3 py-1.5"
                         onClick={toggleProfileMenu}
                     >
-                        <div className="h-7 w-7 lg:h-8 lg:w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
-                            <img
-                                src={profileImage}
-                                alt="Profile"
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
-                                }}
-                            />
-                        </div>
-                        <span className="text-xs lg:text-sm font-medium truncate max-w-[80px] lg:max-w-full">{userName}</span>
+                        <span className="text-xs lg:text-sm font-medium truncate max-w-[80px] lg:max-w-full">Mi cuenta</span>
                         <ChevronDown className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
                     </div>
 
