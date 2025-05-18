@@ -18,6 +18,9 @@ interface LocationSelectorProps {
     concentrationPoints?: ConcentrationPoint[];
     disabledOptions?: string[];
     selectedLocationType?: string;
+    onCurrentLocationIsCP?: (concentrationPoint: any) => void;
+    isCPHighlighted?: boolean;
+    originIsCPHighlighted?: boolean;
 }
 
 interface Coordinates {
@@ -45,7 +48,10 @@ const LocationSelector = ({
     onManualAddressInput, 
     concentrationPoints = [],
     disabledOptions = [],
-    selectedLocationType
+    selectedLocationType,
+    onCurrentLocationIsCP,
+    isCPHighlighted = false,
+    originIsCPHighlighted = false
 }: LocationSelectorProps) => {
     // estado para el tipo de ubicacion (current, manual, hcp)
     const [locationType, setLocationType] = useState(type === 'origin' ? 'current' : 'manual');
@@ -65,7 +71,12 @@ const LocationSelector = ({
         if (selectedLocationType && selectedLocationType !== locationType) {
             setLocationType(selectedLocationType);
         }
-    }, [selectedLocationType]);
+        
+        // Forzar tipo 'manual' si es destino y el origen es un punto de concentración
+        if (type === 'destination' && originIsCPHighlighted && locationType !== 'manual') {
+            setLocationType('manual');
+        }
+    }, [selectedLocationType, originIsCPHighlighted, type, locationType]);
 
     // solicita la ubicacion actual al iniciar si el tipo es origen
     useEffect(() => {
@@ -136,6 +147,11 @@ const LocationSelector = ({
             return;
         }
         
+        // Si es destino y el origen es un punto de concentración, forzar tipo 'manual'
+        if (type === 'destination' && originIsCPHighlighted && newType !== 'manual') {
+            return; // No permitir cambios a otros tipos cuando el origen es un punto de concentración
+        }
+        
         setLocationType(newType);
         
         // reinicia el punto seleccionado al cambiar el tipo de ubicacion
@@ -162,6 +178,24 @@ const LocationSelector = ({
                 
                 setCurrentLocation(coords);
                 onLocationChange(type, `${coords.latitude},${coords.longitude}`, 'current');
+                
+                // Verificar si la ubicación actual es un punto de concentración
+                if (type === 'origin') {
+                    try {
+                        const response = await fetch(
+                            `https://drivup-backend.onrender.com/verificar-punto-concentracion?lat=${coords.latitude}&lon=${coords.longitude}`
+                        );
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.esPuntoConcentracion && onCurrentLocationIsCP) {
+                                onCurrentLocationIsCP(data.puntoConcentracion);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error verificando si la ubicación actual es un punto de concentración:', error);
+                    }
+                }
             } catch (error) {
                 setLocationError('No se pudo obtener tu ubicación. Por favor, verifica que hayas dado permiso de ubicación.');
                 console.error('Error getting location:', error);
@@ -218,6 +252,21 @@ const LocationSelector = ({
         const baseClasses = "px-6 py-3 rounded-full transition-all duration-200";
         const isDisabled = disabledOptions.includes(buttonType);
         const isSelected = locationType === buttonType;
+        
+        // Caso especial: Si es punto de concentración y estamos en origen con la bandera activada
+        if (buttonType === 'hcp' && type === 'origin' && isCPHighlighted) {
+            return `${baseClasses} bg-[#2D5DA1] text-white shadow-md`;
+        }
+        
+        // Caso especial: Si es ubicación actual y estamos en origen con la bandera de CP activada
+        if (buttonType === 'current' && type === 'origin' && isCPHighlighted) {
+            return `${baseClasses} bg-[#2D5DA1] text-white shadow-md`;
+        }
+        
+        // Caso especial: Si es dirección manual y estamos en destino y el origen es un punto de concentración
+        if (buttonType === 'manual' && type === 'destination' && originIsCPHighlighted) {
+            return `${baseClasses} bg-[#5AAA95] text-white shadow-md`;
+        }
         
         if (isDisabled) {
             return `${baseClasses} bg-gray-200 text-gray-500 cursor-not-allowed`;
@@ -308,7 +357,7 @@ const LocationSelector = ({
             </div>
 
             {/* campo de entrada para direccion manual */}
-            {locationType === 'manual' && (
+            {(locationType === 'manual' || (type === 'destination' && originIsCPHighlighted)) && (
                 <div className="relative">
                     <input
                         type="text"
@@ -316,6 +365,7 @@ const LocationSelector = ({
                         className="w-full p-4 pl-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5DA1] focus:border-transparent transition-all duration-200"
                         value={manualAddress}
                         onChange={handleManualAddressChange}
+                        autoFocus={type === 'destination' && originIsCPHighlighted}
                     />
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#4A4E69] absolute left-4 top-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
