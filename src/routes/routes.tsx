@@ -21,11 +21,19 @@ import ListaPasajeros from '../pages/vistaConductores/listaPasajeros';
 import { PreferenciasViajes } from '../pages/preferenciasViajes';
 import SolicitarViaje from '../pages/vistaPasajeros/solicitarViaje';
 import ListaViajes from '../pages/vistaConductores/listaViajes';
+import VisualizacionRuta from '../components/visualizacionRuta';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
     //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
+    
+    {
+        path: "/dashboard/conductor/ruta-ejemplo",
+        element:(                         
+                    <VisualizacionRuta />         //path temporal
+        ),
+    },
     {
         path: "/dashboard/conductor/lista-viajes",
         element:(                 
