@@ -3,8 +3,6 @@ import { Menu as MenuIcon, ChevronDown, User, Settings, HelpCircle, LogOut } fro
 import { Link, useNavigate } from "react-router-dom";
 import MenuResponsive from "../menuResponsive";
 import { logout, getUserId } from "../../utils/auth";
-import { useCurrentUserProfileImage } from "../../utils/useProfileImage";
-
 // Interfaz que coincide con la que se usa en menuResponsive.tsx
 interface MenuItem {
     label: string;
@@ -18,7 +16,6 @@ const Header: React.FC = () => {
     const [userEmail, setUserEmail] = useState("usuario@example.com");
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
-    const { profileImage } = useCurrentUserProfileImage();
 
     // Fetch user data
     useEffect(() => {
@@ -70,11 +67,13 @@ const Header: React.FC = () => {
 
     // Define menu items
     const menuItems: MenuItem[] = [
-        { label: "Buscar viaje", path: "/" },
+        { label: "Buscar viaje", path: "/dashboard/conductor/lista-viajes" },
+        { label: "Mis viajes", path: "/en-proceso" },
         { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
-        { label: "Viajes programados", path: "/rutas" },
+        { label: "Viajes programados", path: "/en-proceso" },
+        { label: "Mi perfil", path: "/en-proceso" },
         { label: "Configuracion", path: "/dashboard/conductor/configuracion" },
-        { label: "Contacto", path: "/contacto" },
+        { label: "Ayuda/Soporte", path: "/en-proceso" },
         { label: "Cerrar sesión", path: "/" }
     ];
 
@@ -89,52 +88,44 @@ const Header: React.FC = () => {
     };
 
     return (
-        <header className="sticky top-0 z-40 border-b bg-[#0a0d35] text-white">
-            <div className="container flex h-16 items-center justify-between py-4 px-4 mx-auto">
+        <header className="sticky top-0 z-40 bg-[#0a0d35] text-white">
+            <div className="container flex h-16 items-center justify-between py-4 px-2 sm:px-4 mx-auto">
                 {/* Logo y nombre - Far left */}
                 <div className="flex-shrink-0">
                     <Link
                         to="/dashboard/conductor"
-                        className="text-2xl font-bold flex items-center space-x-2">
-                        <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-16 w-16 mb-2 mr-3" />
+                        className="text-xl md:text-2xl font-bold flex items-center">
+                        <img src="/drivup_whitelogo.png" alt="DrivUp Logo" className="h-12 w-12 md:h-16 md:w-16 mb-2 mr-1 md:mr-3" />
                         <span className="m-0 p-0">Driv</span><span className="m-0 p-0 text-[#4ade80]">Up</span>
                     </Link>
                 </div>
 
                 {/* Navigation - Center */}
-                <nav className="hidden md:flex items-center justify-start flex-1 px-4 mx-4">
-                    <div className="flex items-center gap-6 justify-center">
-                        <Link to="/" className="text-sm font-medium hover:underline whitespace-nowrap">
+                <nav className="hidden md:flex items-center justify-center flex-1">
+                    <div className="flex items-center gap-2 lg:gap-6 justify-center flex-wrap">
+                        <Link to="/dashboard/conductor/lista-viajes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Buscar Viaje
                         </Link>
-                        <Link to="/dashboard/conductor/solicitudes" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/en-proceso" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
+                            Mis viajes
+                        </Link>
+                        <Link to="/dashboard/conductor/solicitudes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Solicitudes
                         </Link>
-                        <Link to="/rutas" className="text-sm font-medium hover:underline whitespace-nowrap">
+                        <Link to="/en-proceso" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Viajes programados
                         </Link>
                     </div>
                 </nav>
 
                 {/* User Profile - Far right */}
-                <div className="hidden md:flex items-center gap-2 flex-shrink-0 relative" ref={profileMenuRef}>
+                <div className="hidden md:flex items-center gap-1 lg:gap-2 flex-shrink-0 relative" ref={profileMenuRef}>
                     <div
-                        className="flex items-center gap-2 cursor-pointer hover:bg-[#1a1f55] rounded-md px-3 py-1.5"
+                        className="flex items-center gap-1 lg:gap-2 cursor-pointer hover:bg-[#1a1f55] rounded-md px-2 lg:px-3 py-1.5"
                         onClick={toggleProfileMenu}
                     >
-                        <div className="h-8 w-8 rounded-full bg-[#4ade80] flex items-center justify-center overflow-hidden">
-                            <img
-                                src={profileImage}
-                                alt="Profile"
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
-                                }}
-                            />
-                        </div>
-                        <span className="text-sm font-medium">{userName}</span>
-                        <ChevronDown className="h-4 w-4" />
+                        <span className="text-xs lg:text-sm font-medium truncate max-w-[80px] lg:max-w-full">Mi cuenta</span>
+                        <ChevronDown className="h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
                     </div>
 
                     {/* Profile Dropdown Menu */}
@@ -145,7 +136,7 @@ const Header: React.FC = () => {
                                 <p className="text-xs text-gray-400">{userEmail}</p>
                             </div>
                             <div className="py-1">
-                                <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
                                     <User className="h-4 w-4" />
                                     Mi Perfil
                                 </Link>
@@ -153,7 +144,7 @@ const Header: React.FC = () => {
                                     <Settings className="h-4 w-4" />
                                     Configuración
                                 </Link>
-                                <Link to="/ayuda" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
                                     <HelpCircle className="h-4 w-4" />
                                     Ayuda/Soporte
                                 </Link>

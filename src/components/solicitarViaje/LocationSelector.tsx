@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AddressInfoModal from './AddressInfoModal';
 
 interface ConcentrationPoint {
     id: number;
@@ -18,6 +19,10 @@ interface LocationSelectorProps {
     concentrationPoints?: ConcentrationPoint[];
     disabledOptions?: string[];
     selectedLocationType?: string;
+    onCurrentLocationIsCP?: (concentrationPoint: any) => void;
+    isCPHighlighted?: boolean;
+    originIsCPHighlighted?: boolean;
+    detectedCPInfo?: ConcentrationPoint;
 }
 
 interface Coordinates {
@@ -45,7 +50,11 @@ const LocationSelector = ({
     onManualAddressInput, 
     concentrationPoints = [],
     disabledOptions = [],
-    selectedLocationType
+    selectedLocationType,
+    onCurrentLocationIsCP,
+    isCPHighlighted = false,
+    originIsCPHighlighted = false,
+    detectedCPInfo
 }: LocationSelectorProps) => {
     // estado para el tipo de ubicacion (current, manual, hcp)
     const [locationType, setLocationType] = useState(type === 'origin' ? 'current' : 'manual');
@@ -58,6 +67,7 @@ const LocationSelector = ({
     const [selectedPointId, setSelectedPointId] = useState<number | null>(null);
     const [addressInfo, setAddressInfo] = useState<AddressInfo | null>(null);
     const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
     const itemsPerPage = 3;
 
     // sincroniza el tipo de ubicacion con el seleccionado por el componente padre
@@ -65,7 +75,21 @@ const LocationSelector = ({
         if (selectedLocationType && selectedLocationType !== locationType) {
             setLocationType(selectedLocationType);
         }
-    }, [selectedLocationType]);
+        
+        // Forzar tipo 'manual' si es destino y el origen es un punto de concentración
+        if (type === 'destination' && originIsCPHighlighted && locationType !== 'manual') {
+            setLocationType('manual');
+            
+            // Asegurar que no se desplace automáticamente
+            setTimeout(() => {
+                // Restaurar la posición del scroll (solo si es necesario)
+                const scrollY = window.scrollY;
+                if (scrollY > 0) {
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                }
+            }, 50);
+        }
+    }, [selectedLocationType, originIsCPHighlighted, type, locationType]);
 
     // solicita la ubicacion actual al iniciar si el tipo es origen
     useEffect(() => {
@@ -136,6 +160,11 @@ const LocationSelector = ({
             return;
         }
         
+        // Si es destino y el origen es un punto de concentración, forzar tipo 'manual'
+        if (type === 'destination' && originIsCPHighlighted && newType !== 'manual') {
+            return; // No permitir cambios a otros tipos cuando el origen es un punto de concentración
+        }
+        
         setLocationType(newType);
         
         // reinicia el punto seleccionado al cambiar el tipo de ubicacion
@@ -162,6 +191,29 @@ const LocationSelector = ({
                 
                 setCurrentLocation(coords);
                 onLocationChange(type, `${coords.latitude},${coords.longitude}`, 'current');
+                
+                // Verificar si la ubicación actual es un punto de concentración
+                if (type === 'origin') {
+                    try {
+                        const response = await fetch(
+                            `https://drivup-backend.onrender.com/verificar-punto-concentracion?lat=${coords.latitude}&lon=${coords.longitude}`
+                        );
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.esPuntoConcentracion && onCurrentLocationIsCP) {
+                                onCurrentLocationIsCP(data.puntoConcentracion);
+                                
+                                // Asegurar que la página se mantiene en la parte superior
+                                setTimeout(() => {
+                                    window.scrollTo(0, 0);
+                                }, 100);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error verificando si la ubicación actual es un punto de concentración:', error);
+                    }
+                }
             } catch (error) {
                 setLocationError('No se pudo obtener tu ubicación. Por favor, verifica que hayas dado permiso de ubicación.');
                 console.error('Error getting location:', error);
@@ -219,6 +271,21 @@ const LocationSelector = ({
         const isDisabled = disabledOptions.includes(buttonType);
         const isSelected = locationType === buttonType;
         
+        // Caso especial: Si es punto de concentración y estamos en origen con la bandera activada
+        if (buttonType === 'hcp' && type === 'origin' && isCPHighlighted) {
+            return `${baseClasses} bg-[#2D5DA1] text-white shadow-md`;
+        }
+        
+        // Caso especial: Si es ubicación actual y estamos en origen con la bandera de CP activada
+        if (buttonType === 'current' && type === 'origin' && isCPHighlighted) {
+            return `${baseClasses} bg-[#2D5DA1] text-white shadow-md`;
+        }
+        
+        // Caso especial: Si es dirección manual y estamos en destino y el origen es un punto de concentración
+        if (buttonType === 'manual' && type === 'destination' && originIsCPHighlighted) {
+            return `${baseClasses} bg-[#5AAA95] text-white shadow-md`;
+        }
+        
         if (isDisabled) {
             return `${baseClasses} bg-gray-200 text-gray-500 cursor-not-allowed`;
         }
@@ -247,6 +314,13 @@ const LocationSelector = ({
         }
         
         return `${baseClasses} border-gray-200 hover:border-${type === 'origin' ? '[#2D5DA1]' : '[#5AAA95]'}/70`;
+    };
+
+    // Función para manejar la visibilidad del modal de información
+    const toggleInfoModal = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowInfoModal(prev => !prev);
     };
 
     return (
@@ -287,17 +361,44 @@ const LocationSelector = ({
                                 ) : (
                                     <>Ubicación actual: {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}</>
                                 )}
+
+                                {/* Mostrar información cuando es un punto de concentración */}
+                                {type === 'origin' && isCPHighlighted && (
+                                    <div className="mt-2 text-[#2D5DA1] bg-[#2D5DA1]/10 px-3 py-2 rounded-lg flex items-center font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                        </svg>
+                                        Punto de concentración detectado: {
+                                            detectedCPInfo?.nombre || 
+                                            concentrationPoints.find(point => selectedPointId === point.id)?.nombre || 
+                                            'Punto de concentración'
+                                        }
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>
                 )}
-                <button
-                    className={getButtonClasses('manual')}
-                    onClick={() => handleLocationTypeChange('manual')}
-                    disabled={disabledOptions.includes('manual')}
-                >
-                    Dirección manual
-                </button>
+                <div className="relative flex items-center">
+                    <button
+                        className={getButtonClasses('manual')}
+                        onClick={() => handleLocationTypeChange('manual')}
+                        disabled={disabledOptions.includes('manual')}
+                    >
+                        Dirección manual
+                    </button>
+                    {locationType === 'manual' && (
+                        <button 
+                            onClick={toggleInfoModal}
+                            className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#2D5DA1]/10 text-[#2D5DA1] hover:bg-[#2D5DA1]/20 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#2D5DA1]/30 shadow-sm"
+                            title="Información sobre formato de direcciones"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
                 <button
                     className={getButtonClasses('hcp')}
                     onClick={() => handleLocationTypeChange('hcp')}
@@ -308,7 +409,7 @@ const LocationSelector = ({
             </div>
 
             {/* campo de entrada para direccion manual */}
-            {locationType === 'manual' && (
+            {(locationType === 'manual' || (type === 'destination' && originIsCPHighlighted)) && (
                 <div className="relative">
                     <input
                         type="text"
@@ -397,6 +498,9 @@ const LocationSelector = ({
                     )}
                 </div>
             )}
+
+            {/* Modal de información sobre formato de direcciones */}
+            <AddressInfoModal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} />
         </div>
     );
 };

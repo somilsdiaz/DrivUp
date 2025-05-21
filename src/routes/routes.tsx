@@ -21,6 +21,8 @@ import ListaPasajeros from '../pages/vistaConductores/listaPasajeros';
 import { PreferenciasViajes } from '../pages/preferenciasViajes';
 import SolicitarViaje from '../pages/vistaPasajeros/solicitarViaje';
 import ListaViajes from '../pages/vistaConductores/listaViajes';
+import InProcess from '../components/skeletons/inProcess';
+import { DetalleViaje } from '../pages/detalleViaje';
 import VisualizacionRuta from '../components/visualizacionRuta';
 
 const router = createBrowserRouter([
@@ -58,6 +60,19 @@ const router = createBrowserRouter([
                     <ListaPasajeros />
                 </RoleBasedRoute>
             </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/dashboard/conductor/detalle-viaje",
+        element:(                 
+            // <ProtectedRoute>
+            //     <RoleBasedRoute
+            //         allowedRoles={["conductor"]}
+            //         redirectPath="/dashboard/conductor"
+            //     >
+                    <DetalleViaje />
+            //     </RoleBasedRoute>
+            // </ProtectedRoute>
         ),
     },
     {
@@ -227,7 +242,12 @@ const router = createBrowserRouter([
                 </RoleBasedRoute>
             </ProtectedRoute>
         ),
+    },
+    {
+        path: "/en-proceso",
+        element: <InProcess />
     }
+    
 ]);
 
 export const AppRoutes = () => {
