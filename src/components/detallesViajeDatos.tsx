@@ -1,6 +1,6 @@
 import redMarket from "../assets/Pointer_Rojo.png";
 import blueMarket from "../assets/Pointer_Azul.png";
-import greenMarket from "../assets/Pointer_verde.png";
+import greenMarket from "../assets/Pointer_Verde.png";
 
 export type viajesProps={
     conductor:string;
