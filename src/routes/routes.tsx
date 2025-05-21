@@ -19,7 +19,10 @@ import ListaConductores from '../pages/vistaPasajeros/listaConductores';
 import PageDetallesConductor from '../pages/pageDetallesConductor';
 import ListaPasajeros from '../pages/vistaConductores/listaPasajeros';
 import { PreferenciasViajes } from '../pages/preferenciasViajes';
+import SolicitarViaje from '../pages/vistaPasajeros/solicitarViaje';
 import ListaViajes from '../pages/vistaConductores/listaViajes';
+import InProcess from '../components/skeletons/inProcess';
+import { DetalleViaje } from '../pages/detalleViaje';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -52,6 +55,19 @@ const router = createBrowserRouter([
         ),
     },
     {
+        path: "/dashboard/conductor/detalle-viaje",
+        element:(                 
+            // <ProtectedRoute>
+            //     <RoleBasedRoute
+            //         allowedRoles={["conductor"]}
+            //         redirectPath="/dashboard/conductor"
+            //     >
+                    <DetalleViaje />
+            //     </RoleBasedRoute>
+            // </ProtectedRoute>
+        ),
+    },
+    {
         path: "/dashboard/pasajero/lista-conductores",
         element:(                 
             <ProtectedRoute>
@@ -60,6 +76,19 @@ const router = createBrowserRouter([
                     redirectPath="/dashboard/pasajero"
                 >
                     <ListaConductores />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: "/dashboard/pasajero/solicitar-viaje",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"  
+                >
+                    <SolicitarViaje />
                 </RoleBasedRoute>
             </ProtectedRoute>
         ),
@@ -205,7 +234,12 @@ const router = createBrowserRouter([
                 </RoleBasedRoute>
             </ProtectedRoute>
         ),
+    },
+    {
+        path: "/en-proceso",
+        element: <InProcess />
     }
+    
 ]);
 
 export const AppRoutes = () => {
