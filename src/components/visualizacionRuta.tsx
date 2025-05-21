@@ -13,11 +13,6 @@ const VisualizacionRuta = () => {
   const [ruta, setRuta] = useState<Ruta | null>(null);
   const [geojsonRuta, setGeojsonRuta] = useState<any | null>(null);
 
-  // 🔁 Reemplaza con valores reales
-  const viajeId = 1; // o pásalo como prop
-  const conductorId = 123; // o pásalo como prop
-  const apiKey = import.meta.env.VITE_VISUALIZACION_RUTA_API_KEY;
-
   useEffect(() => {
   const obtenerRuta = async () => {
     try {
