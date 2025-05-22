@@ -4,6 +4,7 @@ import { MapaDetallesViajes } from "../components/mapaDetallesViajes";
 import HeaderFooter from "../layouts/headerFooter";
 import { Menu } from 'lucide-react';
 import DetallesViajeResponsive from "../components/detallesViajeResponsive";
+import { useLocation } from "react-router-dom";
 
 type viajesProps = {
     conductor: string;
@@ -11,25 +12,11 @@ type viajesProps = {
     destinos: string[];
 };
 
-const viajes: viajesProps[] = [
-    {
-        conductor: "Carlos Pérez",
-        pasajeros: ["Ana Gómez", "Luis Martínez", "Sofía Torres"],
-        destinos: ["Centro Comercial Buenavista", "Estadio Metropolitano", "Parque Venezuela"]
-    },
-    {
-        conductor: "María Rodríguez",
-        pasajeros: ["Jorge Díaz", "Camila Herrera"],
-        destinos: ["Universidad del Norte", "Malecón del Río", "Zoológico de Barranquilla"]
-    },
-    {
-        conductor: "Juan Castillo",
-        pasajeros: ["Pedro Suárez", "Lucía Mendoza", "Andrés Ramírez"],
-        destinos: ["Aeropuerto Ernesto Cortissoz", "Plaza de la Paz", "Museo del Caribe"]
-    }
-];
+
 
 export function DetalleViaje() {
+     const location = useLocation();
+  const id = location.state as number
     const [windowWidth, setWindow] = useState(window.innerWidth);
     const [openWindow,setOpenWindow]=useState<boolean>(false);
 
