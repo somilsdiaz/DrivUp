@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { DetallesViajeDatos } from "../components/detallesViajeDatos";
-import { MapaDetallesViajes } from "../components/mapaDetallesViajes";
 import HeaderFooter from "../layouts/headerFooter";
 import { Menu } from 'lucide-react';
 import DetallesViajeResponsive from "../components/detallesViajeResponsive";
+import VisualizacionRuta from "../components/visualizacionRuta";
+import { useLocation } from "react-router-dom";
 
 type viajesProps = {
     conductor: string;
     pasajeros: string[];
     destinos: string[];
 };
+
 
 const viajes: viajesProps[] = [
     {
@@ -32,6 +34,8 @@ const viajes: viajesProps[] = [
 export function DetalleViaje() {
     const [windowWidth, setWindow] = useState(window.innerWidth);
     const [openWindow,setOpenWindow]=useState<boolean>(false);
+    const location = useLocation();
+      const id = location.state as number
 
 const closeMenu=()=>{
     setOpenWindow(false);
@@ -46,7 +50,7 @@ const closeMenu=()=>{
     return(
         <HeaderFooter>
         <section className="flex relative">
-            <MapaDetallesViajes/>
+            <VisualizacionRuta viajeId={id}/>
             {windowWidth > 600 && (<DetallesViajeDatos {...viajes[0]}/>)}
             {windowWidth < 600 && ( 
                <button 
