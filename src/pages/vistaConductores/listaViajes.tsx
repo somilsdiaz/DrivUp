@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaClock, FaRoad, FaDollarSign, FaUsers } from "react-icons/fa";
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
+import { useNavigate } from "react-router-dom";
 
 type Viaje = {
   id: number;
@@ -15,6 +16,7 @@ type Viaje = {
 const ListaViajes = () => {
   const [viajes, setViajes] = useState<Viaje[]>([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   
 
@@ -102,13 +104,13 @@ const ListaViajes = () => {
               {/* Botones */}
             <div className="flex space-x-4 mt-2">
               <button
-                className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition"
-                onClick={() => console.log("Ver detalles del viaje", viaje.id)}
+                className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition hover:scale-110"
+                onClick={() => navigate(`/dashboard/conductor/detalle-viaje`,{state:viaje.id})}
               >
                 Ver detalles
               </button>
               <button
-                className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition"
+                className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-110"
                 onClick={() => console.log("Aceptar oferta del viaje", viaje.id)}
               >
                 Aceptar oferta
