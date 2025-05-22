@@ -3,6 +3,7 @@ import { FaClock, FaRoad, FaDollarSign, FaUsers } from "react-icons/fa";
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
 import { getUserId } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
+import VisualizacionRuta from "../../components/visualizacionRuta";
 
 type Viaje = {
   id: number;
@@ -34,6 +35,7 @@ const ListaViajes = () => {
   const [loading, setLoading] = useState(false);
   const [conductorActivo, setConductorActivo] = useState<ConductorEstado | null>(null);
   const [posicionActual, setPosicionActual] = useState<{latitud: string, longitud: string} | null>(null);
+  const [viajeSeleccionado, setViajeSeleccionado] = useState<number | null>(null);
   const navigate = useNavigate();
 
   // Estado del conductor
@@ -188,6 +190,44 @@ const ListaViajes = () => {
     </div>
   );
 
+  // Componente para mostrar los detalles del viaje seleccionado
+  const DetallesViajeSeleccionado = ({ viaje }: { viaje: Viaje }) => {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-[#2D5DA1]">
+            Viaje Aceptado: {viaje.punto_concentracion}
+          </h2>
+          <button
+            onClick={() => setViajeSeleccionado(null)}
+            className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          >
+            Cancelar
+          </button>
+        </div>
+        
+        <div className="mb-4 flex flex-wrap gap-4 text-gray-700">
+          <div className="flex items-center space-x-2">
+            <FaClock className="text-[#F2B134]" />
+            <span>Tiempo: {viaje.tiempo_estimado}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FaRoad className="text-[#F2B134]" />
+            <span>Distancia: {viaje.distancia_km} km</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FaDollarSign className="text-[#F2B134]" />
+            <span>Ganancia: ${viaje.ganancia_estimada}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FaUsers className="text-[#F2B134]" />
+            <span>Pasajeros: {viaje.cantidad_pasajeros}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <HeaderFooterConductores>
       <div className="p-6">
@@ -202,77 +242,97 @@ const ListaViajes = () => {
           <>
             {conductorActivo.activo ? (
               <>
-                <h1 className="text-2xl font-bold mb-4">Ofertas Cercanas</h1>
-
-                <div className="grid gap-4">
-                  {viajes.map((viaje) => (
-                    <div
-                      key={viaje.id}
-                      className="flex flex-col sm:flex-row justify-between sm:items-center border p-4 rounded shadow-md bg-white"
-                    >
-                      {/* Lado izquierdo con info */}
-                      <div className="flex-1 mb-4 sm:mb-0">
-                        <h2 className="text-xl font-bold mb-2 text-[#2D5DA1]">
-                          {viaje.punto_concentracion}
-                        </h2>
-
-                        <div className="flex flex-wrap gap-4 text-gray-700">
-                          <div className="flex items-center space-x-2">
-                            <FaClock className="text-[#F2B134]" />
-                            <span>{viaje.tiempo_estimado}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <FaRoad className="text-[#F2B134]" />
-                            <span>{viaje.distancia_km} km</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <FaDollarSign className="text-[#F2B134]" />
-                            <span>${viaje.ganancia_estimada}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Botones y pasajeros en columna para móvil */}
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end sm:space-x-4 w-full sm:w-auto">
-                        {/* Botones */}
-                        <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 sm:mb-0">
-                          <button
-                            className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition hover:scale-105 mb-2 sm:mb-0"
-                            onClick={() =>
-                              navigate(`/dashboard/conductor/detalle-viaje`, {
-                                state: viaje.id,
-                              })
-                            }
-                          >
-                            Ver detalles
-                          </button>
-                          <button
-                            className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-105"
-                            onClick={() =>
-                              console.log("Aceptar oferta del viaje", viaje.id)
-                            }
-                          >
-                            Aceptar oferta
-                          </button>
-                        </div>
-
-                        {/* Pasajeros */}
-                        <div className="text-right sm:text-left sm:border-l sm:pl-6">
-                          <p className="text-gray-500 text-sm">Pasajeros</p>
-                          <p className="text-2xl font-bold text-[#2D5DA1] flex items-center justify-end sm:justify-start">
-                            <FaUsers className="mr-2 text-[#F2B134]" />
-                            {viaje.cantidad_pasajeros}
-                          </p>
-                        </div>
+                {viajeSeleccionado ? (
+                  <div className="flex flex-col md:flex-row">
+                    <div className="md:w-1/3 w-full mb-4 md:mb-0 md:pr-4">
+                      <DetallesViajeSeleccionado 
+                        viaje={viajes.find(v => v.id === viajeSeleccionado)!} 
+                      />
+                      <div className="bg-white rounded-lg shadow-md p-4">
+                        <h3 className="text-xl font-bold text-[#2D5DA1] mb-4">Instrucciones para el conductor</h3>
+                        <p>1. Dirígete al punto de concentración.</p>
+                        <p>2. Espera a los pasajeros en el lugar indicado.</p>
+                        <p>3. Verifica las identidades de los pasajeros antes de iniciar el viaje.</p>
+                        <p>4. Sigue la ruta recomendada en el mapa.</p>
                       </div>
                     </div>
-                  ))}
-                  {viajes.length === 0 && !loading && (
-                    <div className="text-center p-10">
-                      <p className="text-gray-600">No hay viajes disponibles en este momento.</p>
+                    <div className="md:w-2/3 w-full h-[600px]">
+                      <VisualizacionRuta viajeId={viajeSeleccionado} />
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="text-2xl font-bold mb-4">Ofertas Cercanas</h1>
+
+                    <div className="grid gap-4">
+                      {viajes.map((viaje) => (
+                        <div
+                          key={viaje.id}
+                          className="flex flex-col sm:flex-row justify-between sm:items-center border p-4 rounded shadow-md bg-white"
+                        >
+                          {/* Lado izquierdo con info */}
+                          <div className="flex-1 mb-4 sm:mb-0">
+                            <h2 className="text-xl font-bold mb-2 text-[#2D5DA1]">
+                              {viaje.punto_concentracion}
+                            </h2>
+
+                            <div className="flex flex-wrap gap-4 text-gray-700">
+                              <div className="flex items-center space-x-2">
+                                <FaClock className="text-[#F2B134]" />
+                                <span>{viaje.tiempo_estimado}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <FaRoad className="text-[#F2B134]" />
+                                <span>{viaje.distancia_km} km</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <FaDollarSign className="text-[#F2B134]" />
+                                <span>${viaje.ganancia_estimada}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Botones y pasajeros en columna para móvil */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end sm:space-x-4 w-full sm:w-auto">
+                            {/* Botones */}
+                            <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 sm:mb-0">
+                              <button
+                                className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition hover:scale-105 mb-2 sm:mb-0"
+                                onClick={() =>
+                                  navigate(`/dashboard/conductor/detalle-viaje`, {
+                                    state: viaje.id,
+                                  })
+                                }
+                              >
+                                Ver detalles
+                              </button>
+                              <button
+                                className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-105"
+                                onClick={() => setViajeSeleccionado(viaje.id)}
+                              >
+                                Aceptar oferta
+                              </button>
+                            </div>
+
+                            {/* Pasajeros */}
+                            <div className="text-right sm:text-left sm:border-l sm:pl-6">
+                              <p className="text-gray-500 text-sm">Pasajeros</p>
+                              <p className="text-2xl font-bold text-[#2D5DA1] flex items-center justify-end sm:justify-start">
+                                <FaUsers className="mr-2 text-[#F2B134]" />
+                                {viaje.cantidad_pasajeros}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {viajes.length === 0 && !loading && (
+                        <div className="text-center p-10">
+                          <p className="text-gray-600">No hay viajes disponibles en este momento.</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               <ActivacionServiciosScreen />
