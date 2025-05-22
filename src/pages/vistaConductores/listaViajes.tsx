@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaClock, FaRoad, FaDollarSign, FaUsers } from "react-icons/fa";
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
+import { getUserId } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
 
 type Viaje = {
@@ -12,20 +13,119 @@ type Viaje = {
   cantidad_pasajeros: number;
 };
 
+type ConductorEstado = {
+  success: boolean;
+  activo: boolean;
+  message: string;
+  data: {
+    conductorId: number;
+    estadoDisponibilidad?: string;
+    ubicacion?: {
+      latitud: string;
+      longitud: string;
+    };
+    ultimaActualizacion?: string;
+    sesionExpiraEn?: string;
+  };
+};
 
 const ListaViajes = () => {
   const [viajes, setViajes] = useState<Viaje[]>([]);
   const [loading, setLoading] = useState(false);
+  const [conductorActivo, setConductorActivo] = useState<ConductorEstado | null>(null);
+  const [posicionActual, setPosicionActual] = useState<{latitud: string, longitud: string} | null>(null);
   const navigate = useNavigate();
 
-
-
+  // Estado del conductor
   useEffect(() => {
+    const verificarEstadoConductor = async () => {
+      setLoading(true);
+      try {
+        const userId = getUserId();
+        if (!userId) {
+          console.error("No se encontró ID de usuario");
+          return;
+        }
+
+        // Posición actual conductor
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setPosicionActual({
+                latitud: position.coords.latitude.toString(),
+                longitud: position.coords.longitude.toString()
+              });
+            },
+            (error) => {
+              console.error("Error obteniendo geolocalización:", error);
+            }
+          );
+        }
+
+        // Estado del conductor
+        const response = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
+        const data = await response.json();
+        setConductorActivo(data);
+      } catch (error) {
+        console.error("Error al verificar estado del conductor", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verificarEstadoConductor();
+  }, []);
+
+  // Activación servicios del conductor
+  const activarServicios = async () => {
+    if (!posicionActual) {
+      alert("No se pudo obtener tu ubicación actual. Por favor, permite el acceso a la ubicación.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userId = getUserId();
+      if (!userId) return;
+
+      const response = await fetch("https://drivup-backend.onrender.com/activar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: Number(userId),
+          latitud: posicionActual.latitud,
+          longitud: posicionActual.longitud
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Actualizar estado del conductor
+        const estadoResponse = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
+        const estadoData = await estadoResponse.json();
+        setConductorActivo(estadoData);
+      } else {
+        alert("No se pudo activar tus servicios. Intenta nuevamente.");
+      }
+    } catch (error) {
+      console.error("Error al activar servicios", error);
+      alert("Ocurrió un error al activar tus servicios.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Obtener viajes disponibles si el conductor está activo
+  useEffect(() => {
+    if (!conductorActivo?.activo) return;
+    
     const fetchViajesYConcentraciones = async () => {
       setLoading(true);
       try {
         // 1. Obtener ID del usuario y buscar ID del conductor
-        const userId = localStorage.getItem("userId");
+        const userId = getUserId();
 
         const resConductores = await fetch(`https://drivup-backend.onrender.com/conductores`);
         const conductores = await resConductores.json();
@@ -62,92 +162,125 @@ const ListaViajes = () => {
 
       } catch (error) {
         console.error("Error al obtener viajes", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchViajesYConcentraciones();
-  }, []);
+  }, [conductorActivo]);
+
+  // Pantalla de activación de servicios
+  const ActivacionServiciosScreen = () => (
+    <div className="flex flex-col items-center justify-center p-10 bg-white rounded-lg shadow-md mx-auto my-10 max-w-md">
+      <h2 className="text-2xl font-bold text-[#2D5DA1] mb-4 text-center">
+        Activa tus servicios para que el sistema te recomiende viajes
+      </h2>
+      <p className="text-gray-600 mb-6 text-center">
+        Necesitas activar tus servicios para ver viajes disponibles en tu zona
+      </p>
+      <button
+        onClick={activarServicios}
+        className="px-6 py-3 bg-[#F2B134] text-white rounded-lg hover:bg-[#d79b28] transition font-bold text-lg shadow-md"
+      >
+        Haz clic aquí para activar
+      </button>
+    </div>
+  );
 
   return (
     <HeaderFooterConductores>
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Ofertas Cercanas</h1>
+        {loading && (
+          <div className="flex justify-center mb-4 mt-4">
+            <div className="spinner-border animate-spin border-4 border-t-4 border-black-500 rounded-full w-8 h-8" />
+            <span className="ml-2 text-gray-700">Cargando...</span>
+          </div>
+        )}
 
-        <div className="grid gap-4">
-          {viajes.map((viaje) => (
-            <div
-              key={viaje.id}
-              className="flex flex-col sm:flex-row justify-between sm:items-center border p-4 rounded shadow-md bg-white"
-            >
-              {/* Lado izquierdo con info */}
-              <div className="flex-1 mb-4 sm:mb-0">
-                <h2 className="text-xl font-bold mb-2 text-[#2D5DA1]">
-                  {viaje.punto_concentracion}
-                </h2>
+        {!loading && conductorActivo && (
+          <>
+            {conductorActivo.activo ? (
+              <>
+                <h1 className="text-2xl font-bold mb-4">Ofertas Cercanas</h1>
 
-                <div className="flex flex-wrap gap-4 text-gray-700">
-                  <div className="flex items-center space-x-2">
-                    <FaClock className="text-[#F2B134]" />
-                    <span>{viaje.tiempo_estimado}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <FaRoad className="text-[#F2B134]" />
-                    <span>{viaje.distancia_km} km</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <FaDollarSign className="text-[#F2B134]" />
-                    <span>${viaje.ganancia_estimada}</span>
-                  </div>
+                <div className="grid gap-4">
+                  {viajes.map((viaje) => (
+                    <div
+                      key={viaje.id}
+                      className="flex flex-col sm:flex-row justify-between sm:items-center border p-4 rounded shadow-md bg-white"
+                    >
+                      {/* Lado izquierdo con info */}
+                      <div className="flex-1 mb-4 sm:mb-0">
+                        <h2 className="text-xl font-bold mb-2 text-[#2D5DA1]">
+                          {viaje.punto_concentracion}
+                        </h2>
+
+                        <div className="flex flex-wrap gap-4 text-gray-700">
+                          <div className="flex items-center space-x-2">
+                            <FaClock className="text-[#F2B134]" />
+                            <span>{viaje.tiempo_estimado}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <FaRoad className="text-[#F2B134]" />
+                            <span>{viaje.distancia_km} km</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <FaDollarSign className="text-[#F2B134]" />
+                            <span>${viaje.ganancia_estimada}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botones y pasajeros en columna para móvil */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end sm:space-x-4 w-full sm:w-auto">
+                        {/* Botones */}
+                        <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 sm:mb-0">
+                          <button
+                            className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition hover:scale-105 mb-2 sm:mb-0"
+                            onClick={() =>
+                              navigate(`/dashboard/conductor/detalle-viaje`, {
+                                state: viaje.id,
+                              })
+                            }
+                          >
+                            Ver detalles
+                          </button>
+                          <button
+                            className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-105"
+                            onClick={() =>
+                              console.log("Aceptar oferta del viaje", viaje.id)
+                            }
+                          >
+                            Aceptar oferta
+                          </button>
+                        </div>
+
+                        {/* Pasajeros */}
+                        <div className="text-right sm:text-left sm:border-l sm:pl-6">
+                          <p className="text-gray-500 text-sm">Pasajeros</p>
+                          <p className="text-2xl font-bold text-[#2D5DA1] flex items-center justify-end sm:justify-start">
+                            <FaUsers className="mr-2 text-[#F2B134]" />
+                            {viaje.cantidad_pasajeros}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {viajes.length === 0 && !loading && (
+                    <div className="text-center p-10">
+                      <p className="text-gray-600">No hay viajes disponibles en este momento.</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              {/* Botones y pasajeros en columna para móvil */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end sm:space-x-4 w-full sm:w-auto">
-                {/* Botones */}
-                <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 sm:mb-0">
-                  <button
-                    className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition hover:scale-105 mb-2 sm:mb-0"
-                    onClick={() =>
-                      navigate(`/dashboard/conductor/detalle-viaje`, {
-                        state: viaje.id,
-                      })
-                    }
-                  >
-                    Ver detalles
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-105"
-                    onClick={() =>
-                      console.log("Aceptar oferta del viaje", viaje.id)
-                    }
-                  >
-                    Aceptar oferta
-                  </button>
-                </div>
-
-                {/* Pasajeros */}
-                <div className="text-right sm:text-left sm:border-l sm:pl-6">
-                  <p className="text-gray-500 text-sm">Pasajeros</p>
-                  <p className="text-2xl font-bold text-[#2D5DA1] flex items-center justify-end sm:justify-start">
-                    <FaUsers className="mr-2 text-[#F2B134]" />
-                    {viaje.cantidad_pasajeros}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              </>
+            ) : (
+              <ActivacionServiciosScreen />
+            )}
+          </>
+        )}
       </div>
-
-      {loading && (
-        <div className="flex justify-center mb-4 mt-4">
-          <div className="spinner-border animate-spin border-4 border-t-4 border-black-500 rounded-full w-8 h-8" />
-          <span className="ml-2 text-gray-700">Cargando...</span>
-        </div>
-      )}
     </HeaderFooterConductores>
-
   );
 };
 
