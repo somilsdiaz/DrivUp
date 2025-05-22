@@ -61,7 +61,7 @@ const ListaViajes = () => {
         }
 
         // estado del conductor
-        const response = await fetch(`http://localhost:5000/verificar-estado/${userId}`);
+        const response = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const data = await response.json();
         setConductorActivo(data);
       } catch (error) {
@@ -86,7 +86,7 @@ const ListaViajes = () => {
       const userId = getUserId();
       if (!userId) return;
 
-      const response = await fetch("http://localhost:5000/activar", {
+      const response = await fetch("https://drivup-backend.onrender.com/activar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -101,7 +101,7 @@ const ListaViajes = () => {
       const data = await response.json();
       if (data.success) {
         // actualizar estado del conductor
-        const estadoResponse = await fetch(`http://localhost:5000/verificar-estado/${userId}`);
+        const estadoResponse = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const estadoData = await estadoResponse.json();
         setConductorActivo(estadoData);
       } else {
