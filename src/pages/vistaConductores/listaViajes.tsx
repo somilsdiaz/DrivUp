@@ -240,7 +240,7 @@ const ListaViajes = () => {
                             className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition hover:scale-105 mb-2 sm:mb-0"
                             onClick={() =>
                               navigate(`/dashboard/conductor/detalle-viaje`, {
-                                state: viaje.id,
+                                state: { id: viaje.id, punto_concentracion: viaje.punto_concentracion }
                               })
                             }
                           >

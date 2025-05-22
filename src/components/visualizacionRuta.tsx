@@ -15,7 +15,6 @@ type IdViajeProps = {
 
 const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
   const viajeIdNumero = Number(viajeId);
-  console.log(viajeIdNumero);
 
   const [ruta, setRuta] = useState<Ruta | null>(null);
   const [loading, setLoading] = useState(false);
@@ -90,7 +89,7 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
 }, [viajeId]);
 
   return (
-    <div className="p-4 w-9/12 z-0">
+    <div className="p-4 w-full  md:w-9/12 z-0">
       {loading ? (
         <div className="flex justify-center mb-4 mt-4">
           <div className="spinner-border animate-spin border-4 border-t-4 border-black-500 rounded-full w-8 h-8" />

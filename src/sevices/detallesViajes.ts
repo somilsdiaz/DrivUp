@@ -3,7 +3,7 @@ import { axiosApi } from "../api/axiosApi";
 export const traerDetallesViaje = async (idViaje:number) => {
    
   try {
-    const response = await axiosApi.get(`/traerDatosViajes?id_viaje=${idViaje}`, {
+    const response = await axiosApi.get(`/traerDatosViaje?id_viaje=${idViaje}`, {
         headers: { "Content-Type": "application/json" },
     });
     return response.data;
