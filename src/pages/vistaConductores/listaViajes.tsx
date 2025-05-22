@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaClock, FaRoad, FaDollarSign, FaUsers } from "react-icons/fa";
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
 import { getUserId } from "../../utils/auth";
+import { useNavigate } from "react-router-dom";
 
 type Viaje = {
   id: number;
@@ -33,8 +34,9 @@ const ListaViajes = () => {
   const [loading, setLoading] = useState(false);
   const [conductorActivo, setConductorActivo] = useState<ConductorEstado | null>(null);
   const [posicionActual, setPosicionActual] = useState<{latitud: string, longitud: string} | null>(null);
+  const navigate = useNavigate();
 
-  //estado del conductor
+  // Estado del conductor
   useEffect(() => {
     const verificarEstadoConductor = async () => {
       setLoading(true);
@@ -45,7 +47,7 @@ const ListaViajes = () => {
           return;
         }
 
-        //posición actual conductor
+        // Posición actual conductor
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -60,7 +62,7 @@ const ListaViajes = () => {
           );
         }
 
-        // estado del conductor
+        // Estado del conductor
         const response = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const data = await response.json();
         setConductorActivo(data);
@@ -74,7 +76,7 @@ const ListaViajes = () => {
     verificarEstadoConductor();
   }, []);
 
-  // activacion servicios del conductor
+  // Activación servicios del conductor
   const activarServicios = async () => {
     if (!posicionActual) {
       alert("No se pudo obtener tu ubicación actual. Por favor, permite el acceso a la ubicación.");
@@ -100,7 +102,7 @@ const ListaViajes = () => {
 
       const data = await response.json();
       if (data.success) {
-        // actualizar estado del conductor
+        // Actualizar estado del conductor
         const estadoResponse = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const estadoData = await estadoResponse.json();
         setConductorActivo(estadoData);
@@ -160,8 +162,9 @@ const ListaViajes = () => {
 
       } catch (error) {
         console.error("Error al obtener viajes", error);
+      } finally {
+        setLoading(false);
       }
-       setLoading(false);
     };
 
     fetchViajesYConcentraciones();
@@ -205,15 +208,15 @@ const ListaViajes = () => {
                   {viajes.map((viaje) => (
                     <div
                       key={viaje.id}
-                      className="flex justify-between items-center border p-4 rounded shadow-md bg-white"
+                      className="flex flex-col sm:flex-row justify-between sm:items-center border p-4 rounded shadow-md bg-white"
                     >
                       {/* Lado izquierdo con info */}
-                      <div className="flex-1">
+                      <div className="flex-1 mb-4 sm:mb-0">
                         <h2 className="text-xl font-bold mb-2 text-[#2D5DA1]">
                           {viaje.punto_concentracion}
                         </h2>
 
-                        <div className="flex space-x-6 text-gray-700">
+                        <div className="flex flex-wrap gap-4 text-gray-700">
                           <div className="flex items-center space-x-2">
                             <FaClock className="text-[#F2B134]" />
                             <span>{viaje.tiempo_estimado}</span>
@@ -228,29 +231,39 @@ const ListaViajes = () => {
                           </div>
                         </div>
                       </div>
-                      {/* Botones */}
-                      <div className="flex space-x-4 mt-2">
-                        <button
-                          className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition"
-                          onClick={() => console.log("Ver detalles del viaje", viaje.id)}
-                        >
-                          Ver detalles
-                        </button>
-                        <button
-                          className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition"
-                          onClick={() => console.log("Aceptar oferta del viaje", viaje.id)}
-                        >
-                          Aceptar oferta
-                        </button>
-                      </div>
 
-                      {/* Lado derecho: Pasajeros */}
-                      <div className="text-right ml-6 border-l pl-6">
-                        <p className="text-gray-500 text-sm">Pasajeros</p>
-                        <p className="text-2xl font-bold text-[#2D5DA1] flex items-center justify-end">
-                          <FaUsers className="mr-2 text-[#F2B134]" />
-                          {viaje.cantidad_pasajeros}
-                        </p>
+                      {/* Botones y pasajeros en columna para móvil */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end sm:space-x-4 w-full sm:w-auto">
+                        {/* Botones */}
+                        <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 sm:mb-0">
+                          <button
+                            className="px-4 py-2 bg-[#2D5DA1] text-white rounded hover:bg-[#244b85] transition hover:scale-105 mb-2 sm:mb-0"
+                            onClick={() =>
+                              navigate(`/dashboard/conductor/detalle-viaje`, {
+                                state: viaje.id,
+                              })
+                            }
+                          >
+                            Ver detalles
+                          </button>
+                          <button
+                            className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-105"
+                            onClick={() =>
+                              console.log("Aceptar oferta del viaje", viaje.id)
+                            }
+                          >
+                            Aceptar oferta
+                          </button>
+                        </div>
+
+                        {/* Pasajeros */}
+                        <div className="text-right sm:text-left sm:border-l sm:pl-6">
+                          <p className="text-gray-500 text-sm">Pasajeros</p>
+                          <p className="text-2xl font-bold text-[#2D5DA1] flex items-center justify-end sm:justify-start">
+                            <FaUsers className="mr-2 text-[#F2B134]" />
+                            {viaje.cantidad_pasajeros}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}

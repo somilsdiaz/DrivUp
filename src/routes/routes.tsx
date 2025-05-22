@@ -28,6 +28,7 @@ const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
     //<ProtectedRoute> si el usuario no esta autenticado no puede acceder a la pagina y redirige a la pagina de login
     //<RoleBasedRoute> si el usuario no tiene el rol permitido no puede acceder a la pagina
+    
     {
         path: "/dashboard/conductor/lista-viajes",
         element:(                 
@@ -57,14 +58,14 @@ const router = createBrowserRouter([
     {
         path: "/dashboard/conductor/detalle-viaje",
         element:(                 
-            // <ProtectedRoute>
-            //     <RoleBasedRoute
-            //         allowedRoles={["conductor"]}
-            //         redirectPath="/dashboard/conductor"
-            //     >
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["conductor"]}
+                    redirectPath="/dashboard/conductor"
+                >
                     <DetalleViaje />
-            //     </RoleBasedRoute>
-            // </ProtectedRoute>
+                 </RoleBasedRoute>
+            </ProtectedRoute>
         ),
     },
     {
