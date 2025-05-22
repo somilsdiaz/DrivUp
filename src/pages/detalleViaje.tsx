@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { DetallesViajeDatos } from "../components/detallesViajeDatos";
-import HeaderFooter from "../layouts/headerFooter";
+import HeaderFooterConductores from "../layouts/headerFooterConductores";
 import { Menu } from 'lucide-react';
 import DetallesViajeResponsive from "../components/detallesViajeResponsive";
 import VisualizacionRuta from "../components/visualizacionRuta";
@@ -48,7 +48,7 @@ const closeMenu=()=>{
       return () => window.removeEventListener("resize", handleResize);
     }, []);
     return(
-        <HeaderFooter>
+        <HeaderFooterConductores>
         <section className="flex relative">
             <VisualizacionRuta viajeId={id}/>
             {windowWidth > 600 && (<DetallesViajeDatos {...viajes[0]}/>)}
@@ -62,6 +62,6 @@ const closeMenu=()=>{
            { <DetallesViajeResponsive isMenuVisible={openWindow} closeMenu={closeMenu} data={viajes[0]}/>}
            
         </section>
-       </HeaderFooter>
+       </HeaderFooterConductores>
     );
 }
