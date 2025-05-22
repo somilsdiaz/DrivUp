@@ -5,37 +5,15 @@ import { Menu } from 'lucide-react';
 import DetallesViajeResponsive from "../components/detallesViajeResponsive";
 import VisualizacionRuta from "../components/visualizacionRuta";
 import { useLocation } from "react-router-dom";
-
-type viajesProps = {
-    conductor: string;
-    pasajeros: string[];
-    destinos: string[];
-};
+import { viajeProps } from "../core/interfaces/detallesViajesProps";
 
 
-const viajes: viajesProps[] = [
-    {
-        conductor: "Carlos Pérez",
-        pasajeros: ["Ana Gómez", "Luis Martínez", "Sofía Torres"],
-        destinos: ["Centro Comercial Buenavista", "Estadio Metropolitano", "Parque Venezuela"]
-    },
-    {
-        conductor: "María Rodríguez",
-        pasajeros: ["Jorge Díaz", "Camila Herrera"],
-        destinos: ["Universidad del Norte", "Malecón del Río", "Zoológico de Barranquilla"]
-    },
-    {
-        conductor: "Juan Castillo",
-        pasajeros: ["Pedro Suárez", "Lucía Mendoza", "Andrés Ramírez"],
-        destinos: ["Aeropuerto Ernesto Cortissoz", "Plaza de la Paz", "Museo del Caribe"]
-    }
-];
 
 export function DetalleViaje() {
     const [windowWidth, setWindow] = useState(window.innerWidth);
     const [openWindow,setOpenWindow]=useState<boolean>(false);
     const location = useLocation();
-      const id = location.state as number
+      const data = location.state as viajeProps
 
 const closeMenu=()=>{
     setOpenWindow(false);
@@ -50,8 +28,8 @@ const closeMenu=()=>{
     return(
         <HeaderFooterConductores>
         <section className="flex relative">
-            <VisualizacionRuta viajeId={id}/>
-            {windowWidth > 600 && (<DetallesViajeDatos {...viajes[0]}/>)}
+            <VisualizacionRuta viajeId={data.id}/>
+            {windowWidth > 600 && (<DetallesViajeDatos {...data}/>)}
             {windowWidth < 600 && ( 
                <button 
                onClick={()=>setOpenWindow(true)}
@@ -59,7 +37,7 @@ const closeMenu=()=>{
                    opacity-50 rounded-full  p-2 top-5 cursor-pointer z-20">
                  <Menu size={20}  />
                </button>)}
-           { <DetallesViajeResponsive isMenuVisible={openWindow} closeMenu={closeMenu} data={viajes[0]}/>}
+           { <DetallesViajeResponsive isMenuVisible={openWindow} closeMenu={closeMenu} data={data}/>}
            
         </section>
        </HeaderFooterConductores>

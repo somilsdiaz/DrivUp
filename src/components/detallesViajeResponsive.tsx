@@ -1,13 +1,14 @@
 import React from 'react';
 
-import { DetallesViajeDatos, viajesProps } from './detallesViajeDatos';
+import { DetallesViajeDatos } from './detallesViajeDatos';
+import { viajeProps } from '../core/interfaces/detallesViajesProps';
 
 
 
 interface MenuResponsiveProps {
     isMenuVisible: boolean;
     closeMenu: () => void;
-    data:viajesProps;
+    data:viajeProps;
 }
 
 const DetallesViajeResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible, closeMenu,data }) => {
@@ -21,7 +22,7 @@ const DetallesViajeResponsive: React.FC<MenuResponsiveProps> = ({ isMenuVisible,
             >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#CF251F] via-[#FCD116]  to-[#078930]"></div>
                 <button
-                    className="absolute top-4 right-4 text-3xl text-gray-800 hover:text-blue-600 transition-colors"
+                    className="absolute rounded-3xl p-1 px-3 top-4 right-4  text-white bg-black opacity-50 hover:text-blue-600 transition-colors"
                     onClick={closeMenu}
                 >
                     &times;
