@@ -4,6 +4,7 @@ import HeaderFooterConductores from "../../layouts/headerFooterConductores";
 import { getUserId } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
 import ModalMessage from "../../components/skeletons/ModalMessage";
+import ViajeActualConductor from "../../components/vistaConductores/ViajeActualConductor";
 
 type Viaje = {
   id: number;
@@ -219,12 +220,24 @@ const ListaViajes = () => {
 
       const data = await response.json();
       
-      if (data.success) {
-        showModal("¡Viaje aceptado correctamente!", "success");
+      if (data.success || data.message) {
+        showModal(data.message || "Viaje aceptado con éxito", "success");
+        
+        // Actualizar el estado del conductor a "en_viaje_asignado"
+        if (conductorActivo) {
+          setConductorActivo({
+            ...conductorActivo,
+            data: {
+              ...conductorActivo.data,
+              estadoDisponibilidad: "en_viaje_asignado"
+            }
+          });
+        }
+        
         // Actualizar la lista de viajes disponibles
         setViajes(viajes.filter(viaje => viaje.id !== viajeId));
-      } else {
-        showModal(data.message || "No se pudo aceptar el viaje. Intenta nuevamente.", "error");
+      } else if (data.error) {
+        showModal(data.mensaje || "No se pudo aceptar el viaje. Intenta nuevamente.", "error");
       }
     } catch (error) {
       console.error("Error al aceptar viaje:", error);
@@ -264,7 +277,9 @@ const ListaViajes = () => {
 
         {!loading && conductorActivo && (
           <>
-            {conductorActivo.activo ? (
+            {conductorActivo.data.estadoDisponibilidad === "en_viaje_asignado" ? (
+              <ViajeActualConductor />
+            ) : conductorActivo.activo ? (
               <>
                 <h1 className="text-2xl font-bold mb-4">Ofertas Cercanas</h1>
 
