@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
-import {FaClock,FaRoad,FaDollarSign,FaUsers,FaMapMarkerAlt,FaPhoneAlt,FaUserAlt,FaArrowRight,FaRoute,FaCheckCircle,FaSpinner,} from "react-icons/fa"
+import { FaClock, FaRoad, FaDollarSign, FaUsers, FaMapMarkerAlt, FaPhoneAlt, FaUserAlt, FaArrowRight, FaRoute, FaCheckCircle, FaSpinner, } from "react-icons/fa"
 import { getUserId } from "../../utils/auth"
+import VisualizacionRuta from "../../components/visualizacionRuta"
 
 type PuntoConcentracion = {
     id: number
@@ -204,7 +205,10 @@ const ViajeActualConductor = () => {
                     </div>
                 </div>
             </div>
-
+            {/* Visualization of the route */}
+            <div className="relative z-0 flex justify-center bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden"> 
+                {viajeData && <VisualizacionRuta viajeId={viaje.id} />}
+            </div>
             {/* Passengers Section */}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div className="bg-gradient-to-r from-[#F8F9FA] to-white p-6 border-b border-gray-100">
