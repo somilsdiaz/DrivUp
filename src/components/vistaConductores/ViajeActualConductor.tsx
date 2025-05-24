@@ -155,7 +155,9 @@ const ViajeActualConductor = () => {
                                 <FaMapMarkerAlt className="text-white" />
                             </div>
                             <div>
-                                <p className="text-white/70 text-sm font-medium">Punto de Concentración</p>
+                                <p className="text-white/70 text-sm font-medium">
+                                    Punto de Concentración {viaje.pmcp_es_origen ? "(Origen)" : "(Destino)"}
+                                </p>
                                 <p className="text-white text-lg font-semibold">{viaje.punto_concentracion.nombre}</p>
                             </div>
                         </div>
