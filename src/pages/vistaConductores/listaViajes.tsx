@@ -3,6 +3,7 @@ import { FaClock, FaRoad, FaDollarSign, FaUsers } from "react-icons/fa";
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
 import { getUserId } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
+import ModalMessage from "../../components/skeletons/ModalMessage";
 
 type Viaje = {
   id: number;
@@ -29,11 +30,23 @@ type ConductorEstado = {
   };
 };
 
+type ModalConfig = {
+  isOpen: boolean;
+  message: string;
+  type: "success" | "error" | "info";
+};
+
 const ListaViajes = () => {
   const [viajes, setViajes] = useState<Viaje[]>([]);
   const [loading, setLoading] = useState(false);
+  const [procesandoViaje, setProcesandoViaje] = useState<number | null>(null);
   const [conductorActivo, setConductorActivo] = useState<ConductorEstado | null>(null);
   const [posicionActual, setPosicionActual] = useState<{latitud: string, longitud: string} | null>(null);
+  const [modal, setModal] = useState<ModalConfig>({
+    isOpen: false,
+    message: "",
+    type: "info"
+  });
   const navigate = useNavigate();
 
   // Estado del conductor
@@ -76,10 +89,22 @@ const ListaViajes = () => {
     verificarEstadoConductor();
   }, []);
 
+  const closeModal = () => {
+    setModal({...modal, isOpen: false});
+  };
+
+  const showModal = (message: string, type: "success" | "error" | "info") => {
+    setModal({
+      isOpen: true,
+      message,
+      type
+    });
+  };
+
   // Activación servicios del conductor
   const activarServicios = async () => {
     if (!posicionActual) {
-      alert("No se pudo obtener tu ubicación actual. Por favor, permite el acceso a la ubicación.");
+      showModal("No se pudo obtener tu ubicación actual. Por favor, permite el acceso a la ubicación.", "error");
       return;
     }
 
@@ -106,12 +131,13 @@ const ListaViajes = () => {
         const estadoResponse = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const estadoData = await estadoResponse.json();
         setConductorActivo(estadoData);
+        showModal("Servicios activados correctamente. Ahora puedes ver viajes disponibles.", "success");
       } else {
-        alert("No se pudo activar tus servicios. Intenta nuevamente.");
+        showModal("No se pudo activar tus servicios. Intenta nuevamente.", "error");
       }
     } catch (error) {
       console.error("Error al activar servicios", error);
-      alert("Ocurrió un error al activar tus servicios.");
+      showModal("Ocurrió un error al activar tus servicios.", "error");
     } finally {
       setLoading(false);
     }
@@ -169,6 +195,44 @@ const ListaViajes = () => {
 
     fetchViajesYConcentraciones();
   }, [conductorActivo]);
+
+  // Función para aceptar un viaje
+  const aceptarViaje = async (viajeId: number) => {
+    setProcesandoViaje(viajeId);
+    try {
+      const userId = getUserId();
+      if (!userId) {
+        showModal("No se pudo identificar tu cuenta. Por favor, inicia sesión nuevamente.", "error");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/aceptar-viaje", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: Number(userId),
+          viaje_id: viajeId
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        showModal("¡Viaje aceptado correctamente!", "success");
+        // Actualizar la lista de viajes disponibles
+        setViajes(viajes.filter(viaje => viaje.id !== viajeId));
+      } else {
+        showModal(data.message || "No se pudo aceptar el viaje. Intenta nuevamente.", "error");
+      }
+    } catch (error) {
+      console.error("Error al aceptar viaje:", error);
+      showModal("Ocurrió un error al aceptar el viaje. Por favor, intenta más tarde.", "error");
+    } finally {
+      setProcesandoViaje(null);
+    }
+  };
 
   // Pantalla de activación de servicios
   const ActivacionServiciosScreen = () => (
@@ -248,11 +312,10 @@ const ListaViajes = () => {
                           </button>
                           <button
                             className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-105"
-                            onClick={() =>
-                              console.log("Aceptar oferta del viaje", viaje.id)
-                            }
+                            onClick={() => aceptarViaje(viaje.id)}
+                            disabled={procesandoViaje === viaje.id}
                           >
-                            Aceptar oferta
+                            {procesandoViaje === viaje.id ? "Procesando..." : "Aceptar oferta"}
                           </button>
                         </div>
 
@@ -279,6 +342,14 @@ const ListaViajes = () => {
             )}
           </>
         )}
+
+        {/* Modal de mensajes */}
+        <ModalMessage 
+          isOpen={modal.isOpen}
+          onClose={closeModal}
+          message={modal.message}
+          type={modal.type}
+        />
       </div>
     </HeaderFooterConductores>
   );
