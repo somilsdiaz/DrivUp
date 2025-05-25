@@ -307,6 +307,40 @@ const ViajeActualConductor = () => {
                         </p>
                     </div>
                 </div>
+                
+                <div className="mt-6 pt-6 border-t border-white/20 flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                        className="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 backdrop-blur-sm"
+                        onClick={() => {
+                            // Lógica para cancelar viaje
+                            if (window.confirm('¿Está seguro que desea cancelar este viaje? Esta acción no se puede deshacer.')) {
+                                console.log('Viaje cancelado');
+                                // Aquí iría la llamada a la API para cancelar el viaje
+                            }
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancelar viaje
+                    </button>
+                    
+                    <button
+                        className="flex items-center justify-center bg-[#5AAA95] hover:bg-[#4a9a85] text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg"
+                        onClick={() => {
+                            // Lógica para marcar viaje como completado
+                            if (window.confirm('¿Confirma que el viaje ha sido completado?')) {
+                                console.log('Viaje completado');
+                                // Aquí iría la llamada a la API para completar el viaje
+                            }
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Marcar viaje como completado
+                    </button>
+                </div>
             </div>
         </div>
     )
