@@ -14,6 +14,7 @@ interface ModalMessageProps {
     onCancel?: () => void
     confirmText?: string
     cancelText?: string
+    title?: string
 }
 
 const ModalMessage: React.FC<ModalMessageProps> = ({
@@ -27,6 +28,7 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
     onCancel,
     confirmText = "Aceptar",
     cancelText = "Cancelar",
+    title,
 }) => {
     const [progress, setProgress] = useState(100)
     const [isVisible, setIsVisible] = useState(false)
@@ -117,6 +119,7 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
                     borderGradient: "from-emerald-200 to-green-200",
                     accentColor: "emerald",
                     progressColor: "bg-gradient-to-r from-emerald-400 to-emerald-600",
+                    defaultTitle: "Operación exitosa"
                 }
             case "error":
                 return {
@@ -142,6 +145,7 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
                     borderGradient: "from-red-200 to-rose-200",
                     accentColor: "red",
                     progressColor: "bg-gradient-to-r from-red-400 to-red-600",
+                    defaultTitle: "Error"
                 }
             case "info":
             default:
@@ -172,11 +176,12 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
                     borderGradient: "from-blue-200 to-indigo-200",
                     accentColor: "blue",
                     progressColor: "bg-gradient-to-r from-blue-400 to-blue-600",
+                    defaultTitle: "Información"
                 }
         }
     }
 
-    const { icon, gradient, borderGradient, accentColor, progressColor } = getModalStyles()
+    const { icon, gradient, borderGradient, accentColor, progressColor, defaultTitle } = getModalStyles()
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
@@ -231,7 +236,7 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
                                             : "from-blue-600 to-indigo-600"
                                     } bg-clip-text text-transparent`}
                             >
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                {title || defaultTitle}
                             </h3>
 
                             <p className="text-gray-700 text-lg leading-relaxed font-medium">{message}</p>
