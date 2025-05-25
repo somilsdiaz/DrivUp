@@ -208,7 +208,7 @@ const ViajeActualConductor = () => {
                 </div>
             </div>
             {/* Visualization of the route */}
-            <div className="relative z-0 flex justify-center bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden"> 
+            <div className="relative z-0 flex justify-center bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden">
                 {viajeData && <VisualizacionRuta viajeId={viaje.id} />}
             </div>
             {/* Passengers Section */}
@@ -242,26 +242,26 @@ const ViajeActualConductor = () => {
 
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                                 {/* Passenger Info */}
-                                <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-4 lg:w-1/3">
                                     <div className="w-12 h-12 bg-gradient-to-br from-[#5AAA95] to-[#5AAA95]/80 rounded-xl flex items-center justify-center">
                                         <FaUserAlt className="text-white" />
                                     </div>
-                                    <div>
-                                        <h4 className="text-lg font-semibold text-[#4A4E69]">{pasajero.nombre_completo}</h4>
+                                    <div className="truncate">
+                                        <h4 className="text-lg font-semibold text-[#4A4E69] truncate">{pasajero.nombre_completo}</h4>
                                         <a
                                             href={`tel:${pasajero.telefono}`}
                                             className="flex items-center text-[#2D5DA1] hover:text-[#F2B134] transition-colors duration-200 text-sm font-medium"
                                         >
-                                            <FaPhoneAlt className="mr-2" />
-                                            {pasajero.telefono}
+                                            <FaPhoneAlt className="mr-2 flex-shrink-0" />
+                                            <span className="truncate">{pasajero.telefono}</span>
                                         </a>
                                     </div>
                                 </div>
 
                                 {/* Route Info */}
-                                <div className="flex items-center space-x-6">
+                                <div className="flex items-center space-x-6 lg:w-1/3 justify-center">
                                     <div className="flex items-center space-x-2">
-                                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <FaMapMarkerAlt className="text-red-500 text-sm" />
                                         </div>
                                         <div>
@@ -270,10 +270,10 @@ const ViajeActualConductor = () => {
                                         </div>
                                     </div>
 
-                                    <div className="w-8 h-0.5 bg-gradient-to-r from-red-500 to-green-500 rounded-full"></div>
+                                    <div className="w-8 h-0.5 bg-gradient-to-r from-red-500 to-green-500 rounded-full flex-shrink-0"></div>
 
                                     <div className="flex items-center space-x-2">
-                                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <FaArrowRight className="text-green-500 text-sm" />
                                         </div>
                                         <div>
@@ -284,7 +284,7 @@ const ViajeActualConductor = () => {
                                 </div>
 
                                 {/* Fare */}
-                                <div className="bg-gradient-to-r from-[#F2B134] to-[#F2B134]/90 text-white px-4 py-3 rounded-xl text-center min-w-[120px]">
+                                <div className="bg-gradient-to-r from-[#F2B134] to-[#F2B134]/90 text-white px-4 py-3 rounded-xl text-center lg:w-1/6 flex-shrink-0">
                                     <p className="text-xs font-medium opacity-90">Tarifa</p>
                                     <p className="text-lg font-bold">${Intl.NumberFormat("es-CO").format(Number(pasajero.tarifa))}</p>
                                 </div>

@@ -42,7 +42,7 @@ const ListaViajes = () => {
   const [loading, setLoading] = useState(false);
   const [procesandoViaje, setProcesandoViaje] = useState<number | null>(null);
   const [conductorActivo, setConductorActivo] = useState<ConductorEstado | null>(null);
-  const [posicionActual, setPosicionActual] = useState<{latitud: string, longitud: string} | null>(null);
+  const [posicionActual, setPosicionActual] = useState<{ latitud: string, longitud: string } | null>(null);
   const [modal, setModal] = useState<ModalConfig>({
     isOpen: false,
     message: "",
@@ -91,7 +91,7 @@ const ListaViajes = () => {
   }, []);
 
   const closeModal = () => {
-    setModal({...modal, isOpen: false});
+    setModal({ ...modal, isOpen: false });
   };
 
   const showModal = (message: string, type: "success" | "error" | "info") => {
@@ -147,7 +147,7 @@ const ListaViajes = () => {
   // Obtener viajes disponibles si el conductor está activo
   useEffect(() => {
     if (!conductorActivo?.activo) return;
-    
+
     const fetchViajesYConcentraciones = async () => {
       setLoading(true);
       try {
@@ -219,10 +219,10 @@ const ListaViajes = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.success || data.message) {
         showModal(data.message || "Viaje aceptado con éxito", "success");
-        
+
         // Actualizar el estado del conductor a "en_viaje_asignado"
         if (conductorActivo) {
           setConductorActivo({
@@ -233,7 +233,7 @@ const ListaViajes = () => {
             }
           });
         }
-        
+
         // Actualizar la lista de viajes disponibles
         setViajes(viajes.filter(viaje => viaje.id !== viajeId));
       } else if (data.error) {
@@ -359,7 +359,7 @@ const ListaViajes = () => {
         )}
 
         {/* Modal de mensajes */}
-        <ModalMessage 
+        <ModalMessage
           isOpen={modal.isOpen}
           onClose={closeModal}
           message={modal.message}
