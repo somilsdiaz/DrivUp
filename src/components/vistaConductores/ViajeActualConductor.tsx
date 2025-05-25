@@ -51,6 +51,48 @@ const ViajeActualConductor = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [viajeData, setViajeData] = useState<ViajeResponse | null>(null)
+    const [cancelingViaje, setCancelingViaje] = useState(false)
+
+    const handleCancelarViaje = async () => {
+        if (!viajeData) return
+        
+        if (window.confirm('¿Está seguro que desea cancelar este viaje? Esta acción no se puede deshacer.')) {
+            try {
+                setCancelingViaje(true)
+                const userId = getUserId()
+                if (!userId) {
+                    throw new Error("No se encontró ID de usuario")
+                }
+                
+                const response = await fetch('http://localhost:5000/cancelar-viaje', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        viaje_id: viajeData.viaje.id,
+                        user_id: userId
+                    })
+                })
+                
+                if (!response.ok) {
+                    const errorData = await response.json()
+                    throw new Error(errorData.message || "No se pudo cancelar el viaje")
+                }
+                
+                await response.json()
+                alert('El viaje ha sido cancelado exitosamente')
+                // Refrescar la página o redirigir al usuario
+                window.location.reload()
+                
+            } catch (err) {
+                console.error("Error al cancelar el viaje:", err)
+                alert("Error al cancelar el viaje: " + (err instanceof Error ? err.message : "Error desconocido"))
+            } finally {
+                setCancelingViaje(false)
+            }
+        }
+    }
 
     useEffect(() => {
         const fetchViajeActual = async () => {
@@ -311,18 +353,22 @@ const ViajeActualConductor = () => {
                 <div className="mt-6 pt-6 border-t border-white/20 flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                         className="flex items-center justify-center bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 backdrop-blur-sm"
-                        onClick={() => {
-                            // Lógica para cancelar viaje
-                            if (window.confirm('¿Está seguro que desea cancelar este viaje? Esta acción no se puede deshacer.')) {
-                                console.log('Viaje cancelado');
-                                // Aquí iría la llamada a la API para cancelar el viaje
-                            }
-                        }}
+                        onClick={handleCancelarViaje}
+                        disabled={cancelingViaje}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Cancelar viaje
+                        {cancelingViaje ? (
+                            <>
+                                <FaSpinner className="h-5 w-5 mr-2 animate-spin" />
+                                Cancelando...
+                            </>
+                        ) : (
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Cancelar viaje
+                            </>
+                        )}
                     </button>
                     
                     <button
