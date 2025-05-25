@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { FaClock, FaRoad, FaDollarSign, FaUsers, FaMapMarkerAlt, FaPhoneAlt, FaUserAlt, FaArrowRight, FaRoute, FaCheckCircle, FaSpinner, } from "react-icons/fa"
 import { getUserId } from "../../utils/auth"
 import VisualizacionRuta from "../../components/visualizacionRuta"
+import ModalMessage from "../../components/skeletons/ModalMessage"
 
 type PuntoConcentracion = {
     id: number
@@ -52,46 +53,70 @@ const ViajeActualConductor = () => {
     const [error, setError] = useState<string | null>(null)
     const [viajeData, setViajeData] = useState<ViajeResponse | null>(null)
     const [cancelingViaje, setCancelingViaje] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false)
+    const [modalMessage, setModalMessage] = useState("")
+    const [modalType, setModalType] = useState<"success" | "error" | "info">("info")
+    const [confirmModalOpen, setConfirmModalOpen] = useState(false)
 
     const handleCancelarViaje = async () => {
         if (!viajeData) return
+        setConfirmModalOpen(true)
+    }
+    
+    const confirmCancelarViaje = async () => {
+        if (!viajeData) return
         
-        if (window.confirm('¿Está seguro que desea cancelar este viaje? Esta acción no se puede deshacer.')) {
-            try {
-                setCancelingViaje(true)
-                const userId = getUserId()
-                if (!userId) {
-                    throw new Error("No se encontró ID de usuario")
-                }
-                
-                const response = await fetch('http://localhost:5000/cancelar-viaje', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        viaje_id: viajeData.viaje.id,
-                        user_id: userId
-                    })
-                })
-                
-                if (!response.ok) {
-                    const errorData = await response.json()
-                    throw new Error(errorData.message || "No se pudo cancelar el viaje")
-                }
-                
-                await response.json()
-                alert('El viaje ha sido cancelado exitosamente')
-                // Refrescar la página o redirigir al usuario
-                window.location.reload()
-                
-            } catch (err) {
-                console.error("Error al cancelar el viaje:", err)
-                alert("Error al cancelar el viaje: " + (err instanceof Error ? err.message : "Error desconocido"))
-            } finally {
-                setCancelingViaje(false)
+        try {
+            setCancelingViaje(true)
+            const userId = getUserId()
+            if (!userId) {
+                throw new Error("No se encontró ID de usuario")
             }
+            
+            const response = await fetch('http://localhost:5000/cancelar-viaje', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    viaje_id: viajeData.viaje.id,
+                    user_id: userId
+                })
+            })
+            
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || "No se pudo cancelar el viaje")
+            }
+            
+            await response.json()
+            setModalMessage('El viaje ha sido cancelado exitosamente')
+            setModalType('success')
+            setModalOpen(true)            
+        } catch (err) {
+            console.error("Error al cancelar el viaje:", err)
+            setModalMessage("Error al cancelar el viaje: " + (err instanceof Error ? err.message : "Error desconocido"))
+            setModalType('error')
+            setModalOpen(true)
+        } finally {
+            setCancelingViaje(false)
         }
+    }
+    
+    const handleCloseModal = () => {
+        setModalOpen(false)
+        if (modalType === 'success') {
+            window.location.reload()
+        }
+    }
+    
+    const handleCancelConfirmation = () => {
+        setConfirmModalOpen(false)
+    }
+
+    const handleConfirmCancelacion = () => {
+        setConfirmModalOpen(false)
+        confirmCancelarViaje();
     }
 
     useEffect(() => {
@@ -172,6 +197,29 @@ const ViajeActualConductor = () => {
 
     return (
         <div className="space-y-6">
+            {/* mensaje modal para resultados */}
+            <ModalMessage 
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                message={modalMessage}
+                type={modalType}
+                autoClose={true}
+                autoCloseTime={3000}
+            />
+            
+            {/* mensaje modal para confirmacion */}
+            <ModalMessage 
+                isOpen={confirmModalOpen}
+                onClose={handleConfirmCancelacion}
+                onCancel={handleCancelConfirmation}
+                showCancelButton={true}
+                confirmText="Sí, cancelar"
+                cancelText="No, mantener viaje"
+                message={'¿Está seguro que desea cancelar este viaje? Esta acción no se puede deshacer.'}
+                type={"info"}
+                autoClose={false}
+            />
+            
             <div className="relative overflow-hidden bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] rounded-2xl shadow-2xl">
                 <div className="absolute inset-0 bg-black/10"></div>
                 <div className="relative p-6">

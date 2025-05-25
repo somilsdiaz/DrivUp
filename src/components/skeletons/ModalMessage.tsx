@@ -10,6 +10,10 @@ interface ModalMessageProps {
     type: ModalType
     autoClose?: boolean
     autoCloseTime?: number
+    showCancelButton?: boolean
+    onCancel?: () => void
+    confirmText?: string
+    cancelText?: string
 }
 
 const ModalMessage: React.FC<ModalMessageProps> = ({
@@ -19,6 +23,10 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
     type,
     autoClose = true,
     autoCloseTime = 3000,
+    showCancelButton = false,
+    onCancel,
+    confirmText = "Aceptar",
+    cancelText = "Cancelar",
 }) => {
     const [progress, setProgress] = useState(100)
     const [isVisible, setIsVisible] = useState(false)
@@ -175,7 +183,7 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
             <div
                 className={`absolute inset-0 backdrop-blur-md transition-all duration-300 ${isVisible ? "bg-black/20" : "bg-black/0"
                     }`}
-                onClick={handleClose}
+                onClick={showCancelButton && onCancel ? onCancel : handleClose}
             />
 
             {type === "success" &&
@@ -229,7 +237,18 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
                             <p className="text-gray-700 text-lg leading-relaxed font-medium">{message}</p>
                         </div>
 
-                        <div className="mt-8 flex justify-center">
+                        <div className="mt-8 flex justify-center space-x-4">
+                            {showCancelButton && onCancel && (
+                                <button
+                                    type="button"
+                                    className={`group relative px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-200 active:scale-95`}
+                                    onClick={onCancel}
+                                >
+                                    <span className="relative z-10">{cancelText}</span>
+                                    <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                                </button>
+                            )}
+                            
                             <button
                                 type="button"
                                 className={`group relative px-8 py-3 bg-gradient-to-r ${accentColor === "emerald"
@@ -240,7 +259,7 @@ const ModalMessage: React.FC<ModalMessageProps> = ({
                                     } text-white font-semibold rounded-xl shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-${accentColor}-200 active:scale-95`}
                                 onClick={handleClose}
                             >
-                                <span className="relative z-10">Aceptar</span>
+                                <span className="relative z-10">{confirmText}</span>
                                 <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                             </button>
                         </div>
