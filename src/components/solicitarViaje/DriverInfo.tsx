@@ -35,6 +35,11 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCompleting, setIsCompleting] = useState(false);
     
+    // Scroll to top when component mounts
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+    
     // Obtener el ID del viaje actual del usuario
     useEffect(() => {
         // Si ya tenemos un ID de viaje por props, no necesitamos buscarlo
