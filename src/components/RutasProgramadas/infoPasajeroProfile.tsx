@@ -45,14 +45,14 @@ const InfoPasajeroProfile: React.FC<InfoPasajeroProfileProps> = ({
             
             try {
                 // Obtener los datos del usuario
-                const userResponse = await fetch(`http://localhost:5000/usuario/${userId}`);
+                const userResponse = await fetch(`https://drivup-backend.onrender.com/usuario/${userId}`);
                 if (!userResponse.ok) {
                     throw new Error(`Error al obtener datos del usuario: ${userResponse.status}`);
                 }
                 const userData = await userResponse.json();
                 
                 // Obtener el rol del usuario
-                const roleResponse = await fetch(`http://localhost:5000/usuarios/${userId}/role`);
+                const roleResponse = await fetch(`https://drivup-backend.onrender.com/usuarios/${userId}/role`);
                 if (!roleResponse.ok) {
                     throw new Error(`Error al obtener el rol: ${roleResponse.status}`);
                 }

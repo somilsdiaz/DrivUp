@@ -9,7 +9,7 @@
 ## 🚀 Enlaces Rápidos
 
 [![Frontend](https://img.shields.io/badge/Frontend-DrivUp-blue?style=for-the-badge&logo=react)](https://drivup.onrender.com)
-[![Backend](https://img.shields.io/badge/Backend-API-green?style=for-the-badge&logo=node.js)](http://localhost:5000)
+[![Backend](https://img.shields.io/badge/Backend-API-green?style=for-the-badge&logo=node.js)](https://drivup-backend.onrender.com)
 [![Repo Backend](https://img.shields.io/badge/Repo-Backend-yellow?style=for-the-badge&logo=github)](https://github.com/somilsdiaz/DrivUp-backend)
 
 ## 📋 Índice

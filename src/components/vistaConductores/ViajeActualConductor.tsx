@@ -90,7 +90,7 @@ const ViajeActualConductor = () => {
                 throw new Error("No se encontró ID de usuario")
             }
             
-            const response = await fetch('http://localhost:5000/cancelar-viaje', {
+            const response = await fetch('https://drivup-backend.onrender.com/cancelar-viaje', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -128,7 +128,7 @@ const ViajeActualConductor = () => {
                 throw new Error("No se encontró ID de usuario")
             }
             
-            const response = await fetch(`http://localhost:5000/conductor/estado-viaje/${userId}`)
+            const response = await fetch(`https://drivup-backend.onrender.com/conductor/estado-viaje/${userId}`)
             if (!response.ok) {
                 const errorData = await response.json()
                 throw new Error(errorData.message || "No se pudo obtener el estado de los pasajeros")
@@ -157,7 +157,7 @@ const ViajeActualConductor = () => {
             }
             
             // Llamada al endpoint para completar el viaje
-            const response = await fetch(`http://localhost:5000/conductor/completar-viaje/${userId}`, {
+            const response = await fetch(`https://drivup-backend.onrender.com/conductor/completar-viaje/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -210,7 +210,7 @@ const ViajeActualConductor = () => {
                     return
                 }
 
-                const response = await fetch(`http://localhost:5000/detalles-viaje-conductor?user_id=${userId}`)
+                const response = await fetch(`https://drivup-backend.onrender.com/detalles-viaje-conductor?user_id=${userId}`)
                 if (!response.ok) {
                     throw new Error("Error al obtener detalles del viaje")
                 }

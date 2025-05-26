@@ -51,7 +51,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
             if (!currentUserId) return;
             
             try {
-                const response = await fetch(`http://localhost:5000/viaje-actual/${currentUserId}`);
+                const response = await fetch(`https://drivup-backend.onrender.com/viaje-actual/${currentUserId}`);
                 
                 if (!response.ok) {
                     console.error('No se pudo obtener el viaje actual');
@@ -119,7 +119,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
             setIsCancelling(true);
             
             // llamada a la api para cancelar el viaje activo
-            const response = await fetch(`http://localhost:5000/cancelar-solicitud/${userId}`, {
+            const response = await fetch(`https://drivup-backend.onrender.com/cancelar-solicitud/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -149,7 +149,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
             setIsCompleting(true);
             
             // llamada a la api para marcar el viaje como completado
-            const response = await fetch(`http://localhost:5000/completar-solicitud/${currentUserId}`, {
+            const response = await fetch(`https://drivup-backend.onrender.com/completar-solicitud/${currentUserId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

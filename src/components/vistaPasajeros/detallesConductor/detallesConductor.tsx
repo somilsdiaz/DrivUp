@@ -33,7 +33,7 @@ export function DetallesConductor(conductor:apiConductorProps|undefined){
             nombre_completo:conductor.nombre_completo,
             calificacion:Math.round(conductor.promedio_calificacion),
             fecha:conductor.created_at,
-            img:`http://localhost:5000/uploads/${conductor.foto_de_perfil}`,
+            img:`https://drivup-backend.onrender.com/uploads/${conductor.foto_de_perfil}`,
         }
         const conductorVehiculoProps={
             modelo_vehiculo:conductor.modelo_de_vehiculo,

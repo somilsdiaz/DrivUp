@@ -67,7 +67,7 @@ const ListaViajes = () => {
       const userId = getUserId();
       if (!userId) return;
 
-      const response = await fetch("http://localhost:5000/activar", {
+      const response = await fetch("https://drivup-backend.onrender.com/activar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +138,7 @@ const ListaViajes = () => {
         obtenerPosicionActual();
 
         // Estado del conductor
-        const response = await fetch(`http://localhost:5000/verificar-estado/${userId}`);
+        const response = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const data = await response.json();
         setConductorActivo(data);
       } catch (error) {
@@ -198,7 +198,7 @@ const ListaViajes = () => {
       const userId = getUserId();
       if (!userId) return;
 
-      const response = await fetch("http://localhost:5000/activar", {
+      const response = await fetch("https://drivup-backend.onrender.com/activar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -216,7 +216,7 @@ const ListaViajes = () => {
         guardarPosicionEnStorage(posicionActual);
         
         // Actualizar estado del conductor
-        const estadoResponse = await fetch(`http://localhost:5000/verificar-estado/${userId}`);
+        const estadoResponse = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const estadoData = await estadoResponse.json();
         setConductorActivo(estadoData);
         showModal("Servicios activados correctamente. Ahora puedes ver viajes disponibles.", "success");
@@ -241,7 +241,7 @@ const ListaViajes = () => {
         // 1. Obtener ID del usuario y buscar ID del conductor
         const userId = getUserId();
 
-        const resConductores = await fetch(`http://localhost:5000/conductores`);
+        const resConductores = await fetch(`https://drivup-backend.onrender.com/conductores`);
         const conductores = await resConductores.json();
         const conductor = conductores.find((c: any) => c.user_id === Number(userId));
         if (!conductor) {
@@ -252,14 +252,14 @@ const ListaViajes = () => {
         const conductorId = conductor.id;
 
         // 2. Obtener los puntos de concentración
-        const resPuntos = await fetch(`http://localhost:5000/puntos-concentracion`);
+        const resPuntos = await fetch(`https://drivup-backend.onrender.com/puntos-concentracion`);
         const puntos = await resPuntos.json();
         const mapaPuntos = new Map<number, string>(
           puntos.map((punto: any) => [punto.id, punto.nombre])
         );
 
         // 3. Obtener los viajes disponibles del conductor
-        const resViajes = await fetch(`http://localhost:5000/viajes-disponibles/${conductorId}`);
+        const resViajes = await fetch(`https://drivup-backend.onrender.com/viajes-disponibles/${conductorId}`);
         const data = await resViajes.json();
 
         // 4. Transformar los viajes para el frontend
@@ -294,7 +294,7 @@ const ListaViajes = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/aceptar-viaje", {
+      const response = await fetch("https://drivup-backend.onrender.com/aceptar-viaje", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

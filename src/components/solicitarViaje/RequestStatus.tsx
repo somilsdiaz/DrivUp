@@ -56,7 +56,7 @@ const RequestStatus = ({ onCancel, userId, onRideAccepted, onRideCanceled }: Req
             setIsCancelling(true);
             
             // llamada a la api para cancelar la solicitud activa
-            const response = await fetch(`http://localhost:5000/cancelar-solicitud/${userId}`, {
+            const response = await fetch(`https://drivup-backend.onrender.com/cancelar-solicitud/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

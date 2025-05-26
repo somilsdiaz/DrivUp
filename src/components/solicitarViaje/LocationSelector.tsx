@@ -121,7 +121,7 @@ const LocationSelector = ({
             try {
                 setIsLoadingAddress(true);
                 const response = await fetch(
-                    `http://localhost:5000/coordenadas-a-direccion?lat=${currentLocation.latitude}&lon=${currentLocation.longitude}`
+                    `https://drivup-backend.onrender.com/coordenadas-a-direccion?lat=${currentLocation.latitude}&lon=${currentLocation.longitude}`
                 );
                 
                 if (!response.ok) {
@@ -196,7 +196,7 @@ const LocationSelector = ({
                 if (type === 'origin') {
                     try {
                         const response = await fetch(
-                            `http://localhost:5000/verificar-punto-concentracion?lat=${coords.latitude}&lon=${coords.longitude}`
+                            `https://drivup-backend.onrender.com/verificar-punto-concentracion?lat=${coords.latitude}&lon=${coords.longitude}`
                         );
                         
                         if (response.ok) {

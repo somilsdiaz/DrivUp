@@ -519,7 +519,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 socket.emit('send_message', messageData);
             } else {
                 // alternativa API REST si no hay socket
-                const response = await fetch('http://localhost:5000/messages', {
+                const response = await fetch('https://drivup-backend.onrender.com/messages', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

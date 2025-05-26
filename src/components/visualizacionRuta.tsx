@@ -38,7 +38,7 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
         return;
       }
 
-      const resConductores = await fetch("http://localhost:5000/conductores");
+      const resConductores = await fetch("https://drivup-backend.onrender.com/conductores");
       const conductores = await resConductores.json();
       const conductor = conductores.find((c: any) => c.user_id === Number(userId));
 
@@ -50,7 +50,7 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
       const conductorId = conductor.id;
       const apiKey = import.meta.env.VITE_VISUALIZACION_RUTA_API_KEY;
 
-      const resRuta = await fetch(`http://localhost:5000/ruta-viaje/${viajeIdNumero}/${conductorId}`);
+      const resRuta = await fetch(`https://drivup-backend.onrender.com/ruta-viaje/${viajeIdNumero}/${conductorId}`);
       if (!resRuta.ok) {
         const errorText = await resRuta.text();
         console.error("Error en fetch de ruta:", resRuta.status, errorText);

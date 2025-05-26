@@ -34,7 +34,7 @@ useEffect(() => {
         className="border p-4 rounded shadow-md flex flex-col md:flex-row items-center"
       >
         <img
-          src={`http://localhost:5000/uploads/${conductor.foto_de_perfil}`}
+          src={`https://drivup-backend.onrender.com/uploads/${conductor.foto_de_perfil}`}
           alt={conductor.nombre_completo}
           className="w-24 h-24 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
         />

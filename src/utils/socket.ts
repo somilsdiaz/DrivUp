@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 // URL del servidor desde variables de entorno o valor predeterminado
-const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || 'https://drivup-backend.onrender.com';
 
 // Crear una instancia compartida de Socket.IO con opciones de reconexión
 export const socket: Socket = io(SOCKET_SERVER_URL, {

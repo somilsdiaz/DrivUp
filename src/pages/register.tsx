@@ -33,7 +33,7 @@ const RegisterPage = () => {
         try {
             console.log("Formulario enviado:", data);
 
-            const response = await fetch("http://localhost:5000/registro", {
+            const response = await fetch("https://drivup-backend.onrender.com/registro", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

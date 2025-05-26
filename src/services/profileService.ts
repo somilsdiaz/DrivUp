@@ -1,7 +1,7 @@
 // servicio centralizado para operaciones relacionadas con perfiles de usuario
 
 // url base para las peticiones a la api
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'https://drivup-backend.onrender.com';
 
 /**
  * obtiene la url de la imagen de perfil de un usuario

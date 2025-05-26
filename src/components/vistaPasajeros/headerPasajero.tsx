@@ -25,7 +25,7 @@ const HeaderPasajero: React.FC = () => {
             if (!userId) return;
             
             try {
-                const response = await fetch(`http://localhost:5000/usuario/${userId}`);
+                const response = await fetch(`https://drivup-backend.onrender.com/usuario/${userId}`);
                 if (!response.ok) throw new Error("Error fetching user data");
                 
                 const userData = await response.json();

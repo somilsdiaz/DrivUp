@@ -44,7 +44,7 @@ const RequestPage: FC = () => {
         const userId = getUserId();
         if (!userId) return;
 
-        const socketInstance = io('http://localhost:5000');
+        const socketInstance = io('https://drivup-backend.onrender.com');
         setSocket(socketInstance);
 
         // autentica usuario en el socket
@@ -235,7 +235,7 @@ const RequestPage: FC = () => {
             }
 
             try {
-                const response = await fetch(`http://localhost:5000/conversations/${userId}`);
+                const response = await fetch(`https://drivup-backend.onrender.com/conversations/${userId}`);
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch conversations: ${response.status}`);
@@ -253,7 +253,7 @@ const RequestPage: FC = () => {
                             : conversation.user_id;
                         
                         try {
-                            const rolesResponse = await fetch(`http://localhost:5000/usuarios/${otherUserId}/role`);
+                            const rolesResponse = await fetch(`https://drivup-backend.onrender.com/usuarios/${otherUserId}/role`);
                             if (rolesResponse.ok) {
                                 const rolesData = await rolesResponse.json();
                                 // asigna el rol si existe
@@ -314,7 +314,7 @@ const RequestPage: FC = () => {
         setMessagesError(null);
 
         try {
-            const response = await fetch(`http://localhost:5000/conversations/${conversationId}/messages`);
+            const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversationId}/messages`);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch messages: ${response.status}`);
@@ -544,7 +544,7 @@ const RequestPage: FC = () => {
                     
                     if (lastMessageMatches) {
                         // obtiene todos los mensajes de la conversacion
-                        const response = await fetch(`http://localhost:5000/conversations/${conversation.id}/messages`);
+                        const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversation.id}/messages`);
                         
                         if (!response.ok) {
                             // si no puede obtener mensajes, destaca solo el ultimo
@@ -622,7 +622,7 @@ const RequestPage: FC = () => {
                     conversationsToCheck.map(async (conversation) => {
                         try {
                             // obtiene todos los mensajes
-                            const response = await fetch(`http://localhost:5000/conversations/${conversation.id}/messages`);
+                            const response = await fetch(`https://drivup-backend.onrender.com/conversations/${conversation.id}/messages`);
                             
                             if (!response.ok) {
                                 return null;
