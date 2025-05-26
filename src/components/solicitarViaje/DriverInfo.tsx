@@ -21,12 +21,13 @@ interface DriverInfoProps {
     };
     estimatedArrival: string;
     onCancel: () => void;
+    onComplete?: () => void;
     userId?: string | null;
     onRideCanceled?: (conductorInfo: any) => void;
 }
 
 // componente que muestra la informacion del conductor asignado al pasajero
-const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, userId, onRideCanceled }: DriverInfoProps) => {
+const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId, onRideCanceled }: DriverInfoProps) => {
     // Escuchar eventos del servidor de cancelación de viaje
     useEffect(() => {
         // Solo si el componente puede manejar las cancelaciones
@@ -146,10 +147,18 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, userId, onRideCanc
 
             {/* boton para cancelar viaje */}
             <button
-                className="w-full bg-[#FF6B6B] text-white py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#FF6B6B]/90 transition-all duration-200"
+                className="w-full bg-[#FF6B6B] text-white py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#FF6B6B]/90 transition-all duration-200 mb-4"
                 onClick={onCancel}
             >
                 Cancelar Viaje
+            </button>
+            
+            {/* boton para marcar viaje como completado */}
+            <button
+                className="w-full bg-[#5AAA95] text-white py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#5AAA95]/90 transition-all duration-200"
+                onClick={onComplete}
+            >
+                Marcar Viaje como Completado
             </button>
         </div>
     );
