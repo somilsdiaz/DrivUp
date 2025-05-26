@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FaClock, FaRoad, FaDollarSign, FaUsers } from "react-icons/fa";
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
 import { getUserId } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
+import ModalMessage from "../../components/skeletons/ModalMessage";
+import ViajeActualConductor from "../../components/vistaConductores/ViajeActualConductor";
 
 type Viaje = {
   id: number;
@@ -29,12 +31,97 @@ type ConductorEstado = {
   };
 };
 
+type ModalConfig = {
+  isOpen: boolean;
+  message: string;
+  type: "success" | "error" | "info";
+};
+
 const ListaViajes = () => {
   const [viajes, setViajes] = useState<Viaje[]>([]);
   const [loading, setLoading] = useState(false);
+  const [procesandoViaje, setProcesandoViaje] = useState<number | null>(null);
   const [conductorActivo, setConductorActivo] = useState<ConductorEstado | null>(null);
   const [posicionActual, setPosicionActual] = useState<{latitud: string, longitud: string} | null>(null);
+  const locationIntervalRef = useRef<number | null>(null);
+  const [modal, setModal] = useState<ModalConfig>({
+    isOpen: false,
+    message: "",
+    type: "info"
+  });
   const navigate = useNavigate();
+
+  // Funciones para manejar el localStorage
+  const guardarPosicionEnStorage = (posicion: {latitud: string, longitud: string}) => {
+    localStorage.setItem('conductor_posicion', JSON.stringify(posicion));
+  };
+
+  const obtenerPosicionDeStorage = (): {latitud: string, longitud: string} | null => {
+    const posicionGuardada = localStorage.getItem('conductor_posicion');
+    return posicionGuardada ? JSON.parse(posicionGuardada) : null;
+  };
+
+  // Función para actualizar posición en el backend
+  const actualizarPosicionEnBackend = async (posicion: {latitud: string, longitud: string}) => {
+    try {
+      const userId = getUserId();
+      if (!userId) return;
+
+      const response = await fetch("https://drivup-backend.onrender.com/activar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: Number(userId),
+          latitud: posicion.latitud,
+          longitud: posicion.longitud
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        console.error("Error al actualizar posición en el backend");
+      }
+    } catch (error) {
+      console.error("Error al actualizar posición", error);
+    }
+  };
+
+  // Compara si dos posiciones son diferentes
+  const posicionesDiferentes = (pos1: {latitud: string, longitud: string} | null, pos2: {latitud: string, longitud: string} | null): boolean => {
+    if (!pos1 || !pos2) return true;
+    return pos1.latitud !== pos2.latitud || pos1.longitud !== pos2.longitud;
+  };
+
+  // Obtener posición actual y manejar actualizaciones
+  const obtenerPosicionActual = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const nuevaPosicion = {
+            latitud: position.coords.latitude.toString(),
+            longitud: position.coords.longitude.toString()
+          };
+          
+          setPosicionActual(nuevaPosicion);
+          
+          // Comparar con posición almacenada
+          const posicionGuardada = obtenerPosicionDeStorage();
+          
+          if (posicionesDiferentes(nuevaPosicion, posicionGuardada)) {
+            // Actualizar backend solo si la posición cambió
+            actualizarPosicionEnBackend(nuevaPosicion);
+            // Guardar nueva posición en localStorage
+            guardarPosicionEnStorage(nuevaPosicion);
+          }
+        },
+        (error) => {
+          console.error("Error obteniendo geolocalización:", error);
+        }
+      );
+    }
+  };
 
   // Estado del conductor
   useEffect(() => {
@@ -47,20 +134,8 @@ const ListaViajes = () => {
           return;
         }
 
-        // Posición actual conductor
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              setPosicionActual({
-                latitud: position.coords.latitude.toString(),
-                longitud: position.coords.longitude.toString()
-              });
-            },
-            (error) => {
-              console.error("Error obteniendo geolocalización:", error);
-            }
-          );
-        }
+        // Posición actual conductor - primera carga
+        obtenerPosicionActual();
 
         // Estado del conductor
         const response = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
@@ -76,10 +151,45 @@ const ListaViajes = () => {
     verificarEstadoConductor();
   }, []);
 
+  // Configurar intervalo para actualizar posición cada 6 segundos cuando el conductor está activo
+  useEffect(() => {
+    // Limpiar cualquier intervalo existente
+    if (locationIntervalRef.current) {
+      clearInterval(locationIntervalRef.current);
+      locationIntervalRef.current = null;
+    }
+
+    // Solo iniciar seguimiento si el conductor está activo
+    if (conductorActivo?.activo) {
+      // Intervalo de 6 segundos (6000 ms)
+      locationIntervalRef.current = window.setInterval(obtenerPosicionActual, 6000);
+    }
+
+    // Limpieza al desmontar
+    return () => {
+      if (locationIntervalRef.current) {
+        clearInterval(locationIntervalRef.current);
+        locationIntervalRef.current = null;
+      }
+    };
+  }, [conductorActivo?.activo]);
+
+  const closeModal = () => {
+    setModal({ ...modal, isOpen: false });
+  };
+
+  const showModal = (message: string, type: "success" | "error" | "info") => {
+    setModal({
+      isOpen: true,
+      message,
+      type
+    });
+  };
+
   // Activación servicios del conductor
   const activarServicios = async () => {
     if (!posicionActual) {
-      alert("No se pudo obtener tu ubicación actual. Por favor, permite el acceso a la ubicación.");
+      showModal("No se pudo obtener tu ubicación actual. Por favor, permite el acceso a la ubicación.", "error");
       return;
     }
 
@@ -102,16 +212,20 @@ const ListaViajes = () => {
 
       const data = await response.json();
       if (data.success) {
+        // Guardar la posición inicial en localStorage
+        guardarPosicionEnStorage(posicionActual);
+        
         // Actualizar estado del conductor
         const estadoResponse = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
         const estadoData = await estadoResponse.json();
         setConductorActivo(estadoData);
+        showModal("Servicios activados correctamente. Ahora puedes ver viajes disponibles.", "success");
       } else {
-        alert("No se pudo activar tus servicios. Intenta nuevamente.");
+        showModal("No se pudo activar tus servicios. Intenta nuevamente.", "error");
       }
     } catch (error) {
       console.error("Error al activar servicios", error);
-      alert("Ocurrió un error al activar tus servicios.");
+      showModal("Ocurrió un error al activar tus servicios.", "error");
     } finally {
       setLoading(false);
     }
@@ -120,7 +234,7 @@ const ListaViajes = () => {
   // Obtener viajes disponibles si el conductor está activo
   useEffect(() => {
     if (!conductorActivo?.activo) return;
-    
+
     const fetchViajesYConcentraciones = async () => {
       setLoading(true);
       try {
@@ -170,6 +284,56 @@ const ListaViajes = () => {
     fetchViajesYConcentraciones();
   }, [conductorActivo]);
 
+  // Función para aceptar un viaje
+  const aceptarViaje = async (viajeId: number) => {
+    setProcesandoViaje(viajeId);
+    try {
+      const userId = getUserId();
+      if (!userId) {
+        showModal("No se pudo identificar tu cuenta. Por favor, inicia sesión nuevamente.", "error");
+        return;
+      }
+
+      const response = await fetch("https://drivup-backend.onrender.com/aceptar-viaje", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: Number(userId),
+          viaje_id: viajeId
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success || data.message) {
+        showModal(data.message || "Viaje aceptado con éxito", "success");
+
+        // Actualizar el estado del conductor a "en_viaje_asignado"
+        if (conductorActivo) {
+          setConductorActivo({
+            ...conductorActivo,
+            data: {
+              ...conductorActivo.data,
+              estadoDisponibilidad: "en_viaje_asignado"
+            }
+          });
+        }
+
+        // Actualizar la lista de viajes disponibles
+        setViajes(viajes.filter(viaje => viaje.id !== viajeId));
+      } else if (data.error) {
+        showModal(data.mensaje || "No se pudo aceptar el viaje. Intenta nuevamente.", "error");
+      }
+    } catch (error) {
+      console.error("Error al aceptar viaje:", error);
+      showModal("Ocurrió un error al aceptar el viaje. Por favor, intenta más tarde.", "error");
+    } finally {
+      setProcesandoViaje(null);
+    }
+  };
+
   // Pantalla de activación de servicios
   const ActivacionServiciosScreen = () => (
     <div className="flex flex-col items-center justify-center p-10 bg-white rounded-lg shadow-md mx-auto my-10 max-w-md">
@@ -200,7 +364,9 @@ const ListaViajes = () => {
 
         {!loading && conductorActivo && (
           <>
-            {conductorActivo.activo ? (
+            {conductorActivo.data.estadoDisponibilidad === "en_viaje_asignado" ? (
+              <ViajeActualConductor />
+            ) : conductorActivo.activo ? (
               <>
                 <h1 className="text-2xl font-bold mb-4">Ofertas Cercanas</h1>
 
@@ -248,11 +414,10 @@ const ListaViajes = () => {
                           </button>
                           <button
                             className="px-4 py-2 bg-[#F2B134] text-white rounded hover:bg-[#d79b28] transition hover:scale-105"
-                            onClick={() =>
-                              console.log("Aceptar oferta del viaje", viaje.id)
-                            }
+                            onClick={() => aceptarViaje(viaje.id)}
+                            disabled={procesandoViaje === viaje.id}
                           >
-                            Aceptar oferta
+                            {procesandoViaje === viaje.id ? "Procesando..." : "Aceptar oferta"}
                           </button>
                         </div>
 
@@ -279,6 +444,14 @@ const ListaViajes = () => {
             )}
           </>
         )}
+
+        {/* Modal de mensajes */}
+        <ModalMessage
+          isOpen={modal.isOpen}
+          onClose={closeModal}
+          message={modal.message}
+          type={modal.type}
+        />
       </div>
     </HeaderFooterConductores>
   );
