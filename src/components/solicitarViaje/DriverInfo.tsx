@@ -32,6 +32,7 @@ interface DriverInfoProps {
 // componente que muestra la informacion del conductor asignado al pasajero
 const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId, onRideCanceled, viajeId: propViajeId }: DriverInfoProps) => {
     const [currentViajeId, setCurrentViajeId] = useState<number | undefined>(propViajeId);
+    const [isCancelling, setIsCancelling] = useState(false);
     
     // Obtener el ID del viaje actual del usuario
     useEffect(() => {
@@ -100,6 +101,34 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
         completedRides: driverInfo.completedRides || 0,
         languages: driverInfo.languages || ['Español'],
         vehicleFeatures: driverInfo.vehicleFeatures || ['A/C']
+    };
+
+    // funcion para cancelar el viaje en curso
+    const handleCancelRide = async () => {
+        if (!userId) return;
+        
+        try {
+            setIsCancelling(true);
+            
+            // llamada a la api para cancelar el viaje activo
+            const response = await fetch(`http://localhost:5000/cancelar-solicitud/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error al cancelar el viaje');
+            }
+            
+            // notificar al componente padre que se cancelo el viaje
+            onCancel();
+        } catch (error) {
+            console.error('Error cancelling ride:', error);
+        } finally {
+            setIsCancelling(false);
+        }
     };
 
     return (
@@ -191,9 +220,18 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
             {/* boton para cancelar viaje */}
             <button
                 className="w-full bg-[#FF6B6B] text-white py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-[#FF6B6B]/90 transition-all duration-200 mb-4"
-                onClick={onCancel}
+                onClick={handleCancelRide}
+                disabled={isCancelling}
             >
-                Cancelar Viaje
+                {isCancelling ? (
+                    <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Cancelando...
+                    </>
+                ) : 'Cancelar Viaje'}
             </button>
             
             {/* boton para marcar viaje como completado */}
