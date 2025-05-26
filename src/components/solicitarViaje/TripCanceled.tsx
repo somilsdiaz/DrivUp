@@ -30,7 +30,9 @@ const TripCanceled = ({ driverInfo, onReset }: TripCanceledProps) => {
                 <div className="bg-[#F8F9FA] p-8 rounded-xl mb-8">
                     <div className="flex items-center mb-6">
                         <img
-                            src={driverInfo.foto || 'https://randomuser.me/api/portraits/men/32.jpg'}
+                            src={driverInfo.foto 
+                                ? (driverInfo.foto.startsWith('http') ? driverInfo.foto : `https://drivup-backend.onrender.com/uploads/${driverInfo.foto}`)
+                                : 'https://randomuser.me/api/portraits/men/32.jpg'}
                             alt="Conductor"
                             className="w-20 h-20 rounded-full object-cover mr-6 border-4 border-white shadow-lg"
                         />

@@ -98,7 +98,9 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
         vehicle: driverInfo.vehiculo || driverInfo.vehicle || 'Vehículo no especificado',
         plate: driverInfo.placa || driverInfo.plate || 'Sin placa',
         eta: driverInfo.eta || '5 min',
-        photo: driverInfo.foto || driverInfo.photo || 'https://randomuser.me/api/portraits/men/32.jpg',
+        photo: driverInfo.foto 
+            ? (driverInfo.foto.startsWith('http') ? driverInfo.foto : `https://drivup-backend.onrender.com/uploads/${driverInfo.foto}`) 
+            : (driverInfo.photo || 'https://randomuser.me/api/portraits/men/32.jpg'),
         completedRides: driverInfo.completedRides || 0,
         languages: driverInfo.languages || ['Español'],
         vehicleFeatures: driverInfo.vehicleFeatures || ['A/C']
@@ -181,7 +183,7 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
             <div className="bg-[#F8F9FA] p-8 rounded-xl mb-8">
                 <div className="flex items-center mb-8">
                     <img 
-                        src={normalizedDriverInfo.photo} 
+                        src={normalizedDriverInfo.photo}
                         alt={normalizedDriverInfo.name}
                         className="w-20 h-20 rounded-full object-cover mr-6 border-4 border-white shadow-lg"
                     />
