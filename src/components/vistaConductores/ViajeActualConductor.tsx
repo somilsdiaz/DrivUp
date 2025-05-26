@@ -48,6 +48,20 @@ type ViajeResponse = {
     pasajeros: Pasajero[]
 }
 
+type PasajeroEstado = {
+    solicitud_id: number
+    pasajero_id: number
+    nombre_completo: string
+    estado: string
+}
+
+type EstadoViajeResponse = {
+    success: boolean
+    viaje_id: number
+    conductor_id: number
+    pasajeros: PasajeroEstado[]
+}
+
 const ViajeActualConductor = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -57,6 +71,9 @@ const ViajeActualConductor = () => {
     const [modalMessage, setModalMessage] = useState("")
     const [modalType, setModalType] = useState<"success" | "error" | "info">("info")
     const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+    const [estadoPasajerosModalOpen, setEstadoPasajerosModalOpen] = useState(false)
+    const [estadoPasajeros, setEstadoPasajeros] = useState<EstadoViajeResponse | null>(null)
+    const [loadingEstado, setLoadingEstado] = useState(false)
 
     const handleCancelarViaje = async () => {
         if (!viajeData) return
@@ -103,6 +120,57 @@ const ViajeActualConductor = () => {
         }
     }
     
+    const fetchEstadoPasajeros = async () => {
+        setLoadingEstado(true)
+        try {
+            const userId = getUserId()
+            if (!userId) {
+                throw new Error("No se encontró ID de usuario")
+            }
+            
+            const response = await fetch(`http://localhost:5000/conductor/estado-viaje/${userId}`)
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || "No se pudo obtener el estado de los pasajeros")
+            }
+            
+            const data = await response.json()
+            setEstadoPasajeros(data)
+            setEstadoPasajerosModalOpen(true)
+        } catch (err) {
+            console.error("Error al obtener estado de los pasajeros:", err)
+            setModalMessage("Error al obtener estado de los pasajeros: " + (err instanceof Error ? err.message : "Error desconocido"))
+            setModalType('error')
+            setModalOpen(true)
+        } finally {
+            setLoadingEstado(false)
+        }
+    }
+    
+    const completarViaje = async () => {
+        if (!viajeData || !estadoPasajeros) return
+        
+        try {
+            const userId = getUserId()
+            if (!userId) {
+                throw new Error("No se encontró ID de usuario")
+            }
+            
+            // Aquí iría la llamada a la API para completar el viaje
+            console.log('Viaje completado con ID:', viajeData.viaje.id)
+            
+            setEstadoPasajerosModalOpen(false)
+            setModalMessage('El viaje ha sido completado exitosamente')
+            setModalType('success')
+            setModalOpen(true)
+        } catch (err) {
+            console.error("Error al completar el viaje:", err)
+            setModalMessage("Error al completar el viaje: " + (err instanceof Error ? err.message : "Error desconocido"))
+            setModalType('error')
+            setModalOpen(true)
+        }
+    }
+    
     const handleCloseModal = () => {
         setModalOpen(false)
         if (modalType === 'success') {
@@ -146,6 +214,9 @@ const ViajeActualConductor = () => {
 
         fetchViajeActual()
     }, [])
+
+    // Verificar si todos los pasajeros han completado su viaje
+    const todosPasajerosCompletados = estadoPasajeros?.pasajeros.every(p => p.estado === 'completado') || false
 
     if (loading) {
         return (
@@ -219,6 +290,114 @@ const ViajeActualConductor = () => {
                 type={"info"}
                 autoClose={false}
             />
+            
+            {/* Modal para mostrar estado de pasajeros */}
+            {estadoPasajerosModalOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+                        <div className="bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] p-6 text-white">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                        <FaUsers className="text-white text-xl" />
+                                    </div>
+                                    <h3 className="text-xl font-bold">Estado de Pasajeros</h3>
+                                </div>
+                                <button 
+                                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                                    onClick={() => setEstadoPasajerosModalOpen(false)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                            {loadingEstado ? (
+                                <div className="flex flex-col items-center justify-center py-8">
+                                    <div className="w-12 h-12 border-4 border-[#F2B134] border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="mt-4 text-[#4A4E69]">Cargando estado de pasajeros...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="mb-6">
+                                        <p className="text-[#4A4E69]/70 text-sm mb-2">Información del estado actual de todos los pasajeros en el viaje</p>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                                <span className="text-sm text-[#4A4E69]">Completado</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                                                <span className="text-sm text-[#4A4E69]">No completado</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-4">
+                                        {estadoPasajeros?.pasajeros.map((pasajero) => (
+                                            <div 
+                                                key={pasajero.solicitud_id} 
+                                                className="bg-gradient-to-r from-[#F8F9FA] to-white rounded-xl p-4 border border-gray-100"
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                                            pasajero.estado === 'completado' ? 'bg-green-100' : 'bg-amber-100'
+                                                        }`}>
+                                                            <FaUserAlt className={
+                                                                pasajero.estado === 'completado' ? 'text-green-600' : 'text-amber-600'
+                                                            } />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-medium text-[#4A4E69]">{pasajero.nombre_completo}</h4>
+                                                            <p className="text-xs text-[#4A4E69]/60">ID: {pasajero.pasajero_id}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`px-4 py-2 rounded-full ${
+                                                        pasajero.estado === 'completado' 
+                                                            ? 'bg-green-100 text-green-800' 
+                                                            : 'bg-amber-100 text-amber-800'
+                                                    }`}>
+                                                        {pasajero.estado === 'completado' ? 'Completado' : 'No completado'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        
+                        <div className="bg-gray-50 p-6 border-t border-gray-100 flex justify-end">
+                            <div className="flex space-x-4">
+                                <button
+                                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl transition-colors"
+                                    onClick={() => setEstadoPasajerosModalOpen(false)}
+                                >
+                                    Cerrar
+                                </button>
+                                <button
+                                    className={`px-6 py-3 rounded-xl transition-colors flex items-center ${
+                                        todosPasajerosCompletados
+                                            ? 'bg-[#5AAA95] hover:bg-[#4a9a85] text-white'
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                    onClick={todosPasajerosCompletados ? completarViaje : undefined}
+                                    disabled={!todosPasajerosCompletados}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Marcar viaje como completado
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             
             <div className="relative overflow-hidden bg-gradient-to-r from-[#0a0d35] to-[#2D5DA1] rounded-2xl shadow-2xl">
                 <div className="absolute inset-0 bg-black/10"></div>
@@ -421,18 +600,22 @@ const ViajeActualConductor = () => {
                     
                     <button
                         className="flex items-center justify-center bg-[#5AAA95] hover:bg-[#4a9a85] text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg"
-                        onClick={() => {
-                            // Lógica para marcar viaje como completado
-                            if (window.confirm('¿Confirma que el viaje ha sido completado?')) {
-                                console.log('Viaje completado');
-                                // Aquí iría la llamada a la API para completar el viaje
-                            }
-                        }}
+                        onClick={fetchEstadoPasajeros}
+                        disabled={loadingEstado}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Marcar viaje como completado
+                        {loadingEstado ? (
+                            <>
+                                <FaSpinner className="h-5 w-5 mr-2 animate-spin" />
+                                Cargando...
+                            </>
+                        ) : (
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Marcar viaje como completado
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
