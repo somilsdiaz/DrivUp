@@ -132,16 +132,34 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
           })
         );
 
+        // Contar cuántos pasajeros tienen origen o destino que coincide con el punto PMCP
+        const tolerancia = 0.0005;
+
+        const pasajerosConOrigenIgualAlPMCP = pasajerosConNombres.filter(p =>
+          Math.abs(p.origen.lat - dataRuta.origen.lat) < tolerancia &&
+          Math.abs(p.origen.lng - dataRuta.origen.lng) < tolerancia
+        );
+
+        const pasajerosConDestinoIgualAlPMCP = pasajerosConNombres.filter(p =>
+          Math.abs(p.destino.lat - dataRuta.destino.lat) < tolerancia &&
+          Math.abs(p.destino.lng - dataRuta.destino.lng) < tolerancia
+        );
+
+        // Decidir si el PMCP es origen o destino según cuál tiene más coincidencias
+        const pmcpEsOrigen = pasajerosConOrigenIgualAlPMCP.length >= pasajerosConDestinoIgualAlPMCP.length;
+
         // 6. Ahora mapeamos puntos intermedios con nombres
         // Aquí tienes que decidir si los puntos intermedios corresponden al origen o destino del pasajero
         // Asumiendo que en ruta.puntos_intermedios están las coordenadas origen del pasajero, usamos eso para cruzar:
 
         const puntosIntermediosConNombre = dataRuta.puntos_intermedios.map((p: Punto) => {
-          // Buscar pasajero cuyo origen coincida con este punto (con cierta tolerancia)
+          const tolerancia = 0.0005;
+
+          // Dependiendo de si el PMCP es origen o destino, comparamos con destino u origen
           const pasajero = pasajerosConNombres.find((pas) => {
-            const distanciaLat = Math.abs(p.lat - pas.origen.lat);
-            const distanciaLng = Math.abs(p.lng - pas.origen.lng);
-            const tolerancia = 0.0005; // aprox 50m, ajustar según precisión deseada
+            const puntoComparar = pmcpEsOrigen ? pas.destino : pas.origen;
+            const distanciaLat = Math.abs(p.lat - puntoComparar.lat);
+            const distanciaLng = Math.abs(p.lng - puntoComparar.lng);
             return distanciaLat < tolerancia && distanciaLng < tolerancia;
           });
 
@@ -166,15 +184,21 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
           return pasajero ? pasajero.nombreCompleto : tipo.charAt(0).toUpperCase() + tipo.slice(1);
         };
 
+
+
         const rutaConNombres: Ruta = {
           origen: {
             ...dataRuta.origen,
-            label: obtenerLabelPasajero(dataRuta.origen, 'origen'),
+            label: pmcpEsOrigen
+              ? "Origen"
+              : obtenerLabelPasajero(dataRuta.origen, "origen"),
           },
           puntos_intermedios: puntosIntermediosConNombre,
           destino: {
             ...dataRuta.destino,
-            label: 'Destino',
+            label: pmcpEsOrigen
+              ? obtenerLabelPasajero(dataRuta.destino, "destino")
+              : "Destino",
           },
         };
 
