@@ -17,6 +17,8 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
   const [ruta, setRuta] = useState<Ruta | null>(null);
   const [loading, setLoading] = useState(false);
   const [geojsonRuta, setGeojsonRuta] = useState<any | null>(null);
+  const [ubicacionConductor, setUbicacionConductor] = useState<Punto | null>(null);
+
 
   useEffect(() => {
     const obtenerRuta = async () => {
@@ -46,6 +48,25 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
           return;
         }
         const conductorId = conductor.id;
+
+        // 1.2 obtener ubicacion del conductor
+        // Obtener ubicación actual desde tabla conductores_activos_disponibles
+        const resUbicacion = await fetch(`https://drivup-backend.onrender.com/conductores-activos-disponibles/${conductorId}`);
+        if (!resUbicacion.ok) {
+          console.error("No se pudo obtener la ubicación del conductor desde la tabla");
+        } else {
+          const dataUbicacion = await resUbicacion.json();
+          if (dataUbicacion.length > 0) {
+            const ubicacion = dataUbicacion[0];
+            setUbicacionConductor({
+              lat: parseFloat(ubicacion.ubicacion_actual_lat),
+              lng: parseFloat(ubicacion.ubicacion_actual_lon),
+              label: "Mi ubicación",
+            });
+          } else {
+            console.warn("El conductor no tiene ubicación activa registrada");
+          }
+        }
 
         // 2. Obtener ruta base
         const resRuta = await fetch(`https://drivup-backend.onrender.com/ruta-viaje/${viajeIdNumero}/${conductorId}`);
@@ -197,7 +218,11 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
           <span className="ml-2 text-gray-700">Cargando...</span>
         </div>
       ) : geojsonRuta && ruta ? (
-        <MapaRuta geojsonRuta={geojsonRuta} rutaOriginal={ruta} />
+        <MapaRuta
+          geojsonRuta={geojsonRuta}
+          rutaOriginal={ruta}
+          ubicacionConductor={ubicacionConductor}
+        />
       ) : (
         <p className="text-center text-red-500">No se pudo cargar la ruta</p>
       )}
