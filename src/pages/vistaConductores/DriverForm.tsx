@@ -36,7 +36,7 @@ const DriverForm = () => {
         const fetchInitialData = async () => {
             setLoading(true);
             try {
-                const response = await fetch("https://drivup-backend.onrender.com/conductor-preferencias", {
+                const response = await fetch("http://localhost:5000/conductor-preferencias", {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
@@ -62,7 +62,7 @@ const DriverForm = () => {
         try {
             console.log("Formulario enviado:", data);
 
-            const response = await fetch("https://drivup-backend.onrender.com/configuracion-conductores-viaje", {
+            const response = await fetch("http://localhost:5000/configuracion-conductores-viaje", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

@@ -347,7 +347,7 @@ const DriverRegister = () => {
                 });
             }
 
-            const response = await fetch("https://drivup-backend.onrender.com/Registro-Conductor", { //quizas otro path
+            const response = await fetch("http://localhost:5000/Registro-Conductor", { //quizas otro path
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`

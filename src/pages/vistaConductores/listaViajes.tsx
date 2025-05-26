@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FaClock, FaRoad, FaDollarSign, FaUsers } from "react-icons/fa";
 import HeaderFooterConductores from "../../layouts/headerFooterConductores";
 import { getUserId } from "../../utils/auth";
@@ -42,13 +42,86 @@ const ListaViajes = () => {
   const [loading, setLoading] = useState(false);
   const [procesandoViaje, setProcesandoViaje] = useState<number | null>(null);
   const [conductorActivo, setConductorActivo] = useState<ConductorEstado | null>(null);
-  const [posicionActual, setPosicionActual] = useState<{ latitud: string, longitud: string } | null>(null);
+  const [posicionActual, setPosicionActual] = useState<{latitud: string, longitud: string} | null>(null);
+  const locationIntervalRef = useRef<number | null>(null);
   const [modal, setModal] = useState<ModalConfig>({
     isOpen: false,
     message: "",
     type: "info"
   });
   const navigate = useNavigate();
+
+  // Funciones para manejar el localStorage
+  const guardarPosicionEnStorage = (posicion: {latitud: string, longitud: string}) => {
+    localStorage.setItem('conductor_posicion', JSON.stringify(posicion));
+  };
+
+  const obtenerPosicionDeStorage = (): {latitud: string, longitud: string} | null => {
+    const posicionGuardada = localStorage.getItem('conductor_posicion');
+    return posicionGuardada ? JSON.parse(posicionGuardada) : null;
+  };
+
+  // Función para actualizar posición en el backend
+  const actualizarPosicionEnBackend = async (posicion: {latitud: string, longitud: string}) => {
+    try {
+      const userId = getUserId();
+      if (!userId) return;
+
+      const response = await fetch("http://localhost:5000/activar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: Number(userId),
+          latitud: posicion.latitud,
+          longitud: posicion.longitud
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        console.error("Error al actualizar posición en el backend");
+      }
+    } catch (error) {
+      console.error("Error al actualizar posición", error);
+    }
+  };
+
+  // Compara si dos posiciones son diferentes
+  const posicionesDiferentes = (pos1: {latitud: string, longitud: string} | null, pos2: {latitud: string, longitud: string} | null): boolean => {
+    if (!pos1 || !pos2) return true;
+    return pos1.latitud !== pos2.latitud || pos1.longitud !== pos2.longitud;
+  };
+
+  // Obtener posición actual y manejar actualizaciones
+  const obtenerPosicionActual = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const nuevaPosicion = {
+            latitud: position.coords.latitude.toString(),
+            longitud: position.coords.longitude.toString()
+          };
+          
+          setPosicionActual(nuevaPosicion);
+          
+          // Comparar con posición almacenada
+          const posicionGuardada = obtenerPosicionDeStorage();
+          
+          if (posicionesDiferentes(nuevaPosicion, posicionGuardada)) {
+            // Actualizar backend solo si la posición cambió
+            actualizarPosicionEnBackend(nuevaPosicion);
+            // Guardar nueva posición en localStorage
+            guardarPosicionEnStorage(nuevaPosicion);
+          }
+        },
+        (error) => {
+          console.error("Error obteniendo geolocalización:", error);
+        }
+      );
+    }
+  };
 
   // Estado del conductor
   useEffect(() => {
@@ -61,23 +134,11 @@ const ListaViajes = () => {
           return;
         }
 
-        // Posición actual conductor
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              setPosicionActual({
-                latitud: position.coords.latitude.toString(),
-                longitud: position.coords.longitude.toString()
-              });
-            },
-            (error) => {
-              console.error("Error obteniendo geolocalización:", error);
-            }
-          );
-        }
+        // Posición actual conductor - primera carga
+        obtenerPosicionActual();
 
         // Estado del conductor
-        const response = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
+        const response = await fetch(`http://localhost:5000/verificar-estado/${userId}`);
         const data = await response.json();
         setConductorActivo(data);
       } catch (error) {
@@ -89,6 +150,29 @@ const ListaViajes = () => {
 
     verificarEstadoConductor();
   }, []);
+
+  // Configurar intervalo para actualizar posición cada 6 segundos cuando el conductor está activo
+  useEffect(() => {
+    // Limpiar cualquier intervalo existente
+    if (locationIntervalRef.current) {
+      clearInterval(locationIntervalRef.current);
+      locationIntervalRef.current = null;
+    }
+
+    // Solo iniciar seguimiento si el conductor está activo
+    if (conductorActivo?.activo) {
+      // Intervalo de 6 segundos (6000 ms)
+      locationIntervalRef.current = window.setInterval(obtenerPosicionActual, 6000);
+    }
+
+    // Limpieza al desmontar
+    return () => {
+      if (locationIntervalRef.current) {
+        clearInterval(locationIntervalRef.current);
+        locationIntervalRef.current = null;
+      }
+    };
+  }, [conductorActivo?.activo]);
 
   const closeModal = () => {
     setModal({ ...modal, isOpen: false });
@@ -114,7 +198,7 @@ const ListaViajes = () => {
       const userId = getUserId();
       if (!userId) return;
 
-      const response = await fetch("https://drivup-backend.onrender.com/activar", {
+      const response = await fetch("http://localhost:5000/activar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -128,8 +212,11 @@ const ListaViajes = () => {
 
       const data = await response.json();
       if (data.success) {
+        // Guardar la posición inicial en localStorage
+        guardarPosicionEnStorage(posicionActual);
+        
         // Actualizar estado del conductor
-        const estadoResponse = await fetch(`https://drivup-backend.onrender.com/verificar-estado/${userId}`);
+        const estadoResponse = await fetch(`http://localhost:5000/verificar-estado/${userId}`);
         const estadoData = await estadoResponse.json();
         setConductorActivo(estadoData);
         showModal("Servicios activados correctamente. Ahora puedes ver viajes disponibles.", "success");
@@ -154,7 +241,7 @@ const ListaViajes = () => {
         // 1. Obtener ID del usuario y buscar ID del conductor
         const userId = getUserId();
 
-        const resConductores = await fetch(`https://drivup-backend.onrender.com/conductores`);
+        const resConductores = await fetch(`http://localhost:5000/conductores`);
         const conductores = await resConductores.json();
         const conductor = conductores.find((c: any) => c.user_id === Number(userId));
         if (!conductor) {
@@ -165,14 +252,14 @@ const ListaViajes = () => {
         const conductorId = conductor.id;
 
         // 2. Obtener los puntos de concentración
-        const resPuntos = await fetch(`https://drivup-backend.onrender.com/puntos-concentracion`);
+        const resPuntos = await fetch(`http://localhost:5000/puntos-concentracion`);
         const puntos = await resPuntos.json();
         const mapaPuntos = new Map<number, string>(
           puntos.map((punto: any) => [punto.id, punto.nombre])
         );
 
         // 3. Obtener los viajes disponibles del conductor
-        const resViajes = await fetch(`https://drivup-backend.onrender.com/viajes-disponibles/${conductorId}`);
+        const resViajes = await fetch(`http://localhost:5000/viajes-disponibles/${conductorId}`);
         const data = await resViajes.json();
 
         // 4. Transformar los viajes para el frontend

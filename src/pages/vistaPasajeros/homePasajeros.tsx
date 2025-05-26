@@ -93,7 +93,7 @@ const HomePasajeros = () => {
                 }
 
                 // Fetch role information
-                const roleResponse = await fetch(`https://drivup-backend.onrender.com/usuarios/${userId}/role`);
+                const roleResponse = await fetch(`http://localhost:5000/usuarios/${userId}/role`);
                 if (!roleResponse.ok) {
                     throw new Error("Error al obtener el rol del usuario");
                 }
@@ -101,7 +101,7 @@ const HomePasajeros = () => {
                 setUserRole(roleData.role);
 
                 // Fetch user information
-                const userResponse = await fetch(`https://drivup-backend.onrender.com/usuario/${userId}`);
+                const userResponse = await fetch(`http://localhost:5000/usuario/${userId}`);
                 if (!userResponse.ok) {
                     throw new Error("Error al obtener la información del usuario");
                 }

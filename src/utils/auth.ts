@@ -17,7 +17,7 @@ export const getUserRole = async (): Promise<string> => {
     if (!userId) return "";
     
     try {
-        const response = await fetch(`https://drivup-backend.onrender.com/usuarios/${userId}/role`);
+        const response = await fetch(`http://localhost:5000/usuarios/${userId}/role`);
         if (!response.ok) throw new Error("Error fetching user role");
         
         const data = await response.json();

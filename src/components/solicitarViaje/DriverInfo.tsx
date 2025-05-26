@@ -1,15 +1,20 @@
 interface DriverInfoProps {
     driverInfo: {
-        name: string;
-        rating: number;
-        vehicle: string;
-        plate: string;
-        eta: string;
-        arrivalTime: string;
-        photo: string;
-        completedRides: number;
-        languages: string[];
-        vehicleFeatures: string[];
+        id?: number;
+        nombre?: string;
+        name?: string;
+        rating?: number;
+        vehiculo?: string;
+        vehicle?: string;
+        placa?: string;
+        plate?: string;
+        eta?: string;
+        arrivalTime?: string;
+        foto?: string;
+        photo?: string;
+        completedRides?: number;
+        languages?: string[];
+        vehicleFeatures?: string[];
     };
     estimatedArrival: string;
     onCancel: () => void;
@@ -17,6 +22,19 @@ interface DriverInfoProps {
 
 // componente que muestra la informacion del conductor asignado al pasajero
 const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps) => {
+    // Normalizar los campos para que funcionen con ambos formatos de datos
+    const normalizedDriverInfo = {
+        name: driverInfo.nombre || driverInfo.name || 'Conductor',
+        rating: driverInfo.rating || 4.5,
+        vehicle: driverInfo.vehiculo || driverInfo.vehicle || 'Vehículo no especificado',
+        plate: driverInfo.placa || driverInfo.plate || 'Sin placa',
+        eta: driverInfo.eta || '5 min',
+        photo: driverInfo.foto || driverInfo.photo || 'https://randomuser.me/api/portraits/men/32.jpg',
+        completedRides: driverInfo.completedRides || 0,
+        languages: driverInfo.languages || ['Español'],
+        vehicleFeatures: driverInfo.vehicleFeatures || ['A/C']
+    };
+
     return (
         <div className="p-8">
             {/* seccion de mensaje de confirmacion */}
@@ -34,21 +52,21 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps)
             <div className="bg-[#F8F9FA] p-8 rounded-xl mb-8">
                 <div className="flex items-center mb-8">
                     <img 
-                        src={driverInfo.photo} 
-                        alt={driverInfo.name}
+                        src={normalizedDriverInfo.photo} 
+                        alt={normalizedDriverInfo.name}
                         className="w-20 h-20 rounded-full object-cover mr-6 border-4 border-white shadow-lg"
                     />
                     <div>
-                        <p className="text-2xl font-bold text-[#4A4E69]">{driverInfo.name}</p>
+                        <p className="text-2xl font-bold text-[#4A4E69]">{normalizedDriverInfo.name}</p>
                         <div className="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#F2B134]" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                             </svg>
-                            <span className="ml-2 text-[#4A4E69] text-lg">{driverInfo.rating}</span>
-                            <span className="ml-4 text-[#4A4E69]/60">• {driverInfo.completedRides} viajes</span>
+                            <span className="ml-2 text-[#4A4E69] text-lg">{normalizedDriverInfo.rating}</span>
+                            <span className="ml-4 text-[#4A4E69]/60">• {normalizedDriverInfo.completedRides} viajes</span>
                         </div>
                         <div className="mt-2 flex items-center">
-                            {driverInfo.languages.map((lang, index) => (
+                            {normalizedDriverInfo.languages.map((lang, index) => (
                                 <span key={index} className="text-xs bg-[#2D5DA1]/10 text-[#2D5DA1] px-2 py-1 rounded-full mr-2">
                                     {lang}
                                 </span>
@@ -61,9 +79,9 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps)
                 <div className="grid grid-cols-2 gap-6">
                     <div className="bg-white p-6 rounded-xl">
                         <p className="text-sm text-[#4A4E69]/60 mb-2">Vehículo</p>
-                        <p className="text-xl font-semibold text-[#4A4E69]">{driverInfo.vehicle}</p>
+                        <p className="text-xl font-semibold text-[#4A4E69]">{normalizedDriverInfo.vehicle}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                            {driverInfo.vehicleFeatures.map((feature, index) => (
+                            {normalizedDriverInfo.vehicleFeatures.map((feature, index) => (
                                 <span key={index} className="text-xs bg-[#5AAA95]/10 text-[#5AAA95] px-2 py-1 rounded-full">
                                     {feature}
                                 </span>
@@ -72,11 +90,11 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps)
                     </div>
                     <div className="bg-white p-6 rounded-xl">
                         <p className="text-sm text-[#4A4E69]/60 mb-2">Placa</p>
-                        <p className="text-xl font-semibold text-[#4A4E69]">{driverInfo.plate}</p>
+                        <p className="text-xl font-semibold text-[#4A4E69]">{normalizedDriverInfo.plate}</p>
                     </div>
                     <div className="bg-white p-6 rounded-xl">
                         <p className="text-sm text-[#4A4E69]/60 mb-2">Tiempo de llegada</p>
-                        <p className="text-xl font-semibold text-[#4A4E69]">{driverInfo.eta}</p>
+                        <p className="text-xl font-semibold text-[#4A4E69]">{normalizedDriverInfo.eta}</p>
                     </div>
                     <div className="bg-white p-6 rounded-xl">
                         <p className="text-sm text-[#4A4E69]/60 mb-2">Llegada a destino</p>

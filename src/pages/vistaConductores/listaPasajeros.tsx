@@ -39,7 +39,7 @@ const ListaPasajeros = () => {
       }
 
       // Crear o recuperar la conversación existente
-      const response = await fetch('https://drivup-backend.onrender.com/conversations', {
+      const response = await fetch('http://localhost:5000/conversations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,12 +71,12 @@ const ListaPasajeros = () => {
   useEffect(() => {
     const fetchPasajeros = async () => {
       try {
-        const res = await fetch("https://drivup-backend.onrender.com/rutas-usuarios");
+        const res = await fetch("http://localhost:5000/rutas-usuarios");
         const data = await res.json();
 
         const pasajerosConNombre = await Promise.all(
           data.map(async (pasajero: Pasajero) => {
-            const resUsuario = await fetch(`https://drivup-backend.onrender.com/usuario/${pasajero.user_id}`);
+            const resUsuario = await fetch(`http://localhost:5000/usuario/${pasajero.user_id}`);
             const usuario: Usuario = await resUsuario.json();
             const nombre_completo = [
               usuario.name,
@@ -120,7 +120,7 @@ const ListaPasajeros = () => {
             {pasajeros.map((pasajero) => (
               <div key={pasajero.id} className="border p-4 rounded shadow-md flex flex-col md:flex-row items-center">
                 {/* <img
-                  src={`https://drivup-backend.onrender.com/uploads/${pasajero.foto_de_perfil}`}
+                  src={`http://localhost:5000/uploads/${pasajero.foto_de_perfil}`}
                   alt="Perfil"
                   className="w-24 h-24 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
                 /> */}

@@ -1,13 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 interface RequestStatusProps {
     onCancel: () => void;
     userId: string | null;
+    onRideAccepted: (conductorInfo: any) => void;
 }
 
+// Crear una sola instancia de Socket.IO
+const socket = io('http://localhost:5000');
+
 // componente que muestra el estado de la solicitud de viaje mientras se espera un conductor
-const RequestStatus = ({ onCancel, userId }: RequestStatusProps) => {
+const RequestStatus = ({ onCancel, userId, onRideAccepted }: RequestStatusProps) => {
     const [isCancelling, setIsCancelling] = useState(false);
+
+    // Configurar Socket.IO al montar el componente
+    useEffect(() => {
+        // Si no hay userId, no podemos conectar correctamente
+        if (!userId) return;
+        
+        // Unirse a la sala específica del usuario
+        socket.emit('join_user_room', userId);
+        
+        // Configurar evento para escuchar cuando un conductor acepta el viaje
+        const handleViajeAceptado = (data: any) => {
+            console.log('Viaje aceptado:', data);
+            // Notificar al componente padre que un conductor ha aceptado el viaje
+            onRideAccepted(data.conductor);
+        };
+        
+        // Registrar evento
+        socket.on('viaje_aceptado', handleViajeAceptado);
+        
+        // Limpiar eventos al desmontar el componente
+        return () => {
+            socket.off('viaje_aceptado', handleViajeAceptado);
+        };
+    }, [userId, onRideAccepted]);
 
     // funcion para cancelar la solicitud de viaje en curso
     const handleCancelRide = async () => {
@@ -17,7 +46,7 @@ const RequestStatus = ({ onCancel, userId }: RequestStatusProps) => {
             setIsCancelling(true);
             
             // llamada a la api para cancelar la solicitud activa
-            const response = await fetch(`https://drivup-backend.onrender.com/cancelar-solicitud/${userId}`, {
+            const response = await fetch(`http://localhost:5000/cancelar-solicitud/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -84,7 +84,7 @@ const MapPreview = ({
                 originTimeoutRef.current = window.setTimeout(async () => {
                     try {
                         addDebugInfo(`Enviando solicitud para origen: ${originCoords}`);
-                        const response = await fetch('https://drivup-backend.onrender.com/direccion-a-coordenadas', {
+                        const response = await fetch('http://localhost:5000/direccion-a-coordenadas', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -159,7 +159,7 @@ const MapPreview = ({
                 destinationTimeoutRef.current = window.setTimeout(async () => {
                     try {
                         addDebugInfo(`Enviando solicitud para destino: ${destinationCoords}`);
-                        const response = await fetch('https://drivup-backend.onrender.com/direccion-a-coordenadas', {
+                        const response = await fetch('http://localhost:5000/direccion-a-coordenadas', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'

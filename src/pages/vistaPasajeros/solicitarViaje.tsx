@@ -124,6 +124,9 @@ const SolicitarViaje = () => {
         vehicleFeatures: ['A/C', 'Música', 'Wifi'],
     };
 
+    // Nuevo estado para guardar la información del conductor
+    const [conductorInfo, setConductorInfo] = useState<any>(null);
+
     // funcion para mostrar errores en el modal
     const setErrorWithModal = (errorMsg: string) => {
         setError(errorMsg);
@@ -147,7 +150,7 @@ const SolicitarViaje = () => {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await fetch('https://drivup-backend.onrender.com/puntos-concentracion');
+                const response = await fetch('http://localhost:5000/puntos-concentracion');
                 
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -212,7 +215,7 @@ const SolicitarViaje = () => {
                 };
                 
                 // llamada a la api para calcular informacion del viaje
-                const response = await fetch("https://drivup-backend.onrender.com/calcular-info-viaje", {
+                const response = await fetch("http://localhost:5000/calcular-info-viaje", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -298,7 +301,7 @@ const SolicitarViaje = () => {
     // verifica si las coordenadas pertenecen a un punto de concentracion
     const isConcentrationPoint = async (lat: string, lon: string): Promise<boolean> => {
         try {
-            const response = await fetch(`https://drivup-backend.onrender.com/verificar-punto-concentracion?lat=${lat}&lon=${lon}`);
+            const response = await fetch(`http://localhost:5000/verificar-punto-concentracion?lat=${lat}&lon=${lon}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -313,7 +316,7 @@ const SolicitarViaje = () => {
     // convierte direccion a coordenadas
     const convertAddressToCoordinates = async (address: string): Promise<{lat: string, lon: string} | null> => {
         try {
-            const response = await fetch("https://drivup-backend.onrender.com/direccion-a-coordenadas", {
+            const response = await fetch("http://localhost:5000/direccion-a-coordenadas", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -347,7 +350,7 @@ const SolicitarViaje = () => {
             
             if (isNearConcentration) {
                 // busca el punto de concentracion mas cercano
-                const response = await fetch(`https://drivup-backend.onrender.com/puntos-concentracion-cercanos?lat=${lat}&lon=${lon}&limit=1`);
+                const response = await fetch(`http://localhost:5000/puntos-concentracion-cercanos?lat=${lat}&lon=${lon}&limit=1`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -394,7 +397,7 @@ const SolicitarViaje = () => {
             }
             
             try {
-                const response = await fetch(`https://drivup-backend.onrender.com/verificar-solicitud-activa/${id}`);
+                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${id}`);
                 
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -431,7 +434,7 @@ const SolicitarViaje = () => {
         
         const checkRideStatus = async () => {
             try {
-                const response = await fetch(`https://drivup-backend.onrender.com/verificar-solicitud-activa/${userId}`);
+                const response = await fetch(`http://localhost:5000/verificar-solicitud-activa/${userId}`);
                 
                 if (!response.ok) {
                     return;
@@ -528,7 +531,7 @@ const SolicitarViaje = () => {
             }
             
             // Realizar solicitud con los datos finales
-            const response = await fetch("https://drivup-backend.onrender.com/solicitudes-viaje", {
+            const response = await fetch("http://localhost:5000/solicitudes-viaje", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -700,6 +703,12 @@ const SolicitarViaje = () => {
         }, 100);
     };
 
+    // función para manejar cuando un conductor acepta el viaje
+    const handleRideAccepted = (conductor: any) => {
+        setConductorInfo(conductor);
+        setRideAccepted(true);
+    };
+
     return (
         <HeaderFooterPasajeros>
             <div className="min-h-screen bg-[#F8F9FA]">
@@ -733,10 +742,14 @@ const SolicitarViaje = () => {
                         // muestra el estado de la solicitud o informacion del conductor
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                             {!rideAccepted ? (
-                                <RequestStatus onCancel={handleCancelRequest} userId={userId} />
+                                <RequestStatus 
+                                    onCancel={handleCancelRequest} 
+                                    userId={userId}
+                                    onRideAccepted={handleRideAccepted} 
+                                />
                             ) : (
                                 <DriverInfo 
-                                    driverInfo={driverInfo}
+                                    driverInfo={conductorInfo || driverInfo}
                                     estimatedArrival={estimatedArrival}
                                     onCancel={handleCancelRequest}
                                 />
