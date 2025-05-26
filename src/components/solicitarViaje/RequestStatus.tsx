@@ -1,42 +1,52 @@
 import { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
+import { socket, joinUserRoom } from '../../utils/socket';
 
 interface RequestStatusProps {
     onCancel: () => void;
     userId: string | null;
     onRideAccepted: (conductorInfo: any) => void;
+    onRideCanceled: (conductorInfo: any) => void;
 }
 
-// Crear una sola instancia de Socket.IO
-const socket = io('http://localhost:5000');
-
 // componente que muestra el estado de la solicitud de viaje mientras se espera un conductor
-const RequestStatus = ({ onCancel, userId, onRideAccepted }: RequestStatusProps) => {
+const RequestStatus = ({ onCancel, userId, onRideAccepted, onRideCanceled }: RequestStatusProps) => {
     const [isCancelling, setIsCancelling] = useState(false);
 
     // Configurar Socket.IO al montar el componente
     useEffect(() => {
         // Si no hay userId, no podemos conectar correctamente
         if (!userId) return;
+
+        console.log(`RequestStatus: Configurando Socket.IO para el usuario ${userId}`);
         
         // Unirse a la sala específica del usuario
-        socket.emit('join_user_room', userId);
+        joinUserRoom(userId);
         
         // Configurar evento para escuchar cuando un conductor acepta el viaje
         const handleViajeAceptado = (data: any) => {
-            console.log('Viaje aceptado:', data);
+            console.log('RequestStatus: Viaje aceptado recibido:', data);
             // Notificar al componente padre que un conductor ha aceptado el viaje
             onRideAccepted(data.conductor);
         };
         
-        // Registrar evento
+        // Configurar evento para escuchar cuando un conductor cancela el viaje
+        const handleViajeCancelado = (data: any) => {
+            console.log('RequestStatus: Viaje cancelado por el conductor recibido:', data);
+            // Notificar al componente padre que un conductor ha cancelado el viaje
+            onRideCanceled(data.conductor);
+        };
+        
+        // Registrar eventos
         socket.on('viaje_aceptado', handleViajeAceptado);
+        socket.on('viaje_cancelado', handleViajeCancelado);
         
         // Limpiar eventos al desmontar el componente
         return () => {
+            console.log('RequestStatus: Limpiando eventos de socket');
             socket.off('viaje_aceptado', handleViajeAceptado);
+            socket.off('viaje_cancelado', handleViajeCancelado);
         };
-    }, [userId, onRideAccepted]);
+    }, [userId, onRideAccepted, onRideCanceled]);
 
     // funcion para cancelar la solicitud de viaje en curso
     const handleCancelRide = async () => {

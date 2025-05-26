@@ -5,6 +5,7 @@ import RideDetails from '../../components/solicitarViaje/RideDetails';
 import MapPreview from '../../components/solicitarViaje/MapPreview';
 import RequestStatus from '../../components/solicitarViaje/RequestStatus';
 import DriverInfo from '../../components/solicitarViaje/DriverInfo';
+import TripCanceled from '../../components/solicitarViaje/TripCanceled';
 import ErrorModal from '../../components/solicitarViaje/ErrorModal';
 import { getUserId } from '../../utils/auth';
 
@@ -67,6 +68,7 @@ const SolicitarViaje = () => {
     // estados para el flujo de la solicitud
     const [requestSubmitted, setRequestSubmitted] = useState(false);
     const [rideAccepted, setRideAccepted] = useState(false);
+    const [rideCanceled, setRideCanceled] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [estimatedArrival, setEstimatedArrival] = useState('');
     const [concentrationPoints, setConcentrationPoints] = useState<ConcentrationPoint[]>([]);
@@ -707,6 +709,38 @@ const SolicitarViaje = () => {
     const handleRideAccepted = (conductor: any) => {
         setConductorInfo(conductor);
         setRideAccepted(true);
+        setRideCanceled(false);
+    };
+
+    // función para manejar cuando un conductor cancela el viaje
+    const handleRideCanceled = (conductor: any) => {
+        console.log('SolicitarViaje: Viaje cancelado por conductor, info:', conductor);
+        setConductorInfo(conductor);
+        // Establecer el estado correcto para mostrar el componente TripCanceled
+        setRideAccepted(false);
+        setRideCanceled(true);
+        
+        // Asegurar que la página se desplaza hacia arriba para mostrar la notificación
+        window.scrollTo(0, 0);
+        
+        // Log estado actualizado para depuración
+        setTimeout(() => {
+            console.log('Estado después de cancelación:', { 
+                requestSubmitted, 
+                rideAccepted: false, 
+                rideCanceled: true,
+                conductorInfo: conductor
+            });
+        }, 100);
+    };
+    
+    // función para reiniciar el proceso cuando un viaje ha sido cancelado
+    const handleResetAfterCancellation = () => {
+        console.log('Reiniciando después de cancelación');
+        setRequestSubmitted(false);
+        setRideAccepted(false);
+        setRideCanceled(false);
+        setConductorInfo(null);
     };
 
     return (
@@ -739,19 +773,27 @@ const SolicitarViaje = () => {
                             <p className="text-[#4A4E69]">Verificando solicitudes activas...</p>
                         </div>
                     ) : requestSubmitted ? (
-                        // muestra el estado de la solicitud o informacion del conductor
+                        // muestra el estado de la solicitud, informacion del conductor o pantalla de viaje cancelado
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                            {!rideAccepted ? (
+                            {rideCanceled ? (
+                                <TripCanceled 
+                                    driverInfo={conductorInfo}
+                                    onReset={handleResetAfterCancellation}
+                                />
+                            ) : !rideAccepted ? (
                                 <RequestStatus 
                                     onCancel={handleCancelRequest} 
                                     userId={userId}
-                                    onRideAccepted={handleRideAccepted} 
+                                    onRideAccepted={handleRideAccepted}
+                                    onRideCanceled={handleRideCanceled} 
                                 />
                             ) : (
                                 <DriverInfo 
                                     driverInfo={conductorInfo || driverInfo}
                                     estimatedArrival={estimatedArrival}
                                     onCancel={handleCancelRequest}
+                                    userId={userId}
+                                    onRideCanceled={handleRideCanceled}
                                 />
                             )}
                         </div>

@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import { socket } from '../../utils/socket';
+
 interface DriverInfoProps {
     driverInfo: {
         id?: number;
@@ -18,10 +21,36 @@ interface DriverInfoProps {
     };
     estimatedArrival: string;
     onCancel: () => void;
+    userId?: string | null;
+    onRideCanceled?: (conductorInfo: any) => void;
 }
 
 // componente que muestra la informacion del conductor asignado al pasajero
-const DriverInfo = ({ driverInfo, estimatedArrival, onCancel }: DriverInfoProps) => {
+const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, userId, onRideCanceled }: DriverInfoProps) => {
+    // Escuchar eventos del servidor de cancelación de viaje
+    useEffect(() => {
+        // Solo si el componente puede manejar las cancelaciones
+        if (!userId || !onRideCanceled) return;
+        
+        console.log(`DriverInfo: Configurando listener para viaje_cancelado para usuario ${userId}`);
+        
+        // Manejar cancelación de viaje
+        const handleViajeCancelado = (data: any) => {
+            console.log('DriverInfo: Viaje cancelado por conductor:', data);
+            if (onRideCanceled) {
+                onRideCanceled(data.conductor);
+            }
+        };
+        
+        // Registrar eventos
+        socket.on('viaje_cancelado', handleViajeCancelado);
+        
+        // Limpiar eventos al desmontar
+        return () => {
+            socket.off('viaje_cancelado', handleViajeCancelado);
+        };
+    }, [userId, onRideCanceled]);
+    
     // Normalizar los campos para que funcionen con ambos formatos de datos
     const normalizedDriverInfo = {
         name: driverInfo.nombre || driverInfo.name || 'Conductor',
