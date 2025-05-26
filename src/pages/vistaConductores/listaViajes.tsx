@@ -385,7 +385,7 @@ const ListaViajes = () => {
                         <div className="flex flex-wrap gap-4 text-gray-700">
                           <div className="flex items-center space-x-2">
                             <FaClock className="text-[#F2B134]" />
-                            <span>{viaje.tiempo_estimado}</span>
+                            <span>{viaje.tiempo_estimado} min</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <FaRoad className="text-[#F2B134]" />
