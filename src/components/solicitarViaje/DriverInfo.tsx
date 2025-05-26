@@ -171,9 +171,11 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
             </div>
 
             {/* Visualización de la ruta */}
-            <div className="h-[400px] rounded-xl mb-8 relative">
+            <div className="h-[400px] rounded-xl mb-12 relative overflow-hidden ">
                 {currentViajeId ? (
-                    <VisualizacionRuta viajeId={currentViajeId} />
+                    <div className="absolute inset-0 z-0 flex items-center justify-center">
+                        <VisualizacionRuta viajeId={currentViajeId} />
+                    </div>
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-[#F8F9FA]">
                         <div className="text-center">
