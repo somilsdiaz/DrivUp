@@ -156,11 +156,24 @@ const ViajeActualConductor = () => {
                 throw new Error("No se encontró ID de usuario")
             }
             
-            // Aquí iría la llamada a la API para completar el viaje
-            console.log('Viaje completado con ID:', viajeData.viaje.id)
+            // Llamada al endpoint para completar el viaje
+            const response = await fetch(`http://localhost:5000/conductor/completar-viaje/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
             
+            const data = await response.json()
+            
+            if (!response.ok) {
+                // Si el servidor rechaza la solicitud, mostramos el error
+                throw new Error(data.message || "Error al completar el viaje")
+            }
+            
+            // Si todo sale bien, cerramos el modal y mostramos mensaje de éxito
             setEstadoPasajerosModalOpen(false)
-            setModalMessage('El viaje ha sido completado exitosamente')
+            setModalMessage(data.message || 'El viaje ha sido completado exitosamente')
             setModalType('success')
             setModalOpen(true)
         } catch (err) {
