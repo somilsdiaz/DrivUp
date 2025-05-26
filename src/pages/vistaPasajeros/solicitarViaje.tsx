@@ -792,6 +792,7 @@ const SolicitarViaje = () => {
                                     driverInfo={conductorInfo || driverInfo}
                                     estimatedArrival={estimatedArrival}
                                     onCancel={handleCancelRequest}
+                                    onComplete={handleCancelRequest}
                                     userId={userId}
                                     onRideCanceled={handleRideCanceled}
                                 />
