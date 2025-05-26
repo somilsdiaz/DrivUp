@@ -1,5 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { socket } from '../../utils/socket';
+import VisualizacionRuta from '../../components/visualizacionRuta';
+import { getUserId } from '../../utils/auth';
 
 interface DriverInfoProps {
     driverInfo: {
@@ -24,10 +26,45 @@ interface DriverInfoProps {
     onComplete?: () => void;
     userId?: string | null;
     onRideCanceled?: (conductorInfo: any) => void;
+    viajeId?: number;
 }
 
 // componente que muestra la informacion del conductor asignado al pasajero
-const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId, onRideCanceled }: DriverInfoProps) => {
+const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId, onRideCanceled, viajeId: propViajeId }: DriverInfoProps) => {
+    const [currentViajeId, setCurrentViajeId] = useState<number | undefined>(propViajeId);
+    
+    // Obtener el ID del viaje actual del usuario
+    useEffect(() => {
+        // Si ya tenemos un ID de viaje por props, no necesitamos buscarlo
+        if (propViajeId) return;
+        
+        const fetchViajeId = async () => {
+            const currentUserId = userId || getUserId();
+            
+            if (!currentUserId) return;
+            
+            try {
+                const response = await fetch(`http://localhost:5000/viaje-actual/${currentUserId}`);
+                
+                if (!response.ok) {
+                    console.error('No se pudo obtener el viaje actual');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.viajeId) {
+                    setCurrentViajeId(data.viajeId);
+                    console.log('ID de viaje obtenido:', data.viajeId);
+                }
+            } catch (error) {
+                console.error('Error al obtener el viaje actual:', error);
+            }
+        };
+        
+        fetchViajeId();
+    }, [userId, propViajeId]);
+
     // Escuchar eventos del servidor de cancelación de viaje
     useEffect(() => {
         // Solo si el componente puede manejar las cancelaciones
@@ -133,16 +170,20 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
                 </div>
             </div>
 
-            {/* espacio reservado para el mapa */}
-            <div className="h-[400px] bg-[#F8F9FA] rounded-xl mb-8 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-[#4A4E69]/20 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                        </svg>
-                        <span className="text-[#4A4E69]/60 text-lg">Mapa con ruta final</span>
+            {/* Visualización de la ruta */}
+            <div className="h-[400px] rounded-xl mb-8 relative">
+                {currentViajeId ? (
+                    <VisualizacionRuta viajeId={currentViajeId} />
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#F8F9FA]">
+                        <div className="text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-[#4A4E69]/20 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                            </svg>
+                            <span className="text-[#4A4E69]/60 text-lg">Mapa con ruta final</span>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* boton para cancelar viaje */}
