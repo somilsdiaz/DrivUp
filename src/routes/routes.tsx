@@ -23,6 +23,7 @@ import SolicitarViaje from '../pages/vistaPasajeros/solicitarViaje';
 import ListaViajes from '../pages/vistaConductores/listaViajes';
 import InProcess from '../components/skeletons/inProcess';
 import { DetalleViaje } from '../pages/detalleViaje';
+import { CambiarDatosConductor } from '../pages/actualizarDatosConductor';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -42,6 +43,20 @@ const router = createBrowserRouter([
             </ProtectedRoute>
         ),
     },
+    {
+        path: "/dashboard/conductor/datos-conductor",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["conductor"]}
+                    redirectPath="/dashboard/conductor"
+                >
+                    <CambiarDatosConductor />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
+
     {
         path: "/dashboard/conductor/lista-pasajeros",
         element:(                 

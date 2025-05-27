@@ -71,7 +71,7 @@ const Header: React.FC = () => {
         { label: "Mis viajes", path: "/en-proceso" },
         { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
         { label: "Viajes programados", path: "/en-proceso" },
-        { label: "Mi perfil", path: "/en-proceso" },
+        { label: "Mi perfil", path: "/dashboard/conductor/datos-conductor" },
         { label: "Configuracion", path: "/dashboard/conductor/configuracion" },
         { label: "Ayuda/Soporte", path: "/en-proceso" },
         { label: "Cerrar sesión", path: "/" }
@@ -136,7 +136,7 @@ const Header: React.FC = () => {
                                 <p className="text-xs text-gray-400">{userEmail}</p>
                             </div>
                             <div className="py-1">
-                                <Link to="/en-proceso" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
+                                <Link to="/dashboard/conductor/datos-conductor" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-[#1a1f55] w-full text-left">
                                     <User className="h-4 w-4" />
                                     Mi Perfil
                                 </Link>
