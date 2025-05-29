@@ -8,6 +8,6 @@ export const traerDetallesViaje = async (idViaje:number) => {
     });
     return response.data;
   } catch (error: any) {
-    throw new Error("Error in retrieving the tasks. Error: " + error.message);
+    throw new Error("Error al traer los viajes Error: " + error.message);
   }
 };

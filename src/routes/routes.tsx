@@ -24,6 +24,8 @@ import ListaViajes from '../pages/vistaConductores/listaViajes';
 import InProcess from '../components/skeletons/inProcess';
 import { DetalleViaje } from '../pages/detalleViaje';
 import { CambiarDatosConductor } from '../pages/actualizarDatosConductor';
+import { ViajesConductor } from '../pages/viajeConductor';
+import { ViajesPasajero } from '../pages/viajesPasajero';
 
 const router = createBrowserRouter([
     //<PublicRoute> si el usuario esta autenticado no puede acceder a la pagina 
@@ -254,6 +256,32 @@ const router = createBrowserRouter([
     {
         path: "/en-proceso",
         element: <InProcess />
+    },
+     {
+        path: "/dashboard/conductor/viajes-conductor",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["conductor"]}
+                    redirectPath="/dashboard/conductor"
+                >
+                    <ViajesConductor />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
+    },
+     {
+        path: "/dashboard/pasajero/viajes-pasajero",
+        element:(                 
+            <ProtectedRoute>
+                <RoleBasedRoute
+                    allowedRoles={["pasajero"]}
+                    redirectPath="/dashboard/pasajero"
+                >
+                    <ViajesPasajero />
+                </RoleBasedRoute>
+            </ProtectedRoute>
+        ),
     }
     
 ]);

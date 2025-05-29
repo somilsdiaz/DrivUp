@@ -68,7 +68,7 @@ const Header: React.FC = () => {
     // Define menu items
     const menuItems: MenuItem[] = [
         { label: "Buscar viaje", path: "/dashboard/conductor/lista-viajes" },
-        { label: "Mis viajes", path: "/en-proceso" },
+        { label: "Mis viajes", path: "/dashboard/conductor/viajes-conductor" },
         { label: "Solicitudes", path: "/dashboard/conductor/solicitudes" },
         { label: "Viajes programados", path: "/en-proceso" },
         { label: "Mi perfil", path: "/dashboard/conductor/datos-conductor" },
@@ -106,7 +106,7 @@ const Header: React.FC = () => {
                         <Link to="/dashboard/conductor/lista-viajes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Buscar Viaje
                         </Link>
-                        <Link to="/en-proceso" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
+                        <Link to="/dashboard/conductor/viajes-conductor" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Mis viajes
                         </Link>
                         <Link to="/dashboard/conductor/solicitudes" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">

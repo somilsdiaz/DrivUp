@@ -47,9 +47,18 @@ const ActualizarDatosConductor: React.FC<Props> = ({ conductordatos, close }) =>
     const onSubmit = (data: FormValues) => {
        try{
        const updatedData: DatosUpdateProps = {
+           id: conductordatos.id,
            user_id:Number(getUserId()),
-           ...data
+              modelo_de_vehiculo: data.modelo_vehiculo,
+                marca_de_vehiculo: data.marca_vehiculo,
+                color_del_vehiculo: data.color_vehiculo,
+                año_del_vehiculo: data.año_vehiculo,
+                capacidad_de_pasajeros: data.capacidad_de_pasajeros,
+                origen_aproximado: data.origen,
+                destino_aproximado: data.destino,
+                descripcion: data.descripcion,
        }
+
        updateDatos(updatedData)
        setError("")
         close();
