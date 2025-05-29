@@ -69,7 +69,7 @@ const HeaderPasajero: React.FC = () => {
     // Define menu items
     const menuItems: MenuItem[] = [
         { label: "Solicitar viaje", path: "/dashboard/pasajero/solicitar-viaje" },
-        { label: "Mis viajes", path: "/en-proceso" },
+        { label: "Mis viajes", path: "/dashboard/pasajero/viajes-pasajero" },
         { label: "Solicitar conductores", path: "/dashboard/pasajero/lista-conductores" },
         { label: "Bandeja de mensajes", path: "/dashboard/pasajero/mi-bandeja-de-mensajes" },
         { label: "Mi perfil", path: "/en-proceso" },
@@ -107,7 +107,7 @@ const HeaderPasajero: React.FC = () => {
                         <Link to="/dashboard/pasajero/solicitar-viaje" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Solicitar viaje
                         </Link>
-                        <Link to="/en-proceso" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
+                        <Link to="/dashboard/pasajero/viajes-pasajero" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">
                             Mis Viajes
                         </Link>
                         <Link to="/dashboard/pasajero/lista-conductores" className="text-xs lg:text-sm font-medium hover:underline whitespace-nowrap px-1">

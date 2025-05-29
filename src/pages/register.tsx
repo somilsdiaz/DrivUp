@@ -31,8 +31,6 @@ const RegisterPage = () => {
     const onSubmit = async (data: FormValues) => {
         setLoading(true);
         try {
-            console.log("Formulario enviado:", data);
-
             const response = await fetch("https://drivup-backend.onrender.com/registro", {
                 method: "POST",
                 headers: {

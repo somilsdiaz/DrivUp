@@ -7,7 +7,6 @@ type DatosVehiculoProps={
 }
 
 export function DatosVehiculo(vehiculo:DatosVehiculoProps){
-    
         if(!vehiculo){
             return(
                 <section className="flex flex-col gap-2 bg-">
@@ -15,12 +14,13 @@ export function DatosVehiculo(vehiculo:DatosVehiculoProps){
                 </section>
             );
         }
+        const año = typeof vehiculo.año_vehiculo !== "string" ? (vehiculo.año_vehiculo).toString() : vehiculo.año_vehiculo;
 
     const vehiculoDataList:{Dato:string, Valor:string}[]=[
         { Dato: "Modelo", Valor: vehiculo.modelo_vehiculo },
         { Dato: "Marca", Valor: vehiculo.marca_vehiculo },
         { Dato: "Color", Valor: vehiculo.color_vehiculo },
-        { Dato: "Año", Valor: vehiculo.año_vehiculo.toString() },
+        { Dato: "Año", Valor: año },
         { Dato: "Capacidad de pasajeros", Valor: vehiculo.capacidad_de_pasajeros.toString() },
     ]
 

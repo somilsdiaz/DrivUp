@@ -37,3 +37,39 @@ export type Conductor = {
   origen_aproximado: string;
   destino_aproximado: string;
 };
+
+export interface DatosProps {
+  nombre_completo: string;
+  id: number;
+  user_id?: number;
+  licencia_de_conducir?: string;
+  fecha_de_vencimiento?: string; 
+  foto_de_perfil?: string;
+  marca_de_vehiculo: string;
+  modelo_de_vehiculo: string;
+  año_del_vehiculo: number;
+  color_del_vehiculo: string;
+  placa_del_vehiculo?: string;
+  capacidad_de_pasajeros: number;
+  tarjeta_de_propiedad_vehicular?: string;
+  seguro_del_vehiculo?: string;
+  foto_de_licencia?: string;
+  created_at: string; 
+  origen_aproximado: string;
+  destino_aproximado: string;
+  descripcion: string;
+}
+
+export interface DatosUpdateProps {
+  id: number;
+  user_id: number;
+  marca_de_vehiculo?: string;
+  modelo_de_vehiculo?: string;
+  año_del_vehiculo?: number;
+  color_del_vehiculo?: string;
+  placa_del_vehiculo?: string;
+  capacidad_de_pasajeros?: number;
+  origen_aproximado?: string;
+  destino_aproximado?: string;
+  descripcion?: string;
+}
