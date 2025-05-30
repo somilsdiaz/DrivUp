@@ -20,6 +20,7 @@ interface DriverInfoProps {
         completedRides?: number;
         languages?: string[];
         vehicleFeatures?: string[];
+        conductorId?: number;
     };
     estimatedArrival: string;
     onCancel: () => void;
@@ -34,11 +35,19 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
     const [currentViajeId, setCurrentViajeId] = useState<number | undefined>(propViajeId);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCompleting, setIsCompleting] = useState(false);
+    const [conductorId, setConductorId] = useState<number | undefined>(driverInfo.id || driverInfo.conductorId);
     
     // Scroll to top when component mounts
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+    
+    // Si el conductorId cambia en driverInfo, actualizamos el estado
+    useEffect(() => {
+        if (driverInfo.id || driverInfo.conductorId) {
+            setConductorId(driverInfo.id || driverInfo.conductorId);
+        }
+    }, [driverInfo.id, driverInfo.conductorId]);
     
     // Obtener el ID del viaje actual del usuario
     useEffect(() => {
@@ -95,9 +104,29 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
             socket.off('viaje_cancelado', handleViajeCancelado);
         };
     }, [userId, onRideCanceled]);
+
+    // Escuchar eventos de socket para obtener o actualizar el ID del conductor
+    useEffect(() => {
+        // Solo configurar si tenemos userId pero no tenemos conductorId
+        if (!userId || conductorId) return;
+        
+        const handleAsignacionConductor = (data: any) => {
+            console.log('DriverInfo: Conductor asignado:', data);
+            if (data.conductor && data.conductor.id) {
+                setConductorId(data.conductor.id);
+            }
+        };
+        
+        socket.on('conductor_asignado', handleAsignacionConductor);
+        
+        return () => {
+            socket.off('conductor_asignado', handleAsignacionConductor);
+        };
+    }, [userId, conductorId]);
     
     // Normalizar los campos para que funcionen con ambos formatos de datos
     const normalizedDriverInfo = {
+        id: driverInfo.id || driverInfo.conductorId,
         name: driverInfo.nombre || driverInfo.name || 'Conductor',
         rating: driverInfo.rating || 4.5,
         vehicle: driverInfo.vehiculo || driverInfo.vehicle || 'Vehículo no especificado',
@@ -241,9 +270,12 @@ const DriverInfo = ({ driverInfo, estimatedArrival, onCancel, onComplete, userId
 
             {/* Visualización de la ruta */}
             <div className="h-[400px] rounded-xl mb-12 relative overflow-hidden ">
-                {currentViajeId ? (
+                {currentViajeId && normalizedDriverInfo.id ? (
                     <div className="absolute inset-0 z-0 flex items-center justify-center">
-                        <VisualizacionRuta viajeId={currentViajeId} />
+                        <VisualizacionRuta 
+                            viajeId={currentViajeId} 
+                            conductorId={normalizedDriverInfo.id} 
+                        />
                     </div>
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-[#F8F9FA]">

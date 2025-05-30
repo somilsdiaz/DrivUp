@@ -9,9 +9,12 @@ type Ruta = {
   puntos_intermedios: Punto[];
 };
 
-type IdViajeProps = { viajeId: number };
+type IdViajeProps = { 
+  viajeId: number;
+  conductorId?: number;
+};
 
-const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
+const VisualizacionRuta = ({ viajeId, conductorId }: IdViajeProps) => {
   const viajeIdNumero = Number(viajeId);
 
   const [ruta, setRuta] = useState<Ruta | null>(null);
@@ -31,27 +34,32 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
       }
 
       try {
-        const userId = localStorage.getItem("userId");
-        if (!userId) {
-          console.error("No se encontró userId en localStorage");
-          setLoading(false);
-          return;
-        }
+        let conductorIdFinal = conductorId;
+        
+        // Solo buscar el conductorId si no fue proporcionado como prop
+        if (!conductorIdFinal) {
+          const userId = localStorage.getItem("userId");
+          if (!userId) {
+            console.error("No se encontró userId en localStorage");
+            setLoading(false);
+            return;
+          }
 
-        // 1. Obtener conductorId
-        const resConductores = await fetch("https://drivup-backend.onrender.com/conductores");
-        const conductores = await resConductores.json();
-        const conductor = conductores.find((c: any) => c.user_id === Number(userId));
-        if (!conductor) {
-          console.error("No se encontró el conductor con ese userId");
-          setLoading(false);
-          return;
+          // 1. Obtener conductorId
+          const resConductores = await fetch("https://drivup-backend.onrender.com/conductores");
+          const conductores = await resConductores.json();
+          const conductor = conductores.find((c: any) => c.user_id === Number(userId));
+          if (!conductor) {
+            console.error("No se encontró el conductor con ese userId");
+            setLoading(false);
+            return;
+          }
+          conductorIdFinal = conductor.id;
         }
-        const conductorId = conductor.id;
 
         // 1.2 obtener ubicacion del conductor
         // Obtener ubicación actual desde tabla conductores_activos_disponibles
-        const resUbicacion = await fetch(`https://drivup-backend.onrender.com/conductores-activos-disponibles/${conductorId}`);
+        const resUbicacion = await fetch(`https://drivup-backend.onrender.com/conductores-activos-disponibles/${conductorIdFinal}`);
         if (!resUbicacion.ok) {
           console.error("No se pudo obtener la ubicación del conductor desde la tabla");
         } else {
@@ -69,7 +77,7 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
         }
 
         // 2. Obtener ruta base
-        const resRuta = await fetch(`https://drivup-backend.onrender.com/ruta-viaje/${viajeIdNumero}/${conductorId}`);
+        const resRuta = await fetch(`https://drivup-backend.onrender.com/ruta-viaje/${viajeIdNumero}/${conductorIdFinal}`);
         if (!resRuta.ok) {
           const errorText = await resRuta.text();
           console.error("Error en fetch de ruta:", resRuta.status, errorText);
@@ -232,7 +240,7 @@ const VisualizacionRuta = ({ viajeId }: IdViajeProps) => {
     };
 
     obtenerRuta();
-  }, [viajeId]);
+  }, [viajeId, conductorId]);
 
   return (
     <div className="p-4 w-full  md:w-9/12 z-0">
