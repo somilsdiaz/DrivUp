@@ -50,21 +50,49 @@ DrivUp es una aplicación web moderna que facilita la conexión entre pasajeros 
 ## 🖼️ Demostración
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/5b122011-8246-4f36-b621-5243a759b0e4" alt="Demostración de DrivUp" width="80%" style="border-radius: 8px; margin: 20px 0">
+  <img src="https://github.com/user-attachments/assets/5b122011-8246-4f36-b621-5243a759b0e4" alt="Demostración de DrivUp" width="80%" style="border-radius: 8px; margin: 20px 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
   
   <p><em>Interfaz principal de la aplicación DrivUp</em></p>
+</div>
 
-Dashboard conductor
-![homePageConductor](https://github.com/user-attachments/assets/8f88a5b4-1b73-44a1-bc2f-72c47c360c60)
-![VerdetallesViaje](https://github.com/user-attachments/assets/113e29b1-3033-48c6-a3a8-cf4525ddb0dd)
-![listaViajes](https://github.com/user-attachments/assets/969a9565-4984-41f9-9d07-abf762b04bb2)
+### 🚘 Dashboard Conductor
+
+<div align="center">
+  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
+    <img src="https://github.com/user-attachments/assets/8f88a5b4-1b73-44a1-bc2f-72c47c360c60" alt="Dashboard del Conductor" width="80%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <p><em>Panel principal del conductor</em></p>
+  </div>
   
-Dashboard pasajero
-![homePagePasajero](https://github.com/user-attachments/assets/27349655-efb7-469d-9b03-e4d4ec5d2316)
-![SolicitarViajePage](https://github.com/user-attachments/assets/e46f0ab0-a691-443d-b3b4-9605ab573011)
-![contactarConductorPage](https://github.com/user-attachments/assets/ba992017-9173-4609-aa5b-c3bcf02cfc34)
+  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+    <div style="flex: 1; min-width: 45%;">
+      <img src="https://github.com/user-attachments/assets/113e29b1-3033-48c6-a3a8-cf4525ddb0dd" alt="Detalles de Viaje" width="80%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+      <p><em>Vista detallada de viaje</em></p>
+    </div>
+    <div style="flex: 1; min-width: 45%;">
+      <img src="https://github.com/user-attachments/assets/969a9565-4984-41f9-9d07-abf762b04bb2" alt="Lista de Viajes" width="80%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+      <p><em>Listado de viajes disponibles</em></p>
+    </div>
+  </div>
+</div>
 
+### 👤 Dashboard Pasajero
 
+<div align="center">
+  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
+    <img src="https://github.com/user-attachments/assets/27349655-efb7-469d-9b03-e4d4ec5d2316" alt="Dashboard del Pasajero" width="80%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <p><em>Panel principal del pasajero</em></p>
+  </div>
+  
+  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+    <div style="flex: 1; min-width: 45%;">
+      <img src="https://github.com/user-attachments/assets/e46f0ab0-a691-443d-b3b4-9605ab573011" alt="Solicitar Viaje" width="80%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+      <p><em>Interfaz para solicitar un viaje</em></p>
+    </div>
+    <div style="flex: 1; min-width: 45%;">
+      <img src="https://github.com/user-attachments/assets/ba992017-9173-4609-aa5b-c3bcf02cfc34" alt="Contactar Conductor" width="80%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+      <p><em>Interfaz para contactar al conductor</em></p>
+    </div>
+  </div>
 </div>
 
 ## 🛠️ Tecnologías
