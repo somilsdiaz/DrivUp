@@ -53,6 +53,18 @@ DrivUp es una aplicación web moderna que facilita la conexión entre pasajeros 
   <img src="https://github.com/user-attachments/assets/5b122011-8246-4f36-b621-5243a759b0e4" alt="Demostración de DrivUp" width="80%" style="border-radius: 8px; margin: 20px 0">
   
   <p><em>Interfaz principal de la aplicación DrivUp</em></p>
+
+Dashboard conductor
+![homePageConductor](https://github.com/user-attachments/assets/8f88a5b4-1b73-44a1-bc2f-72c47c360c60)
+![VerdetallesViaje](https://github.com/user-attachments/assets/113e29b1-3033-48c6-a3a8-cf4525ddb0dd)
+![listaViajes](https://github.com/user-attachments/assets/969a9565-4984-41f9-9d07-abf762b04bb2)
+  
+Dashboard pasajero
+![homePagePasajero](https://github.com/user-attachments/assets/27349655-efb7-469d-9b03-e4d4ec5d2316)
+![SolicitarViajePage](https://github.com/user-attachments/assets/e46f0ab0-a691-443d-b3b4-9605ab573011)
+![contactarConductorPage](https://github.com/user-attachments/assets/ba992017-9173-4609-aa5b-c3bcf02cfc34)
+
+
 </div>
 
 ## 🛠️ Tecnologías
